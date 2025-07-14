@@ -1,0 +1,1524 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Momotan Storage Explorer</title>
+    <style>
+        :root {
+            --primary-color: #a74e66;
+            --primary-color-dark: #faf0f3;
+            --danger-color: #f44336;
+            --light-bg: #f5f5f5;
+            --dark-bg: #303030;
+            --border-color: #ddd;
+            --border-color-dark: #444;
+            --shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        html {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(150,150,150,0.5) transparent;
+        }
+        
+        html::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        html::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        body::-webkit-scrollbar-button {
+            display: none;
+        }
+        
+        body {
+            display: flex;
+            height: 100vh;
+            background-color: #ffffff;
+            color: #333;
+            scrollbar-width: none;
+            transition: all 0.2s ease;
+        }
+
+        body.dark-theme {
+            background-color: #252525;
+            color: #eee;
+            scrollbar-width: none;
+        }
+        
+        .container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* 左侧边栏 */
+        .leftbar {
+            width: 65px;
+            background: white;
+            border-right: 1px solid var(--border-color);
+            height: 100%;
+            display: flex;
+            flex-direction: column;     
+            transition: all 0.2s ease;
+        }
+
+        .dark-theme .leftbar {
+            border-right: 1px solid var(--border-color-dark);
+            background: #252525;
+        }
+        
+        /* 存储类型列表 */
+        .storage-type-list {
+            width: 350px;
+            background: white;
+            border-right: 1px solid var(--border-color);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.2s ease;
+        }
+
+        .dark-theme .storage-type-list {
+            border-right: 1px solid var(--border-color-dark);
+            background: #252525;
+        }
+        
+        .storage-type-header {
+            padding: 16px 15px 9px 15px;
+            border-bottom: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+        }
+        
+        .dark-theme .storage-type-header {
+            border-bottom: 1px solid var(--border-color-dark);
+        }
+        
+        .btn {
+            padding: 10px 15px;
+            background-color: #faf0f3;
+            color: var(--primary-color);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            -webkit-tap-highlight-color: transparent;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        
+        .dark-theme .btn {
+            background-color: #3a3537;
+            color: var(--primary-color-dark);
+        }
+        
+        .btn:hover {
+            border-radius: 12px;
+        }
+        
+        .storage-items-list {
+            overflow-y: auto;
+            flex: 1;
+            position: relative;
+            scrollbar-width: none;
+            transition: all 0.2s ease;
+        }
+        
+        .storage-item {
+            padding: 17.5px 15px 15px 15px;
+            height:130px;
+            border-bottom: 1px solid var(--border-color);
+            border-left: 0px solid var(--primary-color);
+            cursor: pointer;
+            position: relative;
+            -webkit-tap-highlight-color: transparent;
+            transition: all 0.2s ease;
+        }
+
+        .dark-theme .storage-item {
+            border-bottom: 1px solid var(--border-color-dark);
+            border-left: 0px solid var(--primary-color); 
+        }
+        
+        .storage-item:hover {
+            background-color: var(--light-bg);
+        }
+        
+        .dark-theme .storage-item:hover {
+            background-color: var(--dark-bg);
+        }
+        
+        .storage-item.selected {
+            background-color: #faf0f3;
+            border-left: 3px solid var(--primary-color);
+            transition: all 0.2s ease;
+        }
+        
+        .dark-theme .storage-item.selected {
+            background-color: #3a3537;
+            border-left: 3px solid var(--primary-color);
+            transition: all 0.2s ease;
+        }
+        
+        .storage-title {
+            font-weight: 500;
+            font-size: 16px;
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .storage-size {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+            transition: all 0.2s ease;
+        }
+        
+        .dark-theme .storage-size {
+            color: #aaa;
+        }
+        
+        .storage-time {
+            font-size: 12px;
+            color: #999;
+            margin-top: 8px;
+        }
+        
+        /* 右侧编辑区域 */
+        .editor {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            height: 100%;
+            transition: all 0.2s ease;
+        }
+        
+        .dark-theme .editor {
+            background: #252525;
+        }
+        
+        .editor-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+        
+        .dark-theme .editor-header {
+            border-bottom: 1px solid var(--border-color-dark);
+        }
+        
+        .storage-detail-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            transition: all 0.2s ease;
+        }
+        
+        .dark-theme .storage-detail-title {
+            color: #eee;
+        }
+        
+        .editor-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .action-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: none;
+            border: none;
+            color: #111;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        .dark-theme .action-btn {
+            color: #eee;
+        }
+        
+        .editor-body {
+            flex: 1;
+            padding: 20px 25px 0px 20px;
+            overflow-y: auto;
+        }
+        
+        .storage-details {
+            background: none;
+            width: 100%;
+            height: 100%;
+            border: none;
+            resize: none;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #444;
+			word-break: normal;         /* 中文按字符换行 */
+  			overflow-wrap: break-word;  /* 英文长单词换行 */
+            white-space: pre-wrap;
+			font-family: inherit;		
+            transition: all 0.2s ease;
+        }
+        
+        .dark-theme .storage-details {
+            color: #eee;
+        }
+		.storage-details:focus {
+            outline: none;
+        }
+        
+        .placeholder {
+            position: relative;
+            color: #aaa;
+            font-size: 16px;
+            transform: translateY(3px);
+            transition: all 0.2s ease;
+        }
+		.placeholder2 {
+            position: relative;
+            color: #aaa;
+            font-size: 16px;
+            transform: translateX(12px) translateY(10px);
+            transition: all 0.2s ease;
+        }
+        
+        svg {
+            width: 20px;
+            height: 20px;
+        }
+        
+        .storage-summary {
+            padding: 15px;
+			height: 130px;
+            border-bottom: 1px solid var(--border-color);
+            background-color: #f9f9f9;
+			transition: all 0.2s ease;
+        }
+        
+        .dark-theme .storage-summary {
+            border-bottom: 1px solid var(--border-color-dark);
+            background-color: #2d2d2d;
+        }
+        
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+			transition: all 0.2s ease;
+        }
+        
+        .summary-label {
+            font-weight: 500;
+            color: #555;
+			transition: all 0.2s ease;
+        }
+        
+        .dark-theme .summary-label {
+            color: #ccc;
+        }
+        
+        .summary-value {
+            color: #333;
+            font-weight: 600;
+			transition: all 0.2s ease;
+        }
+        
+        .dark-theme .summary-value {
+            color: #eee;
+        }
+        
+        .usage-bar {
+            height: 8px;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+            margin-top: 10px;
+            overflow: hidden;
+			transition: all 0.2s ease;
+        }
+        
+        .dark-theme .usage-bar {
+            background-color: #444;
+        }
+        
+        .usage-progress {
+            height: 100%;
+            background-color: var(--primary-color);
+            border-radius: 4px;
+            transition: background-color 0.2s ease, width 0.5s ease;
+        }
+        
+        .dark-theme .usage-progress {
+            background-color: #ffccd8;
+        }
+        
+        .delete-item-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            background-color: #faf0f3;
+            color: #252525;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+
+		.delete-item-btn svg {
+            width: 16px;
+            height: 16px;
+            transition: all 0.2s ease;
+        }
+        
+        .delete-item-btn:hover {
+            background-color: #f8d9e2;
+        }
+        
+        .dark-theme .delete-item-btn {
+            background-color: #433a3e;
+            color: #f0f0f0;
+        }
+        
+        .dark-theme .delete-item-btn:hover {
+            background-color: #52474c;
+        }
+
+		.createbotton {
+			height:65px;
+			width: 65px;
+			font-size:18px;
+			padding: 5px 5px;
+			background-color: #ffffff;
+            color: var(--primary-color);
+			display:flex;
+			flex-direction: column;
+			align-items: center;
+            justify-content: center;
+			text-align: center;
+			border-right: 1px solid var(--border-color);
+			border-bottom: 1px solid var(--border-color);
+			-webkit-tap-highlight-color: transparent;
+			text-decoration: none;
+			transition: all 0.2s ease;
+		}
+
+		.dark-theme .createbotton {
+            background-color: #252525;
+            color: var(--primary-color-dark);
+            border-right: 1px solid var(--border-color-dark);
+			border-bottom: 1px solid var(--border-color-dark);     
+        }
+		.createbotton:hover {
+            background-color: #f5f5f5;
+			
+        }
+		.dark-theme .createbotton:hover {
+            background-color: #303030;
+        }
+		.otherbotton {
+			height:65px;
+			width: 65px;
+			font-size:18px;
+			padding: 5px 5px;
+			background-color: #ffffff;
+            color: var(--primary-color);
+			display:flex;
+			flex-direction: column;
+			align-items: center;
+            justify-content: center;
+			text-align: center;
+			border-right: 1px solid var(--border-color);
+			border-bottom: 1px solid var(--border-color);
+			-webkit-tap-highlight-color: transparent;
+			text-decoration: none;
+			transition: all 0.2s ease;
+        }
+		.dark-theme .otherbotton {
+            color: var(--primary-color-dark);
+			background-color: #252525;
+			border-right: 1px solid var(--border-color-dark);
+			border-bottom: 1px solid var(--border-color-dark);
+        }
+		.otherbotton:hover {
+            background-color: #f5f5f5;
+			
+        }
+		.dark-theme .otherbotton:hover {
+            background-color: #303030;
+        }
+
+		.styleShowStorage{
+			box-shadow: inset 3px 0 0 var(--primary-color);
+		}
+
+        @media (max-width: 900px) {
+            .storage-type-list {
+                width: 300px;
+            }
+        }
+
+        @media (max-width: 600px) {
+
+			.editor {
+            	height: calc(100% - 315px);
+        	}
+            .editor-body {
+                padding: 15px 15px 0px 15px;
+            }
+            
+            .editor-header {
+                padding: 10px 15px;
+				height:45px;
+            }
+            
+            .editor-actions {
+                gap: 2px;
+            }
+            
+            .placeholder {
+                transform: translateY(2px);
+            }
+            
+            .action-btn {
+                width: 32px;
+                height: 32px;
+            }
+            
+            .container {
+                display: block;
+            }
+            
+            .storage-type-list {
+                width: 100%;
+                height: auto;
+                display: flex;
+                flex-direction: row;
+                border-right: none;
+            }
+            .dark-theme .storage-type-list {
+                border-right: none;
+            }
+			.storage-summary {
+				height: auto;
+				font-size:14px;
+				border-right: 1px solid var(--border-color);
+        	}
+
+			.dark-theme .storage-summary {
+				height: auto;
+				border-right: 1px solid var(--border-color-dark);
+        	}
+            
+            .storage-items-list {
+                border-bottom: 1px solid var(--border-color);
+                border-right: none;
+                display: grid;
+                grid-template-rows: repeat(2, 120px);
+                grid-auto-columns: 120px;
+                grid-auto-flow: column;
+                gap: 0px;
+                overflow-x: auto;
+                overflow-y: hidden;
+                height: 240px;
+            }
+            
+            .dark-theme .storage-items-list {
+                border-bottom: 1px solid var(--border-color-dark);
+                border-right: none;
+            }
+            
+            .storage-item {
+                padding: 16px 15px 15px 15px;
+                flex: 0 0 auto;
+                height:120px;
+                width:120px;
+                max-width:120px;
+                min-width:120px;
+                border-right: 1px solid var(--border-color);
+            }
+            
+            .dark-theme .storage-item {
+                border-right: 1px solid var(--border-color-dark);
+            }
+            
+            .storage-type-header {
+                padding: 16px 15px 9px 15px;
+                border-bottom: 1px solid var(--border-color);
+                border-right: 1px solid var(--border-color);
+            }
+            
+            .dark-theme .storage-type-header {
+                border-bottom: 1px solid var(--border-color-dark);
+                border-right: 1px solid var(--border-color-dark);
+            }
+            
+            .leftbar {
+                width: 100%;
+                background: white;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+                height: 60px;
+                display: flex;
+                flex-direction: row;     
+                transition: all 0.2s ease;
+            }
+            
+            .dark-theme .leftbar {
+                border-bottom: 1px solid var(--border-color-dark);
+                border-right: none;
+            }   
+			.createbotton {
+				height:60px;
+				width: 60px;
+				border-bottom: 1px solid var(--border-color);
+        	}
+			.styleShowStorage{
+				box-shadow: inset 0 3px 0 var(--primary-color)
+			}
+			.otherbotton {
+				height:60px;
+				width: 60px;
+				border-bottom: 1px solid var(--border-color);
+        	}
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 左侧存储类型选择 -->
+        <div class="leftbar">
+            <div class="createbotton" id="localStorageBtn">
+                
+				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 4v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8.342a2 2 0 0 0-.602-1.43l-4.44-4.342A2 2 0 0 0 13.56 2H6a2 2 0 0 0-2 2Z"></path>
+                    <path d="M16 18H8"></path>
+                    <path d="M16 14H8"></path>
+                    <path d="M12 10H8"></path>
+                </svg>
+            </div>
+            <div class="createbotton" id="indexedDBBtn">
+                
+				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path>
+                    <path d="M9 9h6"></path>
+                    <path d="M9 13h6"></path>
+                </svg>
+            </div>
+            <div class="createbotton" id="cacheStorageBtn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <path d="M3 9h18M9 21V9"></path>
+                </svg>
+            </div>
+            
+            
+			<div class="otherbotton" id="clearAllBtn">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+            </div>
+			<div class="otherbotton" id="themeToggle">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
+            </div>
+			<div class="otherbotton" id="about">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+            </div>
+        </div>
+        
+        <!-- 左侧列表 -->
+        <div class="storage-type-list">
+            <div class="storage-summary" id="storageSummary">
+                <div class="summary-item">
+                    <span class="summary-label">存储类型</span>
+                    <span class="summary-value" id="storageTypeLabel">-</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">已用空间</span>
+                    <span class="summary-value" id="usedSpace">-</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">总容量</span>
+                    <span class="summary-value" id="totalSpace">-</span>
+                </div>
+                <div class="usage-bar">
+                    <div class="usage-progress" id="usageProgress" style="width: 0%"></div>
+                </div>
+            </div>
+            <div class="storage-items-list" id="storageItemsList">
+                <div class="placeholder2" id="storageListPlaceholder">在边栏选择存储类型以查看内容</div>
+            </div>
+        </div>
+        
+        <!-- 右侧详情 -->
+        <div class="editor">
+            <div class="editor-header" id="editorHeader" style="display: none;">
+                <div class="storage-detail-title" id="storageItemTitle">-</div>
+                <div class="editor-actions">
+                </div>
+            </div>
+            <div class="editor-body" id="editorBody">
+                <div class="placeholder" id="editorPlaceholder">选择存储项查看详情</div>
+                <textarea class="storage-details" id="storageDetails" style="display: none;" readonly></textarea>
+            </div>
+        </div>
+    </div>
+
+    <script>
+		// 画蛇添足加的
+		function styleShowStorage(where){
+			document.getElementById("localStorageBtn").classList.remove("styleShowStorage");
+			document.getElementById("indexedDBBtn").classList.remove("styleShowStorage");
+			document.getElementById("cacheStorageBtn").classList.remove("styleShowStorage");
+			const objId = where + "Btn";
+			document.getElementById(objId).classList.add("styleShowStorage");
+		}
+        // 核心
+        const storageManager = {
+            // 初始化
+            init: function() {
+                // 事件监听器
+                this.setupEventListeners();
+                // 初始化主题
+                this.initTheme();
+            },
+            
+            // 事件监听器
+            setupEventListeners: function() {
+                // 存储类型按钮
+                document.getElementById('localStorageBtn').addEventListener('click', () => {this.showStorage('localStorage'); styleShowStorage('localStorage')});
+                document.getElementById('indexedDBBtn').addEventListener('click', () => {this.showStorage('indexedDB'); styleShowStorage('indexedDB')});
+                document.getElementById('cacheStorageBtn').addEventListener('click', () => {this.showStorage('cacheStorage'); styleShowStorage('cacheStorage')});
+                
+                // 清除全部按钮
+                document.getElementById('clearAllBtn').addEventListener('click', () => this.clearAllStorage());
+                
+                // 主题切换
+                document.getElementById('themeToggle').addEventListener('click', this.toggleTheme);
+                
+                // 关于按钮
+                document.getElementById('about').addEventListener('click', () => {
+                    alert('Momotan Storage Explorer\n©Aphasia, 2025\nVersion 1.0.1 release');
+                });
+            },
+            
+            // 初始化主题
+            initTheme: function() {
+                const savedTheme = localStorage.getItem('storageTheme');
+                if (savedTheme === 'dark') {
+                    document.body.classList.add('dark-theme');
+                } else {
+                    document.body.classList.remove('dark-theme');
+                }
+            },
+            
+            // 切换主题
+            toggleTheme: function() {
+                document.body.classList.toggle('dark-theme');
+                if (document.body.classList.contains('dark-theme')) {
+                    localStorage.setItem('storageTheme', 'dark');
+                } else {
+                    localStorage.setItem('storageTheme', 'light');
+                }
+            },
+            
+            // 显示指定存储类型的内容
+            showStorage: function(storageType) {
+                // 更新当前存储类型
+                this.currentStorageType = storageType;
+                document.getElementById('storageTypeLabel').textContent = 
+                    storageType === 'localStorage' ? 'localStorage' : 
+                    storageType === 'indexedDB' ? 'IndexedDB' : 'CacheStorage';
+                
+                // 清除选择状态
+                this.clearSelection();
+                
+                // 加载存储内容
+                this.loadStorageItems(storageType);
+                
+                // 更新存储空间信息
+                this.updateStorageSpaceInfo(storageType);
+            },
+            
+            // 清除当前选择
+            clearSelection: function() {
+                const selectedItem = document.querySelector('.storage-item.selected');
+                if (selectedItem) {
+                    selectedItem.classList.remove('selected');
+                }
+                document.getElementById('editorHeader').style.display = 'none';
+                document.getElementById('editorPlaceholder').style.display = 'block';
+                document.getElementById('storageDetails').style.display = 'none';
+            },
+            
+            // 加载存储项
+            loadStorageItems: function(storageType) {
+                const storageItemsList = document.getElementById('storageItemsList');
+                storageItemsList.innerHTML = '';
+                
+                switch(storageType) {
+                    case 'localStorage':
+                        this.loadLocalStorageItems();
+                        break;
+                    case 'indexedDB':
+                        this.loadIndexedDBItems();
+                        break;
+                    case 'cacheStorage':
+                        this.loadCacheStorageItems();
+                        break;
+                }
+            },
+            
+            // 加载localStorage
+            loadLocalStorageItems: function() {
+                const storageItemsList = document.getElementById('storageItemsList');
+                
+                // 遍历所有localStorage
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    const value = localStorage.getItem(key);
+                    
+                    // 计算存储大小
+                    const size = new Blob([key + value]).size;
+                    
+                    // 创建存储项元素
+                    const storageItem = document.createElement('div');
+                    storageItem.className = 'storage-item';
+                    storageItem.dataset.key = key;
+                    storageItem.dataset.type = 'localStorage';
+                    
+                    storageItem.innerHTML = `
+                        <div class="storage-title">${key}</div>
+                        <div class="storage-size">${this.formatBytes(size)}</div>
+                        <div class="delete-item-btn"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg></div>
+                    `;
+                    
+                    // 点击事件
+                    storageItem.addEventListener('click', (e) => {
+                        if (!e.target.classList.contains('delete-item-btn')) {
+                            this.selectStorageItem('localStorage', key, value);
+                        }
+                    });
+                    
+                    // 删除按钮
+                    const deleteBtn = storageItem.querySelector('.delete-item-btn');
+                    deleteBtn.addEventListener('click', () => {
+                        this.deleteStorageItem('localStorage', key);
+                    });
+                    
+                    storageItemsList.appendChild(storageItem);
+                }
+                
+                if (localStorage.length === 0) {
+                    storageItemsList.innerHTML = '<div class="placeholder2">localStorage为空</div>';
+                }
+            },
+            
+            // 加载IndexedDB
+			loadIndexedDBItems: function() {
+				const storageItemsList = document.getElementById('storageItemsList');
+				storageItemsList.innerHTML = '<div class="placeholder2">IndexedDB数据库列表加载中...</div>';
+				
+				// 获取所有IndexedDB数据库
+				if (window.indexedDB && window.indexedDB.databases) {
+					indexedDB.databases().then(databases => {
+						storageItemsList.innerHTML = '';
+						
+						if (databases.length === 0) {
+							storageItemsList.innerHTML = '<div class="placeholder2">未找到IndexedDB数据库</div>';
+							return;
+						}
+						
+						databases.forEach(dbInfo => {
+							const storageItem = document.createElement('div');
+							storageItem.className = 'storage-item';
+							storageItem.dataset.name = dbInfo.name;
+							storageItem.dataset.type = 'indexedDB';
+							
+							// 计算数据库大小-异步
+							const getDatabaseSize = (dbName) => {
+								return new Promise((resolve) => {
+									const request = indexedDB.open(dbName);
+									request.onsuccess = (event) => {
+										const db = event.target.result;
+										const transaction = db.transaction(db.objectStoreNames, 'readonly');
+										let size = 0;
+										
+										Array.from(db.objectStoreNames).forEach(storeName => {
+											const store = transaction.objectStore(storeName);
+											const countRequest = store.count();
+											countRequest.onsuccess = (e) => {
+												size += e.target.result;
+											};
+										});
+										
+										transaction.oncomplete = () => {
+											db.close();
+											resolve(size);
+										};
+									};
+								});
+							};
+							
+							getDatabaseSize(dbInfo.name).then(size => {
+								storageItem.innerHTML = `
+									<div class="storage-title">${dbInfo.name}</div>
+									<div class="storage-size">${size} 条记录</div>
+									<div class="storage-time">版本: ${dbInfo.version}</div>
+									<div class="delete-item-btn"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+										<polyline points="3 6 5 6 21 6"></polyline>
+										<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+									</svg></div>
+								`;
+
+								const deleteBtn = storageItem.querySelector('.delete-item-btn');
+									deleteBtn.addEventListener('click', (e) => {
+									e.stopPropagation(); // 阻止父元素点击
+									this.deleteStorageItem('indexedDB', dbInfo.name);
+								});
+							});
+							
+							// 点击事件
+							storageItem.addEventListener('click', (e) => {
+								if (!e.target.classList.contains('delete-item-btn')) {
+									this.selectStorageItem('indexedDB', dbInfo.name, dbInfo);
+								}
+							});
+							
+							// 删除按钮
+							//const deleteBtn = storageItem.querySelector('.delete-item-btn');
+							//deleteBtn.addEventListener('click', () => {
+							//    this.deleteStorageItem('indexedDB', dbInfo.name);
+							//});
+							
+							storageItemsList.appendChild(storageItem);
+						});
+					}).catch(error => {
+						storageItemsList.innerHTML = `<div class="placeholder2">获取数据库列表失败: ${error.message}</div>`;
+					});
+				} else {
+					storageItemsList.innerHTML = '<div class="placeholder2">您的浏览器不支持IndexedDB数据库枚举</div>';
+				}
+			},
+
+			// 加载CacheStorage
+			loadCacheStorageItems: function() {
+				const storageItemsList = document.getElementById('storageItemsList');
+				storageItemsList.innerHTML = '<div class="placeholder2">缓存列表加载中...</div>';
+				
+				// 获取所有CacheStorage
+				if ('caches' in window) {
+					caches.keys().then(cacheNames => {
+						storageItemsList.innerHTML = '';
+						
+						if (cacheNames.length === 0) {
+							storageItemsList.innerHTML = '<div class="placeholder2">未找到缓存</div>';
+							return;
+						}
+						
+						// 获取每个缓存的详细信息
+						const cachePromises = cacheNames.map(cacheName => {
+							return caches.open(cacheName).then(cache => {
+								return cache.keys().then(requests => {
+									return {
+										name: cacheName,
+										items: requests.length,
+										date: null // CacheStorage不提供创建日期
+									};
+								});
+							});
+						});
+						
+						Promise.all(cachePromises).then(caches => {
+							caches.forEach(cacheInfo => {
+								const storageItem = document.createElement('div');
+								storageItem.className = 'storage-item';
+								storageItem.dataset.name = cacheInfo.name;
+								storageItem.dataset.type = 'cacheStorage';
+								
+								storageItem.innerHTML = `
+									<div class="storage-title">${cacheInfo.name}</div>
+									<div class="storage-size">${cacheInfo.items} 项资源</div>
+									<div class="storage-time">${cacheInfo.date ? this.formatDate(cacheInfo.date) : '日期未知'}</div>
+									<div class="delete-item-btn"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+										<polyline points="3 6 5 6 21 6"></polyline>
+										<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+									</svg></div>
+								`;
+								
+								// 点击事件
+								storageItem.addEventListener('click', (e) => {
+									if (!e.target.classList.contains('delete-item-btn')) {
+										this.selectStorageItem('cacheStorage', cacheInfo.name, cacheInfo);
+									}
+								});
+								
+								// 删除按钮
+								const deleteBtn = storageItem.querySelector('.delete-item-btn');
+								deleteBtn.addEventListener('click', () => {
+									this.deleteStorageItem('cacheStorage', cacheInfo.name);
+								});
+								
+								storageItemsList.appendChild(storageItem);
+							});
+						}).catch(error => {
+							storageItemsList.innerHTML = `<div class="placeholder2">获取缓存详情失败: ${error.message}</div>`;
+						});
+					}).catch(error => {
+						storageItemsList.innerHTML = `<div class="placeholder2">获取缓存列表失败: ${error.message}</div>`;
+					});
+				} else {
+					storageItemsList.innerHTML = '<div class="placeholder2">您的浏览器不支持CacheStorage</div>';
+				}
+			},
+						
+			// 选择存储项
+			selectStorageItem: async function(storageType, key, value) {
+				// 清除之前的选择
+				const selectedItems = document.querySelectorAll('.storage-item.selected');
+				selectedItems.forEach(item => item.classList.remove('selected'));
+				
+				// 设置当前选择
+				const currentItem = document.querySelector(`.storage-item[data-key="${key}"], .storage-item[data-name="${key}"]`);
+				if (currentItem) {
+					currentItem.classList.add('selected');
+				}
+				
+				// 更新编辑器标题
+				document.getElementById('storageItemTitle').textContent = key;
+				
+				// 显示编辑器
+				document.getElementById('editorHeader').style.display = 'flex';
+				document.getElementById('editorPlaceholder').style.display = 'none';
+				document.getElementById('storageDetails').style.display = 'block';
+				
+				// 显示详细信息
+				let details = '加载中...';
+				document.getElementById('storageDetails').value = details;
+				
+				try {
+					switch(storageType) {
+						case 'localStorage':
+							const itemValue = localStorage.getItem(key);
+							const itemSize = new Blob([key + itemValue]).size;
+							details = `键名 / Key:\n${key}\n\n键值 / Value:\n${itemValue}\n\n大小 / Size:\n${this.formatBytes(itemSize)}`;
+							break;
+							
+						case 'indexedDB':
+							// 获取数据库详细信息
+							const dbInfo = await this.getIndexedDBDetails(key);
+							details = `数据库 / Database:\n${key}\n\n版本 / Version:\n${dbInfo.version}\n\n对象存储 / Object Stores:\n`;
+
+							// 列出所有对象存储
+							if (dbInfo.objectStores) {
+								dbInfo.objectStores.forEach(store => {
+									details += `${store.name} (${store.indexes.length} indexes)\n`;
+								});
+							}
+							
+							// 添加所有内容的分隔标题
+							details += `\n数据库内容 / Database Contents:\n\n`;
+							
+							// 列出所有对象存储的内容
+							for (const storeInfo of dbInfo.objectStores) {
+								details += `-> ${storeInfo.name}\n`;
+								
+								// 显示每个对象存储的前10条记录
+								if (storeInfo.data && storeInfo.data.length > 0) {
+									const maxItems = Math.min(storeInfo.data.length, 20);
+									for (let i = 0; i < maxItems; i++) {
+										const item = storeInfo.data[i];
+										details += `  ${i + 1}. ${JSON.stringify(item.value)}\n`;
+									}
+									
+									// 添加更多提示
+									if (storeInfo.data.length > 20) {
+										details += `  ...and ${storeInfo.data.length - 20} more items\n`;
+									}
+								} else {
+									details += `未找到数据 / No data found\n`;
+								}
+								details += `\n`;
+							}
+							
+							details += `创建于 / Created:\n${this.formatDate(dbInfo.date)}（仅供参考）`;
+							break;
+							
+						case 'cacheStorage':
+							// 获取缓存详细信息
+							const cacheInfo = await this.getCacheDetails(key);
+							details = `缓存名称 / Cache Name:\n${key}\n\n总大小 / Total Size:\n${this.formatBytes(cacheInfo.size)}\n\n项目数量 / Number of Items:\n${cacheInfo.items}\n\n已缓存的资源 / Cached Resources:\n`;
+							
+							// 列出资源URL
+							if (cacheInfo.resources && cacheInfo.resources.length > 0) {
+								const maxItems = Math.min(cacheInfo.resources.length, 10);
+								for (let i = 0; i < maxItems; i++) {
+									details += `${cacheInfo.resources[i]}\n`;
+								}
+							}
+							break;
+					}
+				} catch (error) {
+					details = `获取详细信息失败: ${error.message}`;
+				}
+				
+				document.getElementById('storageDetails').value = details;
+			},
+
+			// 获取IndexedDB详细信息
+			getIndexedDBDetails: async function(dbName) {
+				return new Promise((resolve, reject) => {
+					if (!window.indexedDB || !window.indexedDB.databases) {
+						reject(new Error('IndexedDB API不可用'));
+						return;
+					}
+					
+					indexedDB.databases().then(databases => {
+						const dbInfo = databases.find(db => db.name === dbName);
+						if (!dbInfo) {
+							reject(new Error('数据库未找到'));
+							return;
+						}
+						
+						// 尝试打开数据库获取对象存储信息
+						const request = indexedDB.open(dbName);
+						request.onerror = () => resolve({...dbInfo, objectStores: []});
+						
+						request.onsuccess = (event) => {
+							const db = event.target.result;
+							const objectStores = [];
+							
+							// 收集对象存储信息
+							Array.from(db.objectStoreNames).forEach(storeName => {
+								const transaction = db.transaction(storeName, 'readonly');
+								const objectStore = transaction.objectStore(storeName);
+								const indexes = Array.from(objectStore.indexNames);
+								
+								// 获取对象存储的数据（最多100条）
+								const data = [];
+								const dataRequest = objectStore.getAll();
+								dataRequest.onsuccess = (e) => {
+									if(!e.target.result.length){
+										reject(new Error('数据库为空'));
+									}
+									data.push(...e.target.result.slice(0, 100).map((value, index) => ({
+										id: index + 1,
+										value
+									})));
+								};
+								
+								objectStores.push({
+									name: storeName,
+									indexes: indexes,
+									data: data
+								});
+							});
+							
+							// 等待所有数据请求完成
+							const checkComplete = () => {
+								if (objectStores.every(store => store.data.length > 0 || 
+									store.dataRequest && store.dataRequest.readyState === 'done')) {
+									db.close();
+									resolve({
+										...dbInfo,
+										objectStores: objectStores,
+										date: new Date()
+									});
+								} else {
+									setTimeout(checkComplete, 50);
+								}
+							};
+							
+							checkComplete();
+						};
+					}).catch(reject);
+				});
+			},
+
+			// 获取缓存详细信息
+			getCacheDetails: async function(cacheName) {
+				try {
+					if (!('caches' in window)) {
+						throw new Error('CacheStorage API不可用');
+					}
+					
+					const cache = await caches.open(cacheName);
+					const requests = await cache.keys();
+					const resources = requests.map(req => req.url);
+					const size = await this.calculateCacheSize(cache, requests);
+					
+					return {
+						name: cacheName,
+						items: requests.length,
+						resources: resources,
+						size: size,
+						date: new Date()
+					};
+				} catch (error) {
+					console.error('获取缓存详情失败:', error);
+					return {
+						name: cacheName,
+						items: 0,
+						resources: [],
+						size: 0,
+						date: new Date()
+					};
+				}
+			},
+
+			// 计算缓存大小
+			calculateCacheSize: async function(cache, requests) {
+				try {
+					let totalSize = 0;
+					
+					for (const request of requests) {
+						const response = await cache.match(request);
+						if (response) {
+							const blob = await response.blob();
+							totalSize += blob.size;
+						}
+					}
+					
+					return totalSize;
+				} catch (error) {
+					console.error('计算缓存大小失败:', error);
+					return 0;
+				}
+			},
+
+			// 删除存储项
+			deleteStorageItem: async function(storageType, key) {
+				var alertText="确定要删除 " + key + " 吗？\n注意：非常不建议在这里删除任何数据，可能会引发很多未知问题";
+				if(storageType=='localStorage')alertText=alertText+"\n\n删除该存储项后，可能导致部分网站的功能出现异常";
+				if(storageType=='indexedDB')alertText=alertText+"\n\n删除该存储项后，可能导致需要大容量储存的网站出现异常";
+				if(storageType=='cacheStorage')alertText=alertText+"\n\n删除该存储项后，可能导致使用了 PWA 技术的网站出现异常";
+				if (confirm(alertText)) {
+					try {
+						switch(storageType) {
+							case 'localStorage':
+								localStorage.removeItem(key);
+								break;
+								
+							case 'indexedDB':
+								// 打开选定的数据库
+								const openRequest = indexedDB.open(key);
+								openRequest.onsuccess = (event) => {
+									const db = event.target.result;
+									// 获取所有对象存储名称
+									const storeNames = Array.from(db.objectStoreNames);
+					
+									// 遍历每个对象存储并清空数据
+									storeNames.forEach(storeName => {
+										const transaction = db.transaction(storeName, 'readwrite');
+										const objectStore = transaction.objectStore(storeName);
+										const clearRequest = objectStore.clear();
+						
+										clearRequest.onsuccess = () => {
+											console.log(`对象存储 ${storeName} 数据已清空`);
+										};
+										clearRequest.onerror = (e) => {
+											console.error(`清空 ${storeName} 失败:`, e.target.error);
+										};
+									});
+					
+									db.close(); // 操作完成后关闭数据库
+								};
+								openRequest.onerror = (e) => {
+									console.error(`打开数据库 ${key} 失败:`, e.target.error);
+								};
+								break;
+								
+							case 'cacheStorage':
+								// 删除缓存
+								if ('caches' in window) {
+									await caches.delete(key);
+								}
+								break;
+						}
+						
+						// 重新加载存储项
+						this.loadStorageItems(this.currentStorageType);
+						
+						// 清除编辑器
+						this.clearSelection();
+						
+						// 显示消息
+						alert(`成功删除 ${key}`);
+					} catch (error) {
+						console.error('删除失败:', error);
+						alert(`删除失败: ${error.message}`);
+					}
+				}
+			},
+						
+			// 清除全部存储
+			clearAllStorage: function() {
+				if(!this.currentStorageType){
+					alert("请打开任一存储选项卡后再进行操作！");
+					return 0;
+				}
+				var alertText="确定要清除所有 " + this.currentStorageType + " 存储吗？\n注意：非常不建议在这里删除任何数据，可能会引发很多未知问题";
+				if(this.currentStorageType=='localStorage')alertText=alertText+"\n\n删除 LocalStorage 后，可能导致部分网站的功能出现异常";
+				if(this.currentStorageType=='indexedDB')alertText=alertText+"\n\n删除 IndexedDB 后，可能导致需要大容量储存的网站出现异常";
+				if(this.currentStorageType=='cacheStorage')alertText=alertText+"\n\n删除 CacheStorage 后，可能导致部分网站的缓存丢失";
+				if (confirm(alertText)) {
+					switch(this.currentStorageType) {
+						case 'localStorage':
+							localStorage.clear();
+							break;
+			
+						case 'indexedDB':
+							if (window.indexedDB && window.indexedDB.databases) {
+								indexedDB.databases().then(databases => {
+									databases.forEach(dbInfo => {
+										// 打开数据库
+										const request = indexedDB.open(dbInfo.name, dbInfo.version);
+										request.onsuccess = (event) => {
+											const db = event.target.result;
+											// 遍历所有对象存储
+											Array.from(db.objectStoreNames).forEach(storeName => {
+												// 读写
+												const transaction = db.transaction(storeName, 'readwrite');
+												const objectStore = transaction.objectStore(storeName);
+												// 清空当前对象存储的所有数据
+												const clearRequest = objectStore.clear();
+									
+												clearRequest.onsuccess = () => {
+													console.log(`对象存储 ${storeName} 数据已清空`);
+												};
+												clearRequest.onerror = (e) => {
+													console.error(`清空 ${storeName} 失败:`, e.target.error);
+												};
+											});
+											db.close(); // 操作完成后关闭数据库
+										};
+										request.onerror = (e) => {
+											console.error(`打开数据库 ${dbInfo.name} 失败:`, e.target.error);
+										};
+									});
+								}).catch(error => {
+									console.error('获取数据库列表失败:', error);
+								});
+							} else {
+								console.error('浏览器不支持IndexedDB枚举');
+							}
+							console.log('已删除所有IndexedDB数据，但结构保留');
+							alert(`已删除所有 IndexedDB 数据，但结构保留`);
+							break;
+								
+						case 'cacheStorage':
+							navigator.serviceWorker.getRegistrations().then(registrations => {
+								for (let registration of registrations) {
+									registration.unregister();
+								}
+							});
+							caches.keys().then(cacheNames => {
+								return Promise.all(
+									cacheNames.map(cacheName => caches.delete(cacheName))
+								);
+							});
+							console.log('已删除所有缓存并注销 Service Workers');
+							alert(`已删除所有缓存并注销 Service Workers`);
+							break;
+					}
+								
+					// 重新加载存储项
+					this.loadStorageItems(this.currentStorageType);
+							
+					// 清除编辑器
+					this.clearSelection();
+				}
+			},
+						
+			// 更新存储空间信息
+			updateStorageSpaceInfo: async function(storageType) {
+				let usedSpace = 0;
+				let totalSpace = 0;
+				
+				try {
+					switch(storageType) {
+						case 'localStorage':
+							// 已用空间
+							for (let i = 0; i < localStorage.length; i++) {
+								const key = localStorage.key(i);
+								const value = localStorage.getItem(key);
+								usedSpace += new Blob([key, value]).size;
+							}
+							// 总容量5MB
+							totalSpace = 5 * 1024 * 1024; 
+							break;
+							
+						case 'indexedDB':
+							// 使用StorageManager API获取IndexedDB空间信息
+							if (navigator.storage && navigator.storage.estimate) {
+								const estimation = await navigator.storage.estimate();
+								usedSpace = estimation.usage;
+								totalSpace = estimation.quota;
+							} else {
+								// 浏览器不支持StorageManager时的备选
+								const indexedDBInfo = await this.calculateIndexedDBSpace();
+								usedSpace = indexedDBInfo.used;
+								totalSpace = indexedDBInfo.total;
+							}
+							break;
+							
+						case 'cacheStorage':
+							// 计算CacheStorage使用量
+							const cacheInfo = await this.calculateCacheStorageSpace();
+							usedSpace = cacheInfo.used;
+							totalSpace = cacheInfo.total;
+							break;
+					}
+				} catch (error) {
+					console.error("计算存储空间失败:", error);
+					usedSpace = 0;
+					totalSpace = 0;
+				}
+				
+				// 更新UI
+				document.getElementById('usedSpace').textContent = this.formatBytes(usedSpace);
+				document.getElementById('totalSpace').textContent = this.formatBytes(totalSpace);
+				
+				// 更新进度条
+				const percentage = totalSpace > 0 ? Math.min(100, Math.round((usedSpace / totalSpace) * 100)) : 0;
+				document.getElementById('usageProgress').style.width = `${percentage}%`;
+			},
+
+
+			// 计算IndexedDB空间
+			calculateIndexedDBSpace: async function() {
+				return new Promise((resolve) => {
+					let used = 0;
+					let total = 0;
+					
+					if (navigator.storage && navigator.storage.estimate) {
+						navigator.storage.estimate().then(estimation => {
+							resolve({
+								used: estimation.usage,
+								total: estimation.quota
+							});
+						});
+					} else {
+						// 备选：使用默认值
+						resolve({
+							used: 0,
+							total: 50 * 1024 * 1024 // 默认50MB
+						});
+					}
+				});
+			},
+
+			// 计算CacheStorage空间
+			calculateCacheStorageSpace: async function() {
+				return new Promise(async (resolve) => {
+					let used = 0;
+					let total = 0;
+					
+					if (navigator.storage && navigator.storage.estimate) {
+						const estimation = await navigator.storage.estimate();
+						used = estimation.usage;
+						total = estimation.quota;
+					} else if ('caches' in window) {
+						// 遍历所有缓存并计算大小
+						const cacheNames = await caches.keys();
+						for (const name of cacheNames) {
+							const cache = await caches.open(name);
+							const requests = await cache.keys();
+							for (const request of requests) {
+								const response = await cache.match(request);
+								if (response) {
+									const blob = await response.blob();
+									used += blob.size;
+								}
+							}
+						}
+						total = 100 * 1024 * 1024; // 默认100MB
+					}
+					
+					resolve({ used, total });
+				});
+			},
+
+			// 辅助-格式化字节大小
+			formatBytes: function(bytes, decimals = 2) {
+				if (bytes === 0) return '0 Bytes';
+				
+				const k = 1024;
+				const dm = decimals < 0 ? 0 : decimals;
+				const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+				
+				const i = Math.floor(Math.log(bytes) / Math.log(k));
+				
+				// 小于1KB时显示Bytes
+				if (i === 0) {
+					return bytes + ' ' + sizes[i];
+				}
+				
+				return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+			},
+            
+            // 辅助-格式化日期
+            formatDate: function(date) {
+                const now = new Date();
+                const diff = Math.floor((now - date) / (1000 * 60)); // 分钟差
+                
+                if (diff < 1) return '刚刚';
+                if (diff < 60) return `${diff}分钟前`;
+                
+                const diffHours = Math.floor(diff / 60);
+                if (diffHours < 24) return `${diffHours}小时前`;
+                
+                const diffDays = Math.floor(diffHours / 24);
+                if (diffDays < 7) return `${diffDays}天前`;
+                
+                return date.toLocaleDateString('zh-CN', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+            }
+        };
+
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            storageManager.init();
+        });
+    </script>
+</body>
+</html>
