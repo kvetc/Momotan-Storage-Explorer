@@ -1,8 +1,18 @@
+<!--
+Momotan Storage Explorer
+Copyright©2025, Aphasia
+v1.0.2 release
+Licensed under the MIT License.
+开源地址 / Open source address: https://github.com/kvetc/Momotan-Storage-Explorer
+-->
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link 
+        rel="icon" 
+        href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'  stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'  fill='white'><path d='M4 4v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8.342a2 2 0 0 0-.602-1.43l-4.44-4.342A2 2 0 0 0 13.56 2H6a2 2 0 0 0-2 2Z'></path><path d='M16 18H8'></path><path d='M16 14H8'></path><path d='M12 10H8'></path></svg>">    
     <title>Momotan Storage Explorer</title>
     <style>
         :root {
@@ -102,32 +112,7 @@
         .dark-theme .storage-type-header {
             border-bottom: 1px solid var(--border-color-dark);
         }
-        
-        .btn {
-            padding: 10px 15px;
-            background-color: #faf0f3;
-            color: var(--primary-color);
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            -webkit-tap-highlight-color: transparent;
-            text-decoration: none;
-            transition: all 0.2s ease;
-        }
-        
-        .dark-theme .btn {
-            background-color: #3a3537;
-            color: var(--primary-color-dark);
-        }
-        
-        .btn:hover {
-            border-radius: 12px;
-        }
-        
+
         .storage-items-list {
             overflow-y: auto;
             flex: 1;
@@ -240,26 +225,7 @@
             display: flex;
             gap: 10px;
         }
-        
-        .action-btn {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s;
-            background: none;
-            border: none;
-            color: #111;
-            -webkit-tap-highlight-color: transparent;
-        }
-        
-        .dark-theme .action-btn {
-            color: #eee;
-        }
-        
+ 
         .editor-body {
             flex: 1;
             padding: 20px 25px 0px 20px;
@@ -384,7 +350,7 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            background-color: #faf0f3;
+            background-color: #ffffff;
             color: #252525;
             font-size: 12px;
             transition: all 0.2s ease;
@@ -401,7 +367,7 @@
         }
         
         .dark-theme .delete-item-btn {
-            background-color: #433a3e;
+            background-color: #252525;
             color: #f0f0f0;
         }
         
@@ -475,6 +441,11 @@
 
 		.styleShowStorage{
 			box-shadow: inset 3px 0 0 var(--primary-color);
+			background-color: #f5f5f5;
+		}
+		.dark-theme .styleShowStorage{
+			box-shadow: inset 3px 0 0 var(--primary-color);
+			background-color: #303030;
 		}
 
         @media (max-width: 900px) {
@@ -601,6 +572,9 @@
 			.styleShowStorage{
 				box-shadow: inset 0 3px 0 var(--primary-color)
 			}
+			.dark-theme .styleShowStorage{
+				box-shadow: inset 0 3px 0 var(--primary-color)
+			}
 			.otherbotton {
 				height:60px;
 				width: 60px;
@@ -695,9 +669,8 @@
             </div>
         </div>
     </div>
-
     <script>
-		// 画蛇添足加的
+		// 由SxrDoor添加
 		function styleShowStorage(where){
 			document.getElementById("localStorageBtn").classList.remove("styleShowStorage");
 			document.getElementById("indexedDBBtn").classList.remove("styleShowStorage");
@@ -730,7 +703,7 @@
                 
                 // 关于按钮
                 document.getElementById('about').addEventListener('click', () => {
-                    alert('Momotan Storage Explorer\n©Aphasia, 2025\nVersion 1.0.1 release');
+                    alert('Momotan Storage Explorer\nCopyright©2025, Aphasia\nv1.0.2 release\nLicensed under the MIT License.\n开源地址 / Open source address: https://github.com/kvetc/Momotan-Storage-Explorer');
                 });
             },
             
@@ -920,12 +893,6 @@
 								}
 							});
 							
-							// 删除按钮
-							//const deleteBtn = storageItem.querySelector('.delete-item-btn');
-							//deleteBtn.addEventListener('click', () => {
-							//    this.deleteStorageItem('indexedDB', dbInfo.name);
-							//});
-							
 							storageItemsList.appendChild(storageItem);
 						});
 					}).catch(error => {
@@ -1058,17 +1025,17 @@
 							for (const storeInfo of dbInfo.objectStores) {
 								details += `-> ${storeInfo.name}\n`;
 								
-								// 显示每个对象存储的前10条记录
+								// 显示每个对象存储的前50条记录
 								if (storeInfo.data && storeInfo.data.length > 0) {
-									const maxItems = Math.min(storeInfo.data.length, 20);
+									const maxItems = Math.min(storeInfo.data.length, 50);
 									for (let i = 0; i < maxItems; i++) {
 										const item = storeInfo.data[i];
 										details += `  ${i + 1}. ${JSON.stringify(item.value)}\n`;
 									}
 									
 									// 添加更多提示
-									if (storeInfo.data.length > 20) {
-										details += `  ...and ${storeInfo.data.length - 20} more items\n`;
+									if (storeInfo.data.length > 50) {
+										details += `  ...and ${storeInfo.data.length - 50} more items\n`;
 									}
 								} else {
 									details += `未找到数据 / No data found\n`;
@@ -1086,7 +1053,7 @@
 							
 							// 列出资源URL
 							if (cacheInfo.resources && cacheInfo.resources.length > 0) {
-								const maxItems = Math.min(cacheInfo.resources.length, 10);
+								const maxItems = Math.min(cacheInfo.resources.length, 50);
 								for (let i = 0; i < maxItems; i++) {
 									details += `${cacheInfo.resources[i]}\n`;
 								}
@@ -1289,7 +1256,7 @@
 			// 清除全部存储
 			clearAllStorage: function() {
 				if(!this.currentStorageType){
-					alert("请打开任一存储选项卡后再进行操作！");
+					alert("请打开任一存储选项卡后再进行操作");
 					return 0;
 				}
 				var alertText="确定要清除所有 " + this.currentStorageType + " 存储吗？\n注意：非常不建议在这里删除任何数据，可能会引发很多未知问题";
