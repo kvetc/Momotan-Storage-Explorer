@@ -1,15 +1,15 @@
 <!--
 Momotan Storage Explorer
 网站本地存储管理工具 / Website local storage management tool
-Copyright©2025, Aphasia
-v1.0.3 release
+Copyright©2026, Aphasia
+v1.0.4 release
 基于 MIT 协议开源 / Licensed under the MIT License.
 开源地址 / Open source address: https://github.com/kvetc/Momotan-Storage-Explorer
 MIT 协议 / MIT License：
 ------------------------
 MIT License
 
-Copyright (c) 2025 Aphasia (kvetc@outlook.com)
+Copyright (c) 2026 Aphasia (kvetc@outlook.com)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -35,9 +35,7 @@ SOFTWARE.
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<link 
-        rel="icon" 
-        href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'  stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'  fill='white'><path d='M4 4v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8.342a2 2 0 0 0-.602-1.43l-4.44-4.342A2 2 0 0 0 13.56 2H6a2 2 0 0 0-2 2Z'></path><path d='M16 18H8'></path><path d='M16 14H8'></path><path d='M12 10H8'></path></svg>">    
+    <link rel="icon" href="data:image/png;base64,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">
     <title>Momotan Storage Explorer</title>
     <style>
         :root {
@@ -874,7 +872,7 @@ SOFTWARE.
                 
                 // 关于按钮
                 document.getElementById('about').addEventListener('click', () => {
-                    alert('Momotan Storage Explorer\n网站本地存储管理工具 / Website local storage management tool\nCopyright©2025, Aphasia\nv1.0.3 release\n基于 MIT 协议开源 / Licensed under the MIT License.\n开源地址 / Open source address: https://github.com/kvetc/Momotan-Storage-Explorer');
+                    alert('Momotan Storage Explorer\n网站本地存储管理工具 / Website local storage management tool\nCopyright©2026, Aphasia\nv1.0.4 release\n基于 MIT 协议开源 / Licensed under the MIT License.\n开源地址 / Open source address: https://github.com/kvetc/Momotan-Storage-Explorer');
                 });
             },
             
