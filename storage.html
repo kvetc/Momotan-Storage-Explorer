@@ -2,7 +2,7 @@
 Momotan Storage Explorer
 网站本地存储管理工具 / Website local storage management tool
 Copyright©2026, Aphasia
-v1.0.4 release
+v1.0.5 release 2026/07/07
 基于 MIT 协议开源 / Licensed under the MIT License.
 开源地址 / Open source address: https://github.com/kvetc/Momotan-Storage-Explorer
 MIT 协议 / MIT License：
@@ -32,388 +32,462 @@ SOFTWARE.
 -->
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAAMsAAADLAAShkWtsAAAVwSURBVHhe7ZtRaFNXGMf/30mCTWlw1TSTuLYwpYhmyJiO7UHcLFbZBquOiaJQ5hh7ELyisMeFCHvYg+gNfZiDsTG2MQXn9mI7nexVZBvUwVxLndBtlta119W0NPbe8+1hSUm/Nl1vktvlRn9wIfn/P244/5yTe87JvQSXnDp1KhwMBjcCeAbAOmZuJqIIgDoAQVnvETaAKa31lFJqiIh+01r/ZFnWz6lUaloWLwZJYSHOnj0bevDgwS6t9UEAu5n5MVlTJfxNRJeZ+VPLsnpTqZQtCySLBpBMJtWqVasOMPO7ANqkX+UMAkjG4/Fz+/btc6SZp2gA3d3drY7jfMTM7dLzE0R0NRgMvnHkyJHfpYdiAZw+ffp5IvoGQJP0fMooEb1qGMY1acwLwDTN55j5MoCI9HxOhoh2yhDmBNDd3d1q2/Z1ALFCvYYYDYVCWwqHg8q/SCaTyrbtj2u48QAQm5mZ+SSZTM62e/ZFNBrdD+DF2dLaZcfq1atfz79R+PfbDzqOc3JOWQ2jtT55/vz5APIBRKPRlwCsk4U1TNudO3d2IR+A1vqQrHgIOAQAZJrmCmYeBtAoK2qcv8LhcFwB2PgQNh4AotlsdiOl0+m3tdYfSNcta9euxaZNm1BfXy+tJeM4DoaHh9HX14eZmRlpVxwiepNM03yfmd+Rphs2bNiAjo4OEM2bWJbE6OgoLl68iOlpVyvbUnhPMXOzVN2glMK2bdsq1ngAiMVi2Lt3L+rq6qRVUYjoCaWUapCGG+rr68vq9sVoamryPAStdYNi5rA03FDJb17idQiBQGCFWsZtrJLwMgRmVrNrgWomH0I4XFZnXRBfBIBcCHv27Kl4CL4JAB6F4KsA4EEIvgsAuRA6OzsRDJb/++3LAJCbLCUSCSm7xrcBIBdCufg6AFWBq3j5Z/A5jwKQwsPGowCkUGmYGdlstqRjWXaFTNP8nplfkMZSiUQiOHz4sJQBAPfu3cOFCxeQyWSktSSICJs3b8b27dulBQDo7+9Hb2+vlJcMEV3ytAf09/eX3Hjkek9fXx9s+z/vcygZTwNoaWlBIBCQsiuam5srMuUthqdDAAAymQwmJiakvCSUUojFYkUnPFU/BACgoaEB8Xi8pGPNmjVFG18pvD27D/B8CNy6dQuWZUl5SQQCAaxfvx6RyMI3q1RiCHgawMDAAHp6eqTsipUrV6Krq2vB3edKBODpELh//76UXDM5OQmttZQrhqcBJBIJtLW1IRqNlnTEYjG0t7eXfSldDE+HgNdU/RDwAwqA9yuOKoWItAKQlYYbHKfobbieU+5na62nFTOX9VM9NTWFkZERKS8Lt2/flpJbJhSAIam65cqVKxW55Lnhxo0bGBwclLIrlFJ/UDqdfktr/aE03RIKhdDa2lqxf2yKwcwYGRnB3bt3peUapVQXmab5NDP/JM1ah4jAzE8pAL8AKG2y7m9GLcv6VRmGkSWi8ibs/qQnlUrZ+YnQl8KseZj5c+TXAuPj4z1ENCCLapiblmVdBQoemEin0we01l/MKatRlFKvHT169CsUrgbHxsbOAfhuTmUNQkSXxsbGvp59X2ieOXOmhYiuM/PjhXoNMew4ztYTJ078mRfmrAaPHTs2BKATQOmb+VUKM09orV8pbDxkAABgGMY1ItpJRP/PBN8DiGhYKbXj+PHj8yZ88wJALgRmfpaIrkrPh/Tatr3VMIwfpYFiASA3HMbHxzsAHATgu0skEd1k5v2WZb0su30h87daFyCZTAYbGxt3E9EhZu6o4gcsLCLqZebP4vH4t4s9M5xnSQEUYprmCgAJItrCzE9qrVtyd5wv++PzzDwJYIiIBgOBwA+O49w0DMPVBs8/HEsxXaD1V5QAAAAASUVORK5CYII=">
-    <title>Momotan Storage Explorer</title>
-    <style>
-        :root {
-            --primary-color: #a74e66;
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="icon"
+		href="data:image/png;base64,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">
+	<title>Momotan Storage Explorer</title>
+	<style>
+		:root {
+			--primary-color: #a74e66;
 			--primary-color-grey: #555555;
-            --danger-color: #f44336;
-            --light-bg: #f5f5f5;
-            --dark-bg: #303030;
-            --border-color: #ddd;
-            --border-color-dark: #444;
+			--danger-color: #f44336;
+			--light-bg: #f5f5f5;
+			--dark-bg: #303030;
+			--border-color: #ddd;
+			--border-color-dark: #444;
 			--now-bg-color: white;
-            --shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
+			--shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+		}
+
 		.dark-theme {
 			--primary-color: #ffc5d3;
 			--primary-color-grey: #dddddd;
 		}
-        
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Arial, sans-serif;
-        }
 
-        html {
-            scrollbar-width: thin;
-            scrollbar-color: rgba(150,150,150,0.5) transparent;
-        }
-        
-        html::-webkit-scrollbar {
-            width: 4px;
-        }
+		* {
+			box-sizing: border-box;
+			margin: 0;
+			padding: 0;
+			font-family: 'Segoe UI', Arial, sans-serif;
+		}
 
-        html::-webkit-scrollbar-track {
-            background: transparent;
-        }
+		html {
+			scrollbar-width: thin;
+			scrollbar-color: rgba(150, 150, 150, 0.5) transparent;
+		}
 
-        body::-webkit-scrollbar-button {
-            display: none;
-        }
-        
-        body {
-            display: flex;
-            height: 100vh;
-            background-color: #ffffff;
-            color: #333;
-            scrollbar-width: none;
-            transition: all 0.2s ease;
-        }
+		html::-webkit-scrollbar {
+			width: 4px;
+		}
 
-        body.dark-theme {
-            background-color: #252525;
-            color: #eee;
-            scrollbar-width: none;
-        }
-        
-        .container {
-            display: flex;
-            width: 100%;
-            height: 100%;
-        }
+		html::-webkit-scrollbar-track {
+			background: transparent;
+		}
 
-        /* 左侧边栏 */
-        .leftbar {
-            width: 65px;
-            background: white;
-            border-right: 1px solid var(--border-color);
-            height: 100%;
-            display: flex;
-            flex-direction: column;     
-            transition: all 0.2s ease;
-        }
+		body::-webkit-scrollbar-button {
+			display: none;
+		}
 
-        .dark-theme .leftbar {
-            border-right: 1px solid var(--border-color-dark);
-            background: #252525;
-        }
-        
-        /* 存储类型列表 */
-        .storage-type-list {
-            width: 350px;
-            background: white;
-            border-right: 1px solid var(--border-color);
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            transition: all 0.2s ease;
-        }
+		body {
+			display: flex;
+			height: 100vh;
+			background-color: #ffffff;
+			color: #333;
+			scrollbar-width: none;
+			transition: all 0.2s ease;
+		}
 
-        .dark-theme .storage-type-list {
-            border-right: 1px solid var(--border-color-dark);
-            background: #252525;
-        }
-        
-        .storage-type-header {
-            padding: 16px 15px 9px 15px;
-            border-bottom: 1px solid var(--border-color);
-            transition: all 0.2s ease;
-        }
-        
-        .dark-theme .storage-type-header {
-            border-bottom: 1px solid var(--border-color-dark);
-        }
+		body.dark-theme {
+			background-color: #252525;
+			color: #eee;
+			scrollbar-width: none;
+		}
 
-        .storage-items-list {
-            overflow-y: auto;
-            flex: 1;
-            position: relative;
-            scrollbar-width: none;
-            transition: all 0.2s ease;
-        }
-        
-        .storage-item {
-            padding: 17.5px 15px 15px 15px;
-            height:130px;
-            border-bottom: 1px solid var(--border-color);
-            border-left: 0px solid var(--primary-color);
-            cursor: pointer;
-            position: relative;
-            -webkit-tap-highlight-color: transparent;
-            transition: all 0.2s ease;
-        }
+		.container {
+			display: flex;
+			width: 100%;
+			height: 100%;
+		}
 
-        .dark-theme .storage-item {
-            border-bottom: 1px solid var(--border-color-dark);
-            border-left: 0px solid var(--primary-color); 
-        }
-        
-        .storage-item:hover {
-            background-color: var(--light-bg);
-        }
-        
-        .dark-theme .storage-item:hover {
-            background-color: var(--dark-bg);
-        }
-        
-        .storage-item.selected {
-            background-color: #faf0f3;
-            box-shadow: inset 3px 0 0 var(--primary-color);
-            transition: all 0.2s ease;
-        }
-        
-        .dark-theme .storage-item.selected {
-            background-color: #3a3537;
-            box-shadow: inset 3px 0 0 var(--primary-color);
-            transition: all 0.2s ease;
-        }
-        
-        .storage-title {
-            font-weight: 500;
-            font-size: 16px;
-            margin-bottom: 5px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        
-        .storage-size {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 8px;
-            transition: all 0.2s ease;
-        }
-        
-        .dark-theme .storage-size {
-            color: #aaa;
-        }
-        
-        .storage-time {
-            font-size: 12px;
-            color: #999;
-            margin-top: 8px;
-        }
-        
-        /* 右侧编辑区域 */
-        .editor {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background: white;
-            height: 100%;
-            transition: all 0.2s ease;
-        }
-        
-        .dark-theme .editor {
-            background: #252525;
-        }
-        
-        .editor-header {
-            padding: 15px 20px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: all 0.2s ease;
-        }
-        
-        .dark-theme .editor-header {
-            border-bottom: 1px solid var(--border-color-dark);
-        }
-        
-        .storage-detail-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: #333;
-            transition: all 0.2s ease;
-        }
-        
-        .dark-theme .storage-detail-title {
-            color: #eee;
-        }
-        
-        .editor-actions {
-            display: flex;
-            gap: 10px;
-        }
- 
-        .editor-body {
-            flex: 1;
-            padding: 20px 25px 0px 20px;
-            overflow-y: auto;
-        }
-        
-        .storage-details {
-            background: none;
-            width: 100%;
-            height: 100%;
-            border: none;
-            resize: none;
-            font-size: 15px;
-            line-height: 1.6;
-            color: #444;
-			word-break: normal;         /* 中文按字符换行 */
-  			overflow-wrap: break-word;  /* 英文长单词换行 */
-            white-space: pre-wrap;
-			font-family: inherit;		
-            transition: all 0.2s ease;
-        }
-        
-        .dark-theme .storage-details {
-            color: #eee;
-        }
-		.storage-details:focus {
-            outline: none;
-        }
-        
-        .placeholder {
-            position: relative;
-            color: #aaa;
-            font-size: 16px;
-            transform: translateY(3px);
-            transition: all 0.2s ease;
-        }
-		.placeholder2 {
-            position: relative;
-            color: #aaa;
-            font-size: 16px;
-            transform: translateX(12px) translateY(10px);
-            transition: all 0.2s ease;
-        }
-        
-        svg {
-            width: 22px;
-            height: 22px;
-        }
-        
-        .storage-summary {
-            padding: 15px;
+		/* 左侧边栏 */
+		.leftbar {
+			width: 65px;
+			background: white;
+			border-right: 1px solid var(--border-color);
+			height: 100%;
+			display: flex;
+			flex-direction: column;
+			transition: all 0.2s ease;
+		}
+
+		.dark-theme .leftbar {
+			border-right: 1px solid var(--border-color-dark);
+			background: #252525;
+		}
+
+		/* 存储类型列表 */
+		.storage-type-list {
+			width: 350px;
+			background: white;
+			border-right: 1px solid var(--border-color);
+			height: 100%;
+			display: flex;
+			flex-direction: column;
+			transition: all 0.2s ease;
+		}
+
+		.dark-theme .storage-type-list {
+			border-right: 1px solid var(--border-color-dark);
+			background: #252525;
+		}
+
+		.storage-type-header {
+			padding: 16px 15px 9px 15px;
+			border-bottom: 1px solid var(--border-color);
+			transition: all 0.2s ease;
+		}
+
+		.dark-theme .storage-type-header {
+			border-bottom: 1px solid var(--border-color-dark);
+		}
+
+		.storage-items-list {
+			overflow-y: auto;
+			flex: 1;
+			position: relative;
+			scrollbar-width: none;
+			transition: all 0.2s ease;
+		}
+
+		.storage-item {
+			padding: 17.5px 15px 15px 15px;
 			height: 130px;
-            border-bottom: 1px solid var(--border-color);
-            background-color: #f9f9f9;
+			border-bottom: 1px solid var(--border-color);
+			border-left: 0px solid var(--primary-color);
+			cursor: pointer;
+			position: relative;
+			-webkit-tap-highlight-color: transparent;
 			transition: all 0.2s ease;
-        }
-        
-        .dark-theme .storage-summary {
-            border-bottom: 1px solid var(--border-color-dark);
-            background-color: #2d2d2d;
-        }
-        
-        .summary-item {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 6px;
+		}
+
+		.dark-theme .storage-item {
+			border-bottom: 1px solid var(--border-color-dark);
+			border-left: 0px solid var(--primary-color);
+		}
+
+		.storage-item:hover {
+			background-color: var(--light-bg);
+		}
+
+		.dark-theme .storage-item:hover {
+			background-color: var(--dark-bg);
+		}
+
+		.storage-item.selected {
+			background-color: #faf0f3;
+			box-shadow: inset 3px 0 0 var(--primary-color);
 			transition: all 0.2s ease;
-        }
-        
-        .summary-label {
-            font-weight: 500;
-            color: #555;
+		}
+
+		.dark-theme .storage-item.selected {
+			background-color: #3a3537;
+			box-shadow: inset 3px 0 0 var(--primary-color);
 			transition: all 0.2s ease;
-        }
-        
-        .dark-theme .summary-label {
-            color: #ccc;
-        }
-        
-        .summary-value {
-            color: #333;
-            font-weight: 600;
+		}
+
+		.storage-title {
+			font-weight: 500;
+			font-size: 17px;
+			margin-bottom: 5px;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+
+		.storage-size {
+			font-size: 15px;
+			color: #666;
+			margin-bottom: 8px;
 			transition: all 0.2s ease;
-        }
-        
-        .dark-theme .summary-value {
-            color: #eee;
-        }
-        
-        .usage-bar {
-            height: 8px;
-            background-color: #e0e0e0;
-            border-radius: 4px;
-            margin-top: 10px;
-            overflow: hidden;
+		}
+
+		.dark-theme .storage-size {
+			color: #aaa;
+		}
+
+		.storage-time {
+			font-size: 13px;
+			color: #999;
+			margin-top: 8px;
+		}
+
+		/* 右侧编辑区域 */
+		.editor {
+			flex: 1;
+			display: flex;
+			flex-direction: column;
+			background: white;
+			height: 100%;
 			transition: all 0.2s ease;
-        }
-        
-        .dark-theme .usage-bar {
-            background-color: #444;
-        }
-        
-        .usage-progress {
-            height: 100%;
-            background-color: var(--primary-color);
-            border-radius: 4px;
-            transition: background-color 0.2s ease, width 0.5s ease;
-        }
-        
-        .dark-theme .usage-progress {
-            background-color: #ffccd8;
-        }
-        
-        .delete-item-btn {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            background: none;
-            color: #252525;
-            font-size: 12px;
-            transition: all 0.2s ease;
-        }
+		}
+
+		.dark-theme .editor {
+			background: #252525;
+		}
+
+		.editor-header {
+			height: 65px;
+			padding: 15px 20px;
+			border-bottom: 1px solid var(--border-color);
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			transition: all 0.2s ease;
+		}
+
+		.dark-theme .editor-header {
+			border-bottom: 1px solid var(--border-color-dark);
+		}
+
+		.storage-detail-title {
+			font-size: 19px;
+			font-weight: 600;
+			color: #333;
+			transition: all 0.2s ease;
+		}
+
+		.dark-theme .storage-detail-title {
+			color: #eee;
+		}
+
+		.editor-actions {
+			display: flex;
+			gap: 10px;
+		}
+
+		.editor-body {
+			flex: 1;
+			padding: 20px 20px 0px 20px;
+			overflow-y: auto;
+		}
+
+		.storage-details {
+			background: none;
+			width: 100%;
+			height: 100%;
+			border: none;
+			resize: none;
+			font-size: 16px;
+			line-height: 1.6;
+			color: #444;
+			word-break: normal;
+			/* 中文按字符换行 */
+			overflow-wrap: break-word;
+			/* 英文长单词换行 */
+			white-space: pre-wrap;
+			font-family: inherit;
+			transition: all 0.2s ease;
+		}
+
+		.dark-theme .storage-details {
+			color: #eee;
+		}
+
+		.storage-details:focus {
+			outline: none;
+		}
+
+		.placeholder {
+			position: relative;
+			color: #aaa;
+			font-size: 16px;
+			transform: translateY(3px);
+			transition: all 0.2s ease;
+		}
+
+		.placeholder2 {
+			position: relative;
+			color: #aaa;
+			font-size: 16px;
+			transform: translateX(12px) translateY(10px);
+			transition: all 0.2s ease;
+		}
+
+		svg {
+			width: 22px;
+			height: 22px;
+		}
+
+		.storage-summary {
+			position: relative;
+			padding: 12px 15px 12px 15px;
+			height: 130px;
+			border-bottom: 1px solid var(--border-color);
+			background-color: #f9f9f9;
+			transition: all 0.2s ease;
+			display: flex;
+			flex-direction: column;
+		}
+
+		.dark-theme .storage-summary {
+			border-bottom: 1px solid var(--border-color-dark);
+			background-color: #2d2d2d;
+		}
+
+		.summary-item {
+			display: flex;
+			justify-content: space-between;
+			margin-bottom: 6px;
+			transition: all 0.2s ease;
+		}
+
+		.summary-label {
+			font-weight: 500;
+			color: #555;
+			transition: all 0.2s ease;
+		}
+
+		.dark-theme .summary-label {
+			color: #ccc;
+		}
+
+		.summary-value {
+			color: #333;
+			font-weight: 600;
+			transition: all 0.2s ease;
+		}
+
+		.dark-theme .summary-value {
+			color: #eee;
+		}
+
+		.usage-bar {
+			height: 8px;
+			background-color: #e0e0e0;
+			border-radius: 4px;
+			margin: 2px 0 6px 0;
+			overflow: hidden;
+			transition: all 0.2s ease;
+		}
+
+		.dark-theme .usage-bar {
+			background-color: #444;
+		}
+
+		.usage-progress {
+			height: 100%;
+			background-color: var(--primary-color);
+			border-radius: 4px;
+			transition: background-color 0.2s ease, width 0.5s ease;
+		}
+
+		.dark-theme .usage-progress {
+			background-color: #ffccd8;
+		}
+
+		.search-bar {
+			height: 65px;
+			padding-top: 10px;
+			flex-shrink: 0;
+		}
+
+		.search-input-wrapper {
+			position: absolute;
+			bottom: 0px;
+			left: 0px;
+			width: 350px;
+			height: 65px;
+			transition: all 0.2s ease;
+		}
+
+		.search-icon {
+			position: absolute;
+			left: 12px;
+			top: 50%;
+			transform: translateY(-50%);
+			width: 20px;
+			height: 20px;
+			color: #999;
+			pointer-events: none;
+			transition: all 0.2s ease;
+		}
+
+		.search-input {
+			width: 100%;
+			height: 100%;
+			min-width: 0px;
+			padding: 0 12px 0 40px;
+			border: none;
+			border-top: 1px solid var(--border-color);
+			border-right: 1px solid var(--border-color);
+			background: none;
+			color: #333;
+			font-size: 15px;
+			outline: none;
+			transition: all 0.2s ease;
+		}
+
+		.search-input::placeholder {
+			color: #999;
+		}
+
+
+		.dark-theme .search-input {
+			border-color: var(--border-color-dark);
+			color: #eee;
+		}
+
+		.dark-theme .search-input::placeholder {
+			color: #aaa;
+		}
+
+		.dark-theme .search-icon {
+			color: #aaa;
+		}
+
+		.search-empty-msg {
+			width: 100%;
+		}
+
+		.delete-item-btn {
+			position: absolute;
+			top: 0px;
+			right: 0px;
+			width: 36px;
+			height: 36px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			cursor: pointer;
+			background: none;
+			color: #252525;
+			font-size: 12px;
+			transition: all 0.2s ease;
+		}
 
 		.delete-item-btn svg {
-            width: 16px;
-            height: 16px;
-            transition: all 0.2s ease;
-        }
-        
-        .delete-item-btn:hover {
-            background-color: #ffffff;
-        }
-        
-        .dark-theme .delete-item-btn {
-            background: none;
-            color: #f0f0f0;
-        }
-        
-        .dark-theme .delete-item-btn:hover {
-            background-color: #252525;
-        }
+			width: 16px;
+			height: 16px;
+			transition: all 0.2s ease;
+		}
+
+		.delete-item-btn:hover {
+			background-color: #ffffff;
+		}
+
+		.dark-theme .delete-item-btn {
+			background: none;
+			color: #f0f0f0;
+		}
+
+		.dark-theme .delete-item-btn:hover {
+			background-color: #252525;
+		}
 
 		.createbotton {
-			height:65px;
+			height: 65px;
 			width: 65px;
-			font-size:18px;
+			font-size: 18px;
 			padding: 5px 5px;
 			background-color: #ffffff;
-            color: var(--primary-color-grey);
-			display:flex;
+			color: var(--primary-color-grey);
+			display: flex;
 			flex-direction: column;
 			align-items: center;
-            justify-content: center;
+			justify-content: center;
 			text-align: center;
 			border-right: 1px solid var(--border-color);
 			border-bottom: 1px solid var(--border-color);
@@ -423,299 +497,802 @@ SOFTWARE.
 		}
 
 		.dark-theme .createbotton {
-            background-color: #252525;
-            color: var(--primary-color-grey);
-            border-right: 1px solid var(--border-color-dark);
-			border-bottom: 1px solid var(--border-color-dark);     
-        }
+			background-color: #252525;
+			color: var(--primary-color-grey);
+			border-right: 1px solid var(--border-color-dark);
+			border-bottom: 1px solid var(--border-color-dark);
+		}
+
 		.createbotton:hover {
-            background-color: #f5f5f5;
-			
-        }
+			background-color: #f5f5f5;
+
+		}
+
 		.dark-theme .createbotton:hover {
-            background-color: #303030;
-        }
+			background-color: #303030;
+		}
+
 		.otherbotton {
-			height:65px;
+			height: 65px;
 			width: 65px;
-			font-size:18px;
+			font-size: 18px;
 			padding: 5px 5px;
 			background-color: #ffffff;
-            color: var(--primary-color-grey);
-			display:flex;
+			color: var(--primary-color-grey);
+			display: flex;
 			flex-direction: column;
 			align-items: center;
-            justify-content: center;
+			justify-content: center;
 			text-align: center;
 			border-right: 1px solid var(--border-color);
 			border-bottom: 1px solid var(--border-color);
 			-webkit-tap-highlight-color: transparent;
 			text-decoration: none;
 			transition: all 0.2s ease;
-        }
+		}
+
 		.dark-theme .otherbotton {
-            color: var(--primary-color-grey);
+			color: var(--primary-color-grey);
 			background-color: #252525;
 			border-right: 1px solid var(--border-color-dark);
 			border-bottom: 1px solid var(--border-color-dark);
-        }
-		.otherbotton:hover {
-            background-color: #f5f5f5;
-			
-        }
-		.dark-theme .otherbotton:hover {
-            background-color: #303030;
-        }
+		}
 
-		.styleShowStorage{
+		.otherbotton:hover {
+			background-color: #f5f5f5;
+
+		}
+
+		.dark-theme .otherbotton:hover {
+			background-color: #303030;
+		}
+
+		.styleShowStorage {
 			box-shadow: inset 3px 0 0 var(--primary-color);
 			background-color: #f5f5f5;
 			color: var(--primary-color)
 		}
-		.dark-theme .styleShowStorage{
+
+		.dark-theme .styleShowStorage {
 			box-shadow: inset 3px 0 0 var(--primary-color);
 			background-color: #303030;
 			color: var(--primary-color)
 		}
 
-        @media (max-width: 900px) {
-            .storage-type-list {
-                width: 300px;
-            }
-        }
+		@media (max-width: 900px) {
+			.storage-type-list {
+				width: 310px;
+			}
 
-        @media (max-width: 600px) {
+			.search-input-wrapper {
+				width: 310px;
+			}
+		}
+
+		@media (max-width: 600px) {
+
+			.storage-title {
+				font-size: 16px;
+			}
+
+			.storage-size {
+				font-size: 14px;
+			}
+
+			.storage-time {
+				font-size: 12px;
+			}
+
+			.storage-summary {
+				width: 120px;
+			}
+
+			.search-input-wrapper {
+				width: 120px;
+			}
 
 			.editor {
-            	height: calc(100% - 315px);
-        	}
-            .editor-body {
-                padding: 15px 15px 0px 15px;
-            }
-            
-            .editor-header {
-                padding: 10px 15px;
-				height:45px;
-            }
-            
-            .editor-actions {
-                gap: 2px;
-            }
-            
-            .placeholder {
-                transform: translateY(2px);
-            }
-            
-            .action-btn {
-                width: 32px;
-                height: 32px;
-            }
-            
-            .container {
-                display: block;
-            }
-            
-            .storage-type-list {
-                width: 100%;
-                height: auto;
-                display: flex;
-                flex-direction: row;
-                border-right: none;
-            }
-            .dark-theme .storage-type-list {
-                border-right: none;
-            }
-			.storage-summary {
+				height: calc(100% - 315px);
+			}
+
+			.editor-body {
+				padding: 15px 15px 0px 15px;
+			}
+
+			.editor-header {
+				padding: 10px 15px;
+				height: 45px;
+			}
+
+			.editor-actions {
+				gap: 2px;
+			}
+
+			.placeholder {
+				transform: translateY(2px);
+			}
+
+			.action-btn {
+				width: 32px;
+				height: 32px;
+			}
+
+			.container {
+				display: block;
+			}
+
+			.storage-type-list {
+				width: 100%;
 				height: auto;
-				font-size:14px;
+				display: flex;
+				flex-direction: row;
+				border-right: none;
+			}
+
+			.dark-theme .storage-type-list {
+				border-right: none;
+			}
+
+			.storage-summary {
+				position: relative;
+				height: auto;
+				font-size: 14px;
 				border-right: 1px solid var(--border-color);
-        	}
+			}
 
 			.dark-theme .storage-summary {
 				height: auto;
 				border-right: 1px solid var(--border-color-dark);
-        	}
+			}
+
 			.summary-item {
-            	display: block;
-            	margin-bottom: 6px;
+				display: block;
+				margin-bottom: 6px;
 				transition: all 0.2s ease;
-        	}
+			}
+
 			.summary-item span {
-            	display: block;
-        	}
-            
-            .storage-items-list {
-                border-bottom: 1px solid var(--border-color);
-                border-right: none;
-                display: grid;
-                grid-template-rows: repeat(2, 120px);
-                grid-auto-columns: 120px;
-                grid-auto-flow: column;
-                gap: 0px;
-                overflow-x: auto;
-                overflow-y: hidden;
-                height: 240px;
-            }
-            
-            .dark-theme .storage-items-list {
-                border-bottom: 1px solid var(--border-color-dark);
-                border-right: none;
-            }
-            
-            .storage-item {
-                padding: 16px 15px 15px 15px;
-                flex: 0 0 auto;
-                height:120px;
-                width:120px;
-                max-width:120px;
-                min-width:120px;
-                border-right: 1px solid var(--border-color);
-            }
-            
-            .dark-theme .storage-item {
-                border-right: 1px solid var(--border-color-dark);
-            }
+				display: block;
+			}
+
+			.storage-items-list {
+				border-bottom: 1px solid var(--border-color);
+				border-right: none;
+				display: grid;
+				grid-template-rows: repeat(2, 120px);
+				grid-auto-columns: 120px;
+				grid-auto-flow: column;
+				gap: 0px;
+				overflow-x: auto;
+				overflow-y: hidden;
+				height: 240px;
+			}
+
+			.dark-theme .storage-items-list {
+				border-bottom: 1px solid var(--border-color-dark);
+				border-right: none;
+			}
+
+			.storage-item {
+				padding: 16px 15px 15px 15px;
+				flex: 0 0 auto;
+				height: 120px;
+				width: 120px;
+				max-width: 120px;
+				min-width: 120px;
+				border-right: 1px solid var(--border-color);
+			}
+
+			.dark-theme .storage-item {
+				border-right: 1px solid var(--border-color-dark);
+			}
+
 			.delete-item-btn {
-            	top: 5px;
-            	right: 5px;
-        	}
-            
-            .storage-type-header {
-                padding: 16px 15px 9px 15px;
-                border-bottom: 1px solid var(--border-color);
-                border-right: 1px solid var(--border-color);
-            }
-            
-            .dark-theme .storage-type-header {
-                border-bottom: 1px solid var(--border-color-dark);
-                border-right: 1px solid var(--border-color-dark);
-            }
-            
-            .leftbar {
-                width: 100%;
-                background: white;
-                border-right: none;
-                border-bottom: 1px solid var(--border-color);
-                height: 60px;
-                display: flex;
-                flex-direction: row;     
-                transition: all 0.2s ease;
-            }
-            
-            .dark-theme .leftbar {
-                border-bottom: 1px solid var(--border-color-dark);
-                border-right: none;
-            }   
+				top: 0px;
+				right: 0px;
+				width: 32px;
+				height: 32px;
+			}
+
+			.storage-type-header {
+				padding: 16px 15px 9px 15px;
+				border-bottom: 1px solid var(--border-color);
+				border-right: 1px solid var(--border-color);
+			}
+
+			.dark-theme .storage-type-header {
+				border-bottom: 1px solid var(--border-color-dark);
+				border-right: 1px solid var(--border-color-dark);
+			}
+
+			.leftbar {
+				width: 100%;
+				background: white;
+				border-right: none;
+				border-bottom: 1px solid var(--border-color);
+				height: 60px;
+				display: flex;
+				flex-direction: row;
+				transition: all 0.2s ease;
+			}
+
+			.dark-theme .leftbar {
+				border-bottom: 1px solid var(--border-color-dark);
+				border-right: none;
+			}
+
 			.createbotton {
-				height:60px;
+				height: 60px;
 				width: 60px;
 				border-bottom: 1px solid var(--border-color);
-        	}
-			.styleShowStorage{
+			}
+
+			.styleShowStorage {
 				box-shadow: inset 0 3px 0 var(--primary-color)
 			}
-			.dark-theme .styleShowStorage{
+
+			.dark-theme .styleShowStorage {
 				box-shadow: inset 0 3px 0 var(--primary-color)
 			}
+
 			.otherbotton {
-				height:60px;
+				height: 60px;
 				width: 60px;
 				border-bottom: 1px solid var(--border-color);
-        	}
-        }
-    </style>
+			}
+		}
+
+		/* 自定义弹窗样式 */
+		.md-btn {
+			display: inline-block;
+			position: relative;
+			font-size: 13px;
+			padding: 10px 15px;
+			margin-top: 7px;
+			margin-right: 5px;
+			background: var(--primary-color);
+			border-radius: 25px;
+			cursor: pointer;
+			align-items: center;
+			justify-content: center;
+			text-align: center;
+			-webkit-tap-highlight-color: transparent;
+			outline: none;
+			border: none;
+			transition: all 0.3s ease;
+		}
+
+		.md-btn:hover {
+			border-radius: 12px;
+		}
+
+		.md-btn:active {
+			transform: scale(0.9);
+		}
+
+		.md-btn p {
+			display: inline-block;
+			font-size: 13px;
+			color: #ffffff;
+		}
+
+		.dark-theme .md-btn p {
+			font-size: 13px;
+			color: #5a2230;
+		}
+
+		.md-btn svg {
+			display: inline-block;
+			height: 13px;
+			width: 13px;
+			margin-right: 3px;
+			color: #ffffff;
+			transform: scale(1.2) translateY(1px);
+		}
+
+		.dark-theme .md-btn svg {
+			color: #5a2230;
+		}
+
+		.md-btn-second {
+			background: none;
+			color: var(--primary-color);
+			border: 1px #888 solid;
+			transition: all 0.3s ease;
+		}
+
+		.md-btn-second p {
+			display: inline-block;
+			font-size: 13px;
+			color: var(--primary-color);
+		}
+
+		.dark-theme .md-btn-second p {
+			color: var(--primary-color);
+		}
+
+		.md-btn-second svg {
+			display: inline-block;
+			height: 13px;
+			width: 13px;
+			margin-right: 3px;
+			color: var(--primary-color);
+			transform: scale(1.2) translateY(1px);
+		}
+
+		.dark-theme .md-btn-second svg {
+			color: var(--primary-color);
+		}
+
+		.shortcutmodal {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background: rgba(0, 0, 0, 0.2);
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			z-index: 1001;
+			opacity: 0;
+			visibility: hidden;
+			transition: all 0.2s ease;
+		}
+
+		.dark-theme .shortcutmodal {
+			background: rgba(0, 0, 0, 0.3);
+		}
+
+		.shortcutmodal.active {
+			opacity: 1;
+			visibility: visible;
+		}
+
+		.shortcutmodal-content {
+			background: white;
+			border-radius: 25px;
+			padding: 23px 25px 25px 25px;
+			width: 90%;
+			max-width: 400px;
+			transform: translateY(35px) perspective(800px) rotateX(-80deg) scale(0.5);
+			box-shadow: 0 8px 40px rgba(0, 0, 0, 0.2);
+			transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1);
+		}
+
+		.shortcutmodal.active .shortcutmodal-content {
+			transform: translateY(0px) perspective(800px) rotateX(0deg) scale(1);
+		}
+
+		.dark-theme .shortcutmodal-content {
+			background: #252525;
+			box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3);
+		}
+
+		.shortcutmodal-title {
+			margin-top: 0;
+			margin-bottom: 20px;
+			color: var(--primary-color);
+		}
+
+		.shortcutmodal-title svg {
+			display: inline-block;
+			height: 18px;
+			width: 18px;
+			margin-right: 7px;
+			transform: scale(1) translateY(2px);
+		}
+
+		.shortcutmodal-title p {
+			display: inline-block;
+			font-size: 18px;
+			font-weight: 500;
+		}
+
+		.modal-actions {
+			display: flex;
+			justify-content: flex-end;
+			gap: 10px;
+		}
+
+		.modal-actions .md-btn {
+			margin-right: 0px;
+			margin-top: 0px;
+		}
+
+		.custom-modal-content {
+			width: 80%;
+			max-width: 360px;
+		}
+
+		#alertMessage,
+		#confirmMessage {
+			white-space: pre-wrap;
+			word-break: break-word;
+			line-height: 1.5;
+		}
+	</style>
 </head>
+
 <body>
-    <div class="container">
-        <!-- 左侧存储类型选择 -->
-        <div class="leftbar">
-            <div class="createbotton" id="localStorageBtn" title="localStorage">
-                
-				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M4 4v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8.342a2 2 0 0 0-.602-1.43l-4.44-4.342A2 2 0 0 0 13.56 2H6a2 2 0 0 0-2 2Z"></path>
-                    <path d="M16 18H8"></path>
-                    <path d="M16 14H8"></path>
-                    <path d="M12 10H8"></path>
-                </svg>
-            </div>
-            <div class="createbotton" id="indexedDBBtn" title="indexedDB">
-                
-				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path>
-                    <path d="M9 9h6"></path>
-                    <path d="M9 13h6"></path>
-                </svg>
-            </div>
-            <div class="createbotton" id="cacheStorageBtn" title="cacheStorage">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                    <path d="M3 9h18M9 21V9"></path>
-                </svg>
-            </div>
-            
-            
+	<!-- 自定义弹窗组件 -->
+	<div id="customAlert" class="shortcutmodal">
+		<div class="shortcutmodal-content custom-modal-content">
+			<h3 class="shortcutmodal-title"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="40"
+					height="40" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+					stroke-linejoin="round">
+					<circle cx="12" cy="12" r="10"></circle>
+					<line x1="12" y1="8" x2="12" y2="12"></line>
+					<line x1="12" y1="16" x2="12.01" y2="16"></line>
+				</svg>
+				<p>提示</p>
+			</h3>
+			<p id="alertMessage"></p>
+			<div class="modal-actions">
+				<button id="alertConfirm" class="md-btn" style="margin-top:25px;">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="40" height="40" fill="none"
+						stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<polyline points="20 6 9 17 4 12"></polyline>
+					</svg>
+					<p>确定</p>
+				</button>
+			</div>
+		</div>
+	</div>
+	<div id="customConfirmModal" class="shortcutmodal">
+		<div class="shortcutmodal-content custom-modal-content">
+			<h3 class="shortcutmodal-title"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="40"
+					height="40" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+					stroke-linejoin="round">
+					<circle cx="12" cy="12" r="10"></circle>
+					<line x1="12" y1="8" x2="12" y2="12"></line>
+					<line x1="12" y1="16" x2="12.01" y2="16"></line>
+				</svg>
+				<p>提示</p>
+			</h3>
+			<p id="confirmMessage"></p>
+			<div class="modal-actions">
+				<button id="confirmCancelBtn" class="md-btn" style="margin-top:25px;">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+						stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<line x1="5" y1="5" x2="19" y2="19" />
+						<line x1="5" y1="19" x2="19" y2="5" />
+					</svg>
+					<p>取消</p>
+				</button>
+				<button id="confirmOkBtn" class="md-btn md-btn-second" style="margin-top:25px;">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="40" height="40" fill="none"
+						stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<polyline points="20 6 9 17 4 12"></polyline>
+					</svg>
+					<p>确定</p>
+				</button>
+			</div>
+		</div>
+	</div>
+	<div class="container">
+		<!-- 左侧存储类型选择 -->
+		<div class="leftbar">
+			<div class="createbotton" id="localStorageBtn" title="localStorage">
+
+				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+					stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<path
+						d="M4 4v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8.342a2 2 0 0 0-.602-1.43l-4.44-4.342A2 2 0 0 0 13.56 2H6a2 2 0 0 0-2 2Z">
+					</path>
+					<path d="M16 18H8"></path>
+					<path d="M16 14H8"></path>
+					<path d="M12 10H8"></path>
+				</svg>
+			</div>
+			<div class="createbotton" id="indexedDBBtn" title="indexedDB">
+
+				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+					stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path>
+					<path d="M9 9h6"></path>
+					<path d="M9 13h6"></path>
+				</svg>
+			</div>
+			<div class="createbotton" id="cacheStorageBtn" title="cacheStorage">
+				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+					stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+					<path d="M3 9h18M9 21V9"></path>
+				</svg>
+			</div>
+
+
 			<div class="otherbotton" id="clearAllBtn" title="删除 (Delete)">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="3 6 5 6 21 6"></polyline>
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                        </svg>
-            </div>
+				<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+					stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<polyline points="3 6 5 6 21 6"></polyline>
+					<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+				</svg>
+			</div>
 			<div class="otherbotton" id="themeToggle" title="主题 (Theme)">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                </svg>
-            </div>
+				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+					stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+				</svg>
+			</div>
 			<div class="otherbotton" id="about" title="关于 (About)">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="12" y1="16" x2="12" y2="12"></line>
-                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
-                </svg>
-            </div>
-        </div>
-        
-        <!-- 左侧列表 -->
-        <div class="storage-type-list">
-            <div class="storage-summary" id="storageSummary">
-                <div class="summary-item">
-                    <span class="summary-label">存储类型</span>
-                    <span class="summary-value" id="storageTypeLabel">-</span>
-                </div>
-                <div class="summary-item">
-                    <span class="summary-label">已用空间</span>
-                    <span class="summary-value" id="usedSpace">-</span>
-                </div>
-                <div class="summary-item">
-                    <span class="summary-label">总容量</span>
-                    <span class="summary-value" id="totalSpace">-</span>
-                </div>
-                <div class="usage-bar">
-                    <div class="usage-progress" id="usageProgress" style="width: 0%"></div>
-                </div>
-            </div>
-            <div class="storage-items-list" id="storageItemsList">
-                <div class="placeholder2" id="storageListPlaceholder">在边栏选择存储类型以查看内容</div>
-            </div>
-        </div>
-        
-        <!-- 右侧详情 -->
-        <div class="editor">
-            <div class="editor-header" id="editorHeader" style="display: none;">
-                <div class="storage-detail-title" id="storageItemTitle">-</div>
-                <div class="editor-actions">
-                </div>
-            </div>
-            <div class="editor-body" id="editorBody">
-                <div class="placeholder" id="editorPlaceholder">选择存储项查看详情</div>
-                <textarea class="storage-details" id="storageDetails" style="display: none;" readonly></textarea>
-            </div>
-        </div>
-    </div>
-    <script>
+				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+					stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<circle cx="12" cy="12" r="10"></circle>
+					<line x1="12" y1="16" x2="12" y2="12"></line>
+					<line x1="12" y1="8" x2="12.01" y2="8"></line>
+				</svg>
+			</div>
+		</div>
+
+		<!-- 左侧列表 -->
+		<div class="storage-type-list">
+			<div class="storage-summary" id="storageSummary">
+				<div class="summary-item">
+					<span><span class="summary-label">存储: </span><span class="summary-value"
+							id="storageTypeLabel">-</span></span>
+					<span><span class="summary-value" id="usedSpace">-</span>/<span class="summary-value"
+							id="totalSpace">-</span></span>
+				</div>
+				<div class="usage-bar">
+					<div class="usage-progress" id="usageProgress" style="width: 0%"></div>
+				</div>
+				<div class="search-input-wrapper">
+					<svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+						viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+						stroke-linejoin="round">
+						<circle cx="11" cy="11" r="8"></circle>
+						<line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+					</svg>
+					<input type="text" class="search-input" id="storageSearchInput" placeholder="搜索...">
+				</div>
+			</div>
+			<div class="storage-items-list" id="storageItemsList">
+				<div class="placeholder2" id="storageListPlaceholder">在边栏选择存储类型以查看内容</div>
+			</div>
+		</div>
+
+		<!-- 右侧详情 -->
+		<div class="editor">
+			<div class="editor-header" id="editorHeader" style="display: none;">
+				<div class="storage-detail-title" id="storageItemTitle">-</div>
+				<div class="editor-actions">
+				</div>
+			</div>
+			<div class="editor-body" id="editorBody">
+				<div class="placeholder" id="editorPlaceholder">选择存储项查看详情</div>
+				<textarea class="storage-details" id="storageDetails" style="display: none;" readonly></textarea>
+			</div>
+		</div>
+	</div>
+	<script>
+
+		/**
+		 * Momotan PopUp v2（自定义弹窗组件）
+		 * 劫持原生 window.alert / window.confirm
+		 * 特性：
+		 * 自动创建所需 DOM（如果页面中不存在）
+		 * 支持消息中的 \n 换行
+		 * 键盘适配：alert(ESC/Enter/Space关闭)，confirm(ESC取消，Enter/Space确认)
+		 * 背景点击关闭
+		 * 注：需要带上css样式，或者自行定义样式
+		 */
+		(function initCustomDialog() {
+			'use strict';
+
+			// 防止重复初始化
+			if (window.__customDialogInited) return;
+			window.__customDialogInited = true;
+
+			let currentAlertResolve = null;
+			let currentConfirmResolve = null;
+			let keydownHandler = null;
+
+			const ESCAPE_KEY = 'Escape';
+			const ENTER_KEY = 'Enter';
+			const SPACE_KEY = ' ';
+
+			function ensureDOM() {
+				if (!document.body) {
+					console.error('CustomDialog: document.body is not available. Please initialize after DOM is ready.');
+					return;
+				}
+				if (!document.getElementById('customAlert')) {
+					createAlertDOM();
+				}
+				if (!document.getElementById('customConfirmModal')) {
+					createConfirmDOM();
+				}
+			}
+
+			function createAlertDOM() {
+				const div = document.createElement('div');
+				div.id = 'customAlert';
+				div.className = 'shortcutmodal';
+				div.innerHTML = `
+		            <div class="shortcutmodal-content custom-modal-content">
+		                <h3 class="shortcutmodal-title">
+		                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+		                        <circle cx="12" cy="12" r="10"></circle>
+		                        <line x1="12" y1="8" x2="12" y2="12"></line>
+		                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+		                    </svg>
+		                    <p>提示</p>
+		                </h3>
+		                <p id="alertMessage"></p>
+		                <div class="modal-actions">
+		                    <button id="alertConfirm" class="md-btn" style="margin-top:25px;">
+		                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+		                            <polyline points="20 6 9 17 4 12"></polyline>
+		                        </svg>
+		                        <p>确定</p>
+		                    </button>
+		                </div>
+		            </div>
+		        `;
+				document.body.appendChild(div);
+			}
+
+			function createConfirmDOM() {
+				const div = document.createElement('div');
+				div.id = 'customConfirmModal';
+				div.className = 'shortcutmodal';
+				div.innerHTML = `
+		            <div class="shortcutmodal-content custom-modal-content">
+		                <h3 class="shortcutmodal-title">
+		                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+		                        <circle cx="12" cy="12" r="10"></circle>
+		                        <line x1="12" y1="8" x2="12" y2="12"></line>
+		                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+		                    </svg>
+		                    <p>提示</p>
+		                </h3>
+		                <p id="confirmMessage"></p>
+		                <div class="modal-actions">
+		                    <button id="confirmCancelBtn" class="md-btn" style="margin-top:25px;">
+		                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+		                            <line x1="5" y1="5" x2="19" y2="19"/>
+		                            <line x1="5" y1="19" x2="19" y2="5"/>
+		                        </svg>
+		                        <p>取消</p>
+		                    </button>
+		                    <button id="confirmOkBtn" class="md-btn md-btn-second" style="margin-top:25px;">
+		                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+		                            <polyline points="20 6 9 17 4 12"></polyline>
+		                        </svg>
+		                        <p>确定</p>
+		                    </button>
+		                </div>
+		            </div>
+		        `;
+				document.body.appendChild(div);
+			}
+
+			function bindKeyboard(type, resolve) {
+				unbindKeyboard();
+				keydownHandler = (e) => {
+					if (type === 'alert') {
+						if (e.key === ESCAPE_KEY || e.key === ENTER_KEY || e.key === SPACE_KEY) {
+							e.preventDefault();
+							resolve();
+							closeAlert();
+						}
+					} else if (type === 'confirm') {
+						if (e.key === ESCAPE_KEY) {
+							e.preventDefault();
+							resolve(false);
+							closeConfirm();
+						} else if (e.key === ENTER_KEY || e.key === SPACE_KEY) {
+							e.preventDefault();
+							resolve(true);
+							closeConfirm();
+						}
+					}
+				};
+				document.addEventListener('keydown', keydownHandler);
+			}
+
+			function unbindKeyboard() {
+				if (keydownHandler) {
+					document.removeEventListener('keydown', keydownHandler);
+					keydownHandler = null;
+				}
+			}
+
+			function closeAlert() {
+				const customAlert = document.getElementById('customAlert');
+				if (customAlert) customAlert.classList.remove('active');
+				currentAlertResolve = null;
+				unbindKeyboard();
+			}
+
+			function closeConfirm() {
+				const customConfirmModal = document.getElementById('customConfirmModal');
+				if (customConfirmModal) customConfirmModal.classList.remove('active');
+				currentConfirmResolve = null;
+				unbindKeyboard();
+			}
+
+			function showAlert(message) {
+				return new Promise((resolve) => {
+					ensureDOM();
+					currentAlertResolve = resolve;
+
+					const customAlert = document.getElementById('customAlert');
+					const alertMessage = document.getElementById('alertMessage');
+					const alertConfirm = document.getElementById('alertConfirm');
+
+					alertMessage.textContent = message;
+					customAlert.classList.add('active');
+					alertConfirm.focus();
+
+					alertConfirm.onclick = () => {
+						resolve();
+						closeAlert();
+					};
+
+					bindKeyboard('alert', resolve);
+				});
+			}
+
+			function showConfirm(message) {
+				return new Promise((resolve) => {
+					ensureDOM();
+					currentConfirmResolve = resolve;
+
+					const customConfirmModal = document.getElementById('customConfirmModal');
+					const confirmMessage = document.getElementById('confirmMessage');
+					const confirmOkBtn = document.getElementById('confirmOkBtn');
+					const confirmCancelBtn = document.getElementById('confirmCancelBtn');
+
+					confirmMessage.textContent = message;
+					customConfirmModal.classList.add('active');
+					confirmOkBtn.focus();
+
+					confirmOkBtn.onclick = () => {
+						resolve(true);
+						closeConfirm();
+					};
+
+					confirmCancelBtn.onclick = () => {
+						resolve(false);
+						closeConfirm();
+					};
+
+					bindKeyboard('confirm', resolve);
+				});
+			}
+
+			// 背景点击关闭
+			document.addEventListener('click', function (e) {
+				const customAlert = document.getElementById('customAlert');
+				const customConfirmModal = document.getElementById('customConfirmModal');
+
+				if (customAlert && e.target === customAlert && currentAlertResolve) {
+					currentAlertResolve();
+					closeAlert();
+				}
+
+				if (customConfirmModal && e.target === customConfirmModal && currentConfirmResolve) {
+					currentConfirmResolve(false);
+					closeConfirm();
+				}
+			});
+
+			window.alert = async function (message) {
+				await showAlert(message);
+			};
+
+			window.confirm = function (message) {
+				return showConfirm(message);
+			};
+		})();
+
 
 		// 由SxrDoor添加
 
-		function createBtnSvg(id,num){
+		function createBtnSvg(id, num) {
 			// 公共部分
 			const svgNS = "http://www.w3.org/2000/svg";
 			let svg = document.createElementNS(svgNS, "svg");
@@ -726,21 +1303,21 @@ SOFTWARE.
 			svg.setAttribute("stroke-width", "2");
 			svg.setAttribute("stroke-linecap", "round");
 			svg.setAttribute("stroke-linejoin", "round");
-			
-			switch(id){
+
+			switch (id) {
 				case "localStorageBtn":
 					const path = document.createElementNS(svgNS, "path");
 					path.setAttribute("d", "M4 4v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8.342a2 2 0 0 0-.602-1.43l-4.44-4.342A2 2 0 0 0 13.56 2H6a2 2 0 0 0-2 2Z");
 					svg.appendChild(path);
-					
+
 					const path2 = document.createElementNS(svgNS, "path");
 					path2.setAttribute("d", "M16 18H8");
 					svg.appendChild(path2);
-					
+
 					const path3 = document.createElementNS(svgNS, "path");
 					path3.setAttribute("d", "M16 14H8");
 					svg.appendChild(path3);
-					
+
 					const path4 = document.createElementNS(svgNS, "path");
 					path4.setAttribute("d", "M12 10H8");
 					svg.appendChild(path4);
@@ -750,11 +1327,11 @@ SOFTWARE.
 					const path5 = document.createElementNS(svgNS, "path");
 					path5.setAttribute("d", "M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20");
 					svg.appendChild(path5);
-					
+
 					const path6 = document.createElementNS(svgNS, "path");
 					path6.setAttribute("d", "M9 9h6");
 					svg.appendChild(path6);
-					
+
 					const path7 = document.createElementNS(svgNS, "path");
 					path7.setAttribute("d", "M9 13h6");
 					svg.appendChild(path7);
@@ -769,7 +1346,7 @@ SOFTWARE.
 					rect.setAttribute("rx", "2");
 					rect.setAttribute("ry", "2");
 					svg.appendChild(rect);
-					
+
 					const path8 = document.createElementNS(svgNS, "path");
 					path8.setAttribute("d", "M3 9h18M9 21V9");
 					svg.appendChild(path8);
@@ -778,14 +1355,14 @@ SOFTWARE.
 			}
 
 			// 文字部分
-			if(num) {
+			if (num) {
 				const circle = document.createElementNS(svgNS, "circle");
 				circle.setAttribute("cx", "17");
 				circle.setAttribute("cy", "17");
 				circle.setAttribute("r", "6");
 				circle.setAttribute("fill", "var(--now-bg-color)");
 				svg.appendChild(circle);
-				
+
 				const text = document.createElementNS(svgNS, "text");
 				text.setAttribute("x", "17");
 				text.setAttribute("y", "17.8");
@@ -795,49 +1372,49 @@ SOFTWARE.
 				text.setAttribute("font-family", "Arial");
 				text.setAttribute("fill", "currentColor");
 				text.setAttribute("style", "font-size:8px");
-				
-				if(num > 99) {
+
+				if (num > 99) {
 					text.textContent = "...";
 				} else {
 					text.textContent = num;
 				}
 				svg.appendChild(text);
 			}
-			
+
 			// 应用到元素
-			document.getElementById(id).innerHTML="";
+			document.getElementById(id).innerHTML = "";
 			document.getElementById(id).appendChild(svg);
 		}
 
-		function refreshLeftItems(){
-			try{
+		function refreshLeftItems() {
+			try {
 				// 颜色搞对
-				if (document.body.classList.contains('dark-theme'))document.documentElement.style.setProperty('--now-bg-color', '#303030');
-                else document.documentElement.style.setProperty('--now-bg-color', 'white');
+				if (document.body.classList.contains('dark-theme')) document.documentElement.style.setProperty('--now-bg-color', '#303030');
+				else document.documentElement.style.setProperty('--now-bg-color', 'white');
 
 				// LocalStorage
-				if(localStorage.length)createBtnSvg("localStorageBtn",localStorage.length);
-				else createBtnSvg("localStorageBtn",0);
+				if (localStorage.length) createBtnSvg("localStorageBtn", localStorage.length);
+				else createBtnSvg("localStorageBtn", 0);
 
 				// IndexDB
 				if (window.indexedDB && window.indexedDB.databases) {
 					indexedDB.databases().then(databases => {
-						if (databases.length)createBtnSvg("indexedDBBtn",databases.length);
-						else createBtnSvg("indexedDBBtn",0);
+						if (databases.length) createBtnSvg("indexedDBBtn", databases.length);
+						else createBtnSvg("indexedDBBtn", 0);
 					});
 				}
 
 				//CacheStorage
 				caches.keys().then(cacheNames => {
-					if(cacheNames.length)createBtnSvg("cacheStorageBtn",cacheNames.length);
-					else createBtnSvg("cacheStorageBtn",0);
+					if (cacheNames.length) createBtnSvg("cacheStorageBtn", cacheNames.length);
+					else createBtnSvg("cacheStorageBtn", 0);
 				});
-			}catch(err){
+			} catch (err) {
 				;
 			}
 		};
 
-		function styleShowStorage(where){
+		function styleShowStorage(where) {
 			document.getElementById("localStorageBtn").classList.remove("styleShowStorage");
 			document.getElementById("indexedDBBtn").classList.remove("styleShowStorage");
 			document.getElementById("cacheStorageBtn").classList.remove("styleShowStorage");
@@ -845,125 +1422,176 @@ SOFTWARE.
 			document.getElementById(objId).classList.add("styleShowStorage");
 		}
 
-        // 核心
-        const storageManager = {
-            // 初始化
-            init: function() {
-                // 事件监听器
-                this.setupEventListeners();
-                // 初始化主题
-                this.initTheme();
+		// 核心
+		const storageManager = {
+			// 初始化
+			init: function () {
+				// 事件监听器
+				this.setupEventListeners();
+				// 初始化主题
+				this.initTheme();
 				// 初始化图标
 				refreshLeftItems();
-            },
-            
-            // 事件监听器
-            setupEventListeners: function() {
-                // 存储类型按钮
-                document.getElementById('localStorageBtn').addEventListener('click', () => {this.showStorage('localStorage'); styleShowStorage('localStorage')});
-                document.getElementById('indexedDBBtn').addEventListener('click', () => {this.showStorage('indexedDB'); styleShowStorage('indexedDB')});
-                document.getElementById('cacheStorageBtn').addEventListener('click', () => {this.showStorage('cacheStorage'); styleShowStorage('cacheStorage')});
-                
-                // 清除全部按钮
-                document.getElementById('clearAllBtn').addEventListener('click', () => this.clearAllStorage());
-                
-                // 主题切换
-                document.getElementById('themeToggle').addEventListener('click', this.toggleTheme);
-                
-                // 关于按钮
-                document.getElementById('about').addEventListener('click', () => {
-                    alert('Momotan Storage Explorer\n网站本地存储管理工具 / Website local storage management tool\nCopyright©2026, Aphasia\nv1.0.4 release\n基于 MIT 协议开源 / Licensed under the MIT License.\n开源地址 / Open source address: https://github.com/kvetc/Momotan-Storage-Explorer');
-                });
-            },
-            
-            // 初始化主题
-            initTheme: function() {
-                const savedTheme = localStorage.getItem('storageTheme');
-                if (savedTheme === 'dark') {
-                    document.body.classList.add('dark-theme');
-                } else {
-                    document.body.classList.remove('dark-theme');
-                }
-            },
-            
-            // 切换主题
-            toggleTheme: function() {
-                document.body.classList.toggle('dark-theme');
-                if (document.body.classList.contains('dark-theme')) {
-                    localStorage.setItem('storageTheme', 'dark');
+			},
+
+			// 事件监听器
+			setupEventListeners: function () {
+				// 存储类型按钮
+				document.getElementById('localStorageBtn').addEventListener('click', () => { this.showStorage('localStorage'); styleShowStorage('localStorage') });
+				document.getElementById('indexedDBBtn').addEventListener('click', () => { this.showStorage('indexedDB'); styleShowStorage('indexedDB') });
+				document.getElementById('cacheStorageBtn').addEventListener('click', () => { this.showStorage('cacheStorage'); styleShowStorage('cacheStorage') });
+
+				// 清除全部按钮
+				document.getElementById('clearAllBtn').addEventListener('click', () => this.clearAllStorage());
+
+				// 主题切换
+				document.getElementById('themeToggle').addEventListener('click', this.toggleTheme);
+
+				// 关于按钮
+				document.getElementById('about').addEventListener('click', () => {
+					alert('Momotan Storage Explorer\n\n网站本地存储管理工具 / Website local storage management tool\nCopyright©2026, Aphasia\nv1.0.5 release 2026/07/07\n\n基于 MIT 协议开源 / Licensed under the MIT License.\n开源地址 / Open source address: https://github.com/kvetc/Momotan-Storage-Explorer');
+				});
+
+				// 搜索栏
+				const searchInput = document.getElementById('storageSearchInput');
+				searchInput.addEventListener('input', (e) => {
+					this.filterStorageItems(e.target.value);
+				});
+			},
+
+			// 搜索过滤存储项
+			filterStorageItems: function (searchTerm) {
+				const items = document.querySelectorAll('.storage-item');
+				const term = searchTerm.toLowerCase().trim();
+				let visibleCount = 0;
+
+				items.forEach(item => {
+					const titleEl = item.querySelector('.storage-title');
+					if (!titleEl) return;
+
+					const title = titleEl.textContent.toLowerCase();
+					if (term === '' || title.includes(term)) {
+						item.style.display = '';
+						visibleCount++;
+					} else {
+						item.style.display = 'none';
+					}
+				});
+
+				// 无匹配结果提示
+				const storageItemsList = document.getElementById('storageItemsList');
+				let emptyMsg = storageItemsList.querySelector('.search-empty-msg');
+
+				if (visibleCount === 0 && items.length > 0) {
+					if (!emptyMsg) {
+						emptyMsg = document.createElement('div');
+						emptyMsg.className = 'placeholder2 search-empty-msg';
+						emptyMsg.textContent = '没有匹配的存储项';
+						storageItemsList.appendChild(emptyMsg);
+					}
+				} else if (emptyMsg) {
+					emptyMsg.remove();
+				}
+			},
+
+			// 初始化主题
+			initTheme: function () {
+				const savedTheme = localStorage.getItem('storageTheme');
+				if (savedTheme === 'dark') {
+					document.body.classList.add('dark-theme');
+				} else {
+					document.body.classList.remove('dark-theme');
+				}
+			},
+
+			// 切换主题
+			toggleTheme: function () {
+				document.body.classList.toggle('dark-theme');
+				if (document.body.classList.contains('dark-theme')) {
+					localStorage.setItem('storageTheme', 'dark');
 					document.documentElement.style.setProperty('--now-bg-color', '#303030');
-                } else {
-                    localStorage.setItem('storageTheme', 'light');
+				} else {
+					localStorage.setItem('storageTheme', 'light');
 					document.documentElement.style.setProperty('--now-bg-color', 'white');
-                }
-            },
-            
-            // 显示指定存储类型的内容
-            showStorage: function(storageType) {
-                // 更新当前存储类型
-                this.currentStorageType = storageType;
-                document.getElementById('storageTypeLabel').textContent = 
-                    storageType === 'localStorage' ? 'localStorage' : 
-                    storageType === 'indexedDB' ? 'IndexedDB' : 'CacheStorage';
-                
-                // 清除选择状态
-                this.clearSelection();
-                
-                // 加载存储内容
-                this.loadStorageItems(storageType);
-                
-                // 更新存储空间信息
-                this.updateStorageSpaceInfo(storageType);
-            },
-            
-            // 清除当前选择
-            clearSelection: function() {
-                const selectedItem = document.querySelector('.storage-item.selected');
-                if (selectedItem) {
-                    selectedItem.classList.remove('selected');
-                }
-                document.getElementById('editorHeader').style.display = 'none';
-                document.getElementById('editorPlaceholder').style.display = 'block';
-                document.getElementById('storageDetails').style.display = 'none';
-            },
-            
-            // 加载存储项
-            loadStorageItems: function(storageType) {
-                const storageItemsList = document.getElementById('storageItemsList');
-                storageItemsList.innerHTML = '';
-                
-                switch(storageType) {
-                    case 'localStorage':
-                        this.loadLocalStorageItems();
-                        break;
-                    case 'indexedDB':
-                        this.loadIndexedDBItems();
-                        break;
-                    case 'cacheStorage':
-                        this.loadCacheStorageItems();
-                        break;
-                }
-            },
-            
-            // 加载localStorage
-            loadLocalStorageItems: function() {
-                const storageItemsList = document.getElementById('storageItemsList');
-                
-                // 遍历所有localStorage
-                for (let i = 0; i < localStorage.length; i++) {
-                    const key = localStorage.key(i);
-                    const value = localStorage.getItem(key);
-                    
-                    // 计算存储大小
-                    const size = new Blob([key + value]).size;
-                    
-                    // 创建存储项元素
-                    const storageItem = document.createElement('div');
-                    storageItem.className = 'storage-item';
-                    storageItem.dataset.key = key;
-                    storageItem.dataset.type = 'localStorage';
-                    
-                    storageItem.innerHTML = `
+				}
+			},
+
+			// 显示指定存储类型的内容
+			showStorage: function (storageType) {
+				// 更新当前存储类型
+				this.currentStorageType = storageType;
+				document.getElementById('storageTypeLabel').textContent =
+					storageType === 'localStorage' ? 'localStorage' :
+						storageType === 'indexedDB' ? 'IndexedDB' : 'CacheStorage';
+
+				// 清除选择状态
+				this.clearSelection();
+
+				// 清空搜索框
+				const searchInput = document.getElementById('storageSearchInput');
+				if (searchInput) {
+					searchInput.value = '';
+				}
+
+				// 加载存储内容
+				this.loadStorageItems(storageType);
+
+				// 更新存储空间信息
+				this.updateStorageSpaceInfo(storageType);
+			},
+
+			// 清除当前选择
+			clearSelection: function () {
+				const selectedItem = document.querySelector('.storage-item.selected');
+				if (selectedItem) {
+					selectedItem.classList.remove('selected');
+				}
+				document.getElementById('editorHeader').style.display = 'none';
+				document.getElementById('editorPlaceholder').style.display = 'block';
+				document.getElementById('storageDetails').style.display = 'none';
+			},
+
+			// 加载存储项
+			loadStorageItems: function (storageType) {
+				const storageItemsList = document.getElementById('storageItemsList');
+				storageItemsList.innerHTML = '';
+
+				switch (storageType) {
+					case 'localStorage':
+						this.loadLocalStorageItems();
+						break;
+					case 'indexedDB':
+						this.loadIndexedDBItems();
+						break;
+					case 'cacheStorage':
+						this.loadCacheStorageItems();
+						break;
+				}
+
+				// 应用当前搜索过滤
+				const searchInput = document.getElementById('storageSearchInput');
+				this.filterStorageItems(searchInput ? searchInput.value : '');
+			},
+
+			// 加载localStorage
+			loadLocalStorageItems: function () {
+				const storageItemsList = document.getElementById('storageItemsList');
+
+				// 遍历所有localStorage
+				for (let i = 0; i < localStorage.length; i++) {
+					const key = localStorage.key(i);
+					const value = localStorage.getItem(key);
+
+					// 计算存储大小
+					const size = new Blob([key + value]).size;
+
+					// 创建存储项元素
+					const storageItem = document.createElement('div');
+					storageItem.className = 'storage-item';
+					storageItem.dataset.key = key;
+					storageItem.dataset.type = 'localStorage';
+
+					storageItem.innerHTML = `
                         <div class="storage-title">${key}</div>
                         <div class="storage-size">${this.formatBytes(size)}</div>
                         <div class="delete-item-btn" title="删除 (Delete)"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -971,49 +1599,53 @@ SOFTWARE.
                             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                         </svg></div>
                     `;
-                    
-                    // 点击事件
-                    storageItem.addEventListener('click', (e) => {
-                        if (!e.target.classList.contains('delete-item-btn')) {
-                            this.selectStorageItem('localStorage', key, value);
-                        }
-                    });
-                    
-                    // 删除按钮
-                    const deleteBtn = storageItem.querySelector('.delete-item-btn');
-                    deleteBtn.addEventListener('click', () => {
-                        this.deleteStorageItem('localStorage', key);
-                    });
-                    
-                    storageItemsList.appendChild(storageItem);
-                }
-                
-                if (localStorage.length === 0) {
-                    storageItemsList.innerHTML = '<div class="placeholder2">localStorage为空</div>';
-                }
-            },
-            
-            // 加载IndexedDB
-			loadIndexedDBItems: function() {
+
+					// 点击事件
+					storageItem.addEventListener('click', (e) => {
+						if (!e.target.classList.contains('delete-item-btn')) {
+							this.selectStorageItem('localStorage', key, value);
+						}
+					});
+
+					// 删除按钮
+					const deleteBtn = storageItem.querySelector('.delete-item-btn');
+					deleteBtn.addEventListener('click', () => {
+						this.deleteStorageItem('localStorage', key);
+					});
+
+					storageItemsList.appendChild(storageItem);
+				}
+
+				if (localStorage.length === 0) {
+					storageItemsList.innerHTML = '<div class="placeholder2">localStorage为空</div>';
+				}
+
+				// 应用当前搜索过滤
+				const searchInput = document.getElementById('storageSearchInput');
+				this.filterStorageItems(searchInput ? searchInput.value : '');
+			},
+
+			// 加载IndexedDB
+			loadIndexedDBItems: function () {
 				const storageItemsList = document.getElementById('storageItemsList');
 				storageItemsList.innerHTML = '<div class="placeholder2">IndexedDB数据库列表加载中...</div>';
-				
+
 				// 获取所有IndexedDB数据库
 				if (window.indexedDB && window.indexedDB.databases) {
 					indexedDB.databases().then(databases => {
 						storageItemsList.innerHTML = '';
-						
+
 						if (databases.length === 0) {
 							storageItemsList.innerHTML = '<div class="placeholder2">未找到IndexedDB数据库</div>';
 							return;
 						}
-						
+
 						databases.forEach(dbInfo => {
 							const storageItem = document.createElement('div');
 							storageItem.className = 'storage-item';
 							storageItem.dataset.name = dbInfo.name;
 							storageItem.dataset.type = 'indexedDB';
-							
+
 							// 计算数据库大小-异步
 							const getDatabaseSize = (dbName) => {
 								return new Promise((resolve) => {
@@ -1022,7 +1654,7 @@ SOFTWARE.
 										const db = event.target.result;
 										const transaction = db.transaction(db.objectStoreNames, 'readonly');
 										let size = 0;
-										
+
 										Array.from(db.objectStoreNames).forEach(storeName => {
 											const store = transaction.objectStore(storeName);
 											const countRequest = store.count();
@@ -1030,7 +1662,7 @@ SOFTWARE.
 												size += e.target.result;
 											};
 										});
-										
+
 										transaction.oncomplete = () => {
 											db.close();
 											resolve(size);
@@ -1038,7 +1670,7 @@ SOFTWARE.
 									};
 								});
 							};
-							
+
 							getDatabaseSize(dbInfo.name).then(size => {
 								storageItem.innerHTML = `
 									<div class="storage-title">${dbInfo.name}</div>
@@ -1051,19 +1683,23 @@ SOFTWARE.
 								`;
 
 								const deleteBtn = storageItem.querySelector('.delete-item-btn');
-									deleteBtn.addEventListener('click', (e) => {
+								deleteBtn.addEventListener('click', (e) => {
 									e.stopPropagation(); // 阻止父元素点击
 									this.deleteStorageItem('indexedDB', dbInfo.name);
 								});
+
+								// 应用当前搜索过滤
+								const searchInput = document.getElementById('storageSearchInput');
+								this.filterStorageItems(searchInput ? searchInput.value : '');
 							});
-							
+
 							// 点击事件
 							storageItem.addEventListener('click', (e) => {
 								if (!e.target.classList.contains('delete-item-btn')) {
 									this.selectStorageItem('indexedDB', dbInfo.name, dbInfo);
 								}
 							});
-							
+
 							storageItemsList.appendChild(storageItem);
 						});
 					}).catch(error => {
@@ -1075,20 +1711,20 @@ SOFTWARE.
 			},
 
 			// 加载CacheStorage
-			loadCacheStorageItems: function() {
+			loadCacheStorageItems: function () {
 				const storageItemsList = document.getElementById('storageItemsList');
 				storageItemsList.innerHTML = '<div class="placeholder2">缓存列表加载中...</div>';
-				
+
 				// 获取所有CacheStorage
 				if ('caches' in window) {
 					caches.keys().then(cacheNames => {
 						storageItemsList.innerHTML = '';
-						
+
 						if (cacheNames.length === 0) {
 							storageItemsList.innerHTML = '<div class="placeholder2">未找到缓存</div>';
 							return;
 						}
-						
+
 						// 获取每个缓存的详细信息
 						const cachePromises = cacheNames.map(cacheName => {
 							return caches.open(cacheName).then(cache => {
@@ -1101,14 +1737,14 @@ SOFTWARE.
 								});
 							});
 						});
-						
+
 						Promise.all(cachePromises).then(caches => {
 							caches.forEach(cacheInfo => {
 								const storageItem = document.createElement('div');
 								storageItem.className = 'storage-item';
 								storageItem.dataset.name = cacheInfo.name;
 								storageItem.dataset.type = 'cacheStorage';
-								
+
 								storageItem.innerHTML = `
 									<div class="storage-title">${cacheInfo.name}</div>
 									<div class="storage-size">${cacheInfo.items} 项资源</div>
@@ -1118,22 +1754,26 @@ SOFTWARE.
 										<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
 									</svg></div>
 								`;
-								
+
 								// 点击事件
 								storageItem.addEventListener('click', (e) => {
 									if (!e.target.classList.contains('delete-item-btn')) {
 										this.selectStorageItem('cacheStorage', cacheInfo.name, cacheInfo);
 									}
 								});
-								
+
 								// 删除按钮
 								const deleteBtn = storageItem.querySelector('.delete-item-btn');
 								deleteBtn.addEventListener('click', () => {
 									this.deleteStorageItem('cacheStorage', cacheInfo.name);
 								});
-								
+
 								storageItemsList.appendChild(storageItem);
 							});
+
+							// 应用当前搜索过滤
+							const searchInput = document.getElementById('storageSearchInput');
+							this.filterStorageItems(searchInput ? searchInput.value : '');
 						}).catch(error => {
 							storageItemsList.innerHTML = `<div class="placeholder2">获取缓存详情失败: ${error.message}</div>`;
 						});
@@ -1144,39 +1784,39 @@ SOFTWARE.
 					storageItemsList.innerHTML = '<div class="placeholder2">您的浏览器不支持CacheStorage</div>';
 				}
 			},
-						
+
 			// 选择存储项
-			selectStorageItem: async function(storageType, key, value) {
+			selectStorageItem: async function (storageType, key, value) {
 				// 清除之前的选择
 				const selectedItems = document.querySelectorAll('.storage-item.selected');
 				selectedItems.forEach(item => item.classList.remove('selected'));
-				
+
 				// 设置当前选择
 				const currentItem = document.querySelector(`.storage-item[data-key="${key}"], .storage-item[data-name="${key}"]`);
 				if (currentItem) {
 					currentItem.classList.add('selected');
 				}
-				
+
 				// 更新编辑器标题
 				document.getElementById('storageItemTitle').textContent = key;
-				
+
 				// 显示编辑器
 				document.getElementById('editorHeader').style.display = 'flex';
 				document.getElementById('editorPlaceholder').style.display = 'none';
 				document.getElementById('storageDetails').style.display = 'block';
-				
+
 				// 显示详细信息
 				let details = '加载中...';
 				document.getElementById('storageDetails').value = details;
-				
+
 				try {
-					switch(storageType) {
+					switch (storageType) {
 						case 'localStorage':
 							const itemValue = localStorage.getItem(key);
 							const itemSize = new Blob([key + itemValue]).size;
 							details = `键名 / Key:\n${key}\n\n键值 / Value:\n${itemValue}\n\n大小 / Size:\n${this.formatBytes(itemSize)}`;
 							break;
-							
+
 						case 'indexedDB':
 							// 获取数据库详细信息
 							const dbInfo = await this.getIndexedDBDetails(key);
@@ -1188,14 +1828,14 @@ SOFTWARE.
 									details += `${store.name} (${store.indexes.length} indexes)\n`;
 								});
 							}
-							
+
 							// 添加所有内容的分隔标题
 							details += `\n数据库内容 / Database Contents:\n\n`;
-							
+
 							// 列出所有对象存储的内容
 							for (const storeInfo of dbInfo.objectStores) {
 								details += `-> ${storeInfo.name}\n`;
-								
+
 								// 显示每个对象存储的前50条记录
 								if (storeInfo.data && storeInfo.data.length > 0) {
 									const maxItems = Math.min(storeInfo.data.length, 50);
@@ -1203,7 +1843,7 @@ SOFTWARE.
 										const item = storeInfo.data[i];
 										details += `  ${i + 1}. ${JSON.stringify(item.value)}\n`;
 									}
-									
+
 									// 添加更多提示
 									if (storeInfo.data.length > 50) {
 										details += `  ...and ${storeInfo.data.length - 50} more items\n`;
@@ -1213,15 +1853,15 @@ SOFTWARE.
 								}
 								details += `\n`;
 							}
-							
+
 							details += `创建于 / Created:\n${this.formatDate(dbInfo.date)}（仅供参考）`;
 							break;
-							
+
 						case 'cacheStorage':
 							// 获取缓存详细信息
 							const cacheInfo = await this.getCacheDetails(key);
 							details = `缓存名称 / Cache Name:\n${key}\n\n总大小 / Total Size:\n${this.formatBytes(cacheInfo.size)}\n\n项目数量 / Number of Items:\n${cacheInfo.items}\n\n已缓存的资源 / Cached Resources:\n`;
-							
+
 							// 列出资源URL
 							if (cacheInfo.resources && cacheInfo.resources.length > 0) {
 								const maxItems = Math.min(cacheInfo.resources.length, 50);
@@ -1234,44 +1874,44 @@ SOFTWARE.
 				} catch (error) {
 					details = `获取详细信息失败: ${error.message}`;
 				}
-				
+
 				document.getElementById('storageDetails').value = details;
 			},
 
 			// 获取IndexedDB详细信息
-			getIndexedDBDetails: async function(dbName) {
+			getIndexedDBDetails: async function (dbName) {
 				return new Promise((resolve, reject) => {
 					if (!window.indexedDB || !window.indexedDB.databases) {
 						reject(new Error('IndexedDB API不可用'));
 						return;
 					}
-					
+
 					indexedDB.databases().then(databases => {
 						const dbInfo = databases.find(db => db.name === dbName);
 						if (!dbInfo) {
 							reject(new Error('数据库未找到'));
 							return;
 						}
-						
+
 						// 尝试打开数据库获取对象存储信息
 						const request = indexedDB.open(dbName);
-						request.onerror = () => resolve({...dbInfo, objectStores: []});
-						
+						request.onerror = () => resolve({ ...dbInfo, objectStores: [] });
+
 						request.onsuccess = (event) => {
 							const db = event.target.result;
 							const objectStores = [];
-							
+
 							// 收集对象存储信息
 							Array.from(db.objectStoreNames).forEach(storeName => {
 								const transaction = db.transaction(storeName, 'readonly');
 								const objectStore = transaction.objectStore(storeName);
 								const indexes = Array.from(objectStore.indexNames);
-								
+
 								// 获取对象存储的数据（最多100条）
 								const data = [];
 								const dataRequest = objectStore.getAll();
 								dataRequest.onsuccess = (e) => {
-									if(!e.target.result.length){
+									if (!e.target.result.length) {
 										reject(new Error('数据库为空'));
 									}
 									data.push(...e.target.result.slice(0, 100).map((value, index) => ({
@@ -1279,17 +1919,17 @@ SOFTWARE.
 										value
 									})));
 								};
-								
+
 								objectStores.push({
 									name: storeName,
 									indexes: indexes,
 									data: data
 								});
 							});
-							
+
 							// 等待所有数据请求完成
 							const checkComplete = () => {
-								if (objectStores.every(store => store.data.length > 0 || 
+								if (objectStores.every(store => store.data.length > 0 ||
 									store.dataRequest && store.dataRequest.readyState === 'done')) {
 									db.close();
 									resolve({
@@ -1301,7 +1941,7 @@ SOFTWARE.
 									setTimeout(checkComplete, 50);
 								}
 							};
-							
+
 							checkComplete();
 						};
 					}).catch(reject);
@@ -1309,17 +1949,17 @@ SOFTWARE.
 			},
 
 			// 获取缓存详细信息
-			getCacheDetails: async function(cacheName) {
+			getCacheDetails: async function (cacheName) {
 				try {
 					if (!('caches' in window)) {
 						throw new Error('CacheStorage API不可用');
 					}
-					
+
 					const cache = await caches.open(cacheName);
 					const requests = await cache.keys();
 					const resources = requests.map(req => req.url);
 					const size = await this.calculateCacheSize(cache, requests);
-					
+
 					return {
 						name: cacheName,
 						items: requests.length,
@@ -1340,10 +1980,10 @@ SOFTWARE.
 			},
 
 			// 计算缓存大小
-			calculateCacheSize: async function(cache, requests) {
+			calculateCacheSize: async function (cache, requests) {
 				try {
 					let totalSize = 0;
-					
+
 					for (const request of requests) {
 						const response = await cache.match(request);
 						if (response) {
@@ -1351,7 +1991,7 @@ SOFTWARE.
 							totalSize += blob.size;
 						}
 					}
-					
+
 					return totalSize;
 				} catch (error) {
 					console.error('计算缓存大小失败:', error);
@@ -1360,18 +2000,18 @@ SOFTWARE.
 			},
 
 			// 删除存储项
-			deleteStorageItem: async function(storageType, key) {
-				var alertText="确定要删除 " + key + " 吗？\n注意：非常不建议在这里删除任何数据，可能会引发很多未知问题";
-				if(storageType=='localStorage')alertText=alertText+"\n\n删除该存储项后，可能导致部分网站的功能出现异常";
-				if(storageType=='indexedDB')alertText=alertText+"\n\n删除该存储项后，可能导致需要大容量储存的网站出现异常";
-				if(storageType=='cacheStorage')alertText=alertText+"\n\n删除该存储项后，可能导致使用了 PWA 技术的网站出现异常";
-				if (confirm(alertText)) {
+			deleteStorageItem: async function (storageType, key) {
+				var alertText = "确定删除 " + key + " 吗？\n\n注意：不建议在这里删除任何数据，可能会引发很多未知问题。";
+				if (storageType == 'localStorage') alertText = alertText + "\n删除该存储项后，可能导致部分网站功能异常，本地数据丢失。";
+				if (storageType == 'indexedDB') alertText = alertText + "\n删除该存储项后，可能导致需要大容量储存的网站出现异常，本地数据丢失。";
+				if (storageType == 'cacheStorage') alertText = alertText + "\n删除该存储项后，可能导致使用了 PWA 技术的网站出现异常。";
+				if (await confirm(alertText)) {
 					try {
-						switch(storageType) {
+						switch (storageType) {
 							case 'localStorage':
 								localStorage.removeItem(key);
 								break;
-								
+
 							case 'indexedDB':
 								// 打开选定的数据库
 								const openRequest = indexedDB.open(key);
@@ -1379,13 +2019,13 @@ SOFTWARE.
 									const db = event.target.result;
 									// 获取所有对象存储名称
 									const storeNames = Array.from(db.objectStoreNames);
-					
+
 									// 遍历每个对象存储并清空数据
 									storeNames.forEach(storeName => {
 										const transaction = db.transaction(storeName, 'readwrite');
 										const objectStore = transaction.objectStore(storeName);
 										const clearRequest = objectStore.clear();
-						
+
 										clearRequest.onsuccess = () => {
 											console.log(`对象存储 ${storeName} 数据已清空`);
 										};
@@ -1393,14 +2033,14 @@ SOFTWARE.
 											console.error(`清空 ${storeName} 失败:`, e.target.error);
 										};
 									});
-					
+
 									db.close(); // 操作完成后关闭数据库
 								};
 								openRequest.onerror = (e) => {
 									console.error(`打开数据库 ${key} 失败:`, e.target.error);
 								};
 								break;
-								
+
 							case 'cacheStorage':
 								// 删除缓存
 								if ('caches' in window) {
@@ -1408,15 +2048,12 @@ SOFTWARE.
 								}
 								break;
 						}
-						
+
 						// 重新加载存储项
 						this.loadStorageItems(this.currentStorageType);
-						
+
 						// 清除编辑器
 						this.clearSelection();
-						
-						// 显示消息
-						alert(`成功删除 ${key}`);
 					} catch (error) {
 						console.error('删除失败:', error);
 						alert(`删除失败: ${error.message}`);
@@ -1424,23 +2061,23 @@ SOFTWARE.
 				}
 				refreshLeftItems();
 			},
-						
+
 			// 清除全部存储
-			clearAllStorage: function() {
-				if(!this.currentStorageType){
-					alert("请打开任一存储选项卡后再进行操作");
+			clearAllStorage: async function () {
+				if (!this.currentStorageType) {
+					alert("请打开任一存储选项卡后再进行操作。");
 					return 0;
 				}
-				var alertText="确定要清除所有 " + this.currentStorageType + " 存储吗？\n注意：非常不建议在这里删除任何数据，可能会引发很多未知问题";
-				if(this.currentStorageType=='localStorage')alertText=alertText+"\n\n删除 LocalStorage 后，可能导致部分网站的功能出现异常";
-				if(this.currentStorageType=='indexedDB')alertText=alertText+"\n\n删除 IndexedDB 后，可能导致需要大容量储存的网站出现异常";
-				if(this.currentStorageType=='cacheStorage')alertText=alertText+"\n\n删除 CacheStorage 后，可能导致部分网站的缓存丢失";
-				if (confirm(alertText)) {
-					switch(this.currentStorageType) {
+				var alertText = "确定清除所有 " + this.currentStorageType + " 存储吗？\n\n注意：不建议在这里删除任何数据，可能会引发很多未知问题。";
+				if (this.currentStorageType == 'localStorage') alertText = alertText + "\n删除 LocalStorage 后，可能导致部分网站功能异常，本地数据丢失。";
+				if (this.currentStorageType == 'indexedDB') alertText = alertText + "\n删除 IndexedDB 后，可能导致需要大容量储存的网站出现异常，本地数据丢失。";
+				if (this.currentStorageType == 'cacheStorage') alertText = alertText + "\n删除 CacheStorage 后，可能导致部分网站的本地缓存丢失。";
+				if (await confirm(alertText)) {
+					switch (this.currentStorageType) {
 						case 'localStorage':
 							localStorage.clear();
 							break;
-			
+
 						case 'indexedDB':
 							if (window.indexedDB && window.indexedDB.databases) {
 								indexedDB.databases().then(databases => {
@@ -1456,7 +2093,7 @@ SOFTWARE.
 												const objectStore = transaction.objectStore(storeName);
 												// 清空当前对象存储的所有数据
 												const clearRequest = objectStore.clear();
-									
+
 												clearRequest.onsuccess = () => {
 													console.log(`对象存储 ${storeName} 数据已清空`);
 												};
@@ -1479,7 +2116,7 @@ SOFTWARE.
 							console.log('已删除所有IndexedDB数据，但结构保留');
 							alert(`已删除所有 IndexedDB 数据，但结构保留`);
 							break;
-								
+
 						case 'cacheStorage':
 							navigator.serviceWorker.getRegistrations().then(registrations => {
 								for (let registration of registrations) {
@@ -1495,23 +2132,23 @@ SOFTWARE.
 							alert(`已删除所有缓存并注销 Service Workers`);
 							break;
 					}
-								
+
 					// 重新加载存储项
 					this.loadStorageItems(this.currentStorageType);
-							
+
 					// 清除编辑器
 					this.clearSelection();
 				}
 				refreshLeftItems();
 			},
-						
+
 			// 更新存储空间信息
-			updateStorageSpaceInfo: async function(storageType) {
+			updateStorageSpaceInfo: async function (storageType) {
 				let usedSpace = 0;
 				let totalSpace = 0;
-				
+
 				try {
-					switch(storageType) {
+					switch (storageType) {
 						case 'localStorage':
 							// 已用空间
 							for (let i = 0; i < localStorage.length; i++) {
@@ -1520,9 +2157,9 @@ SOFTWARE.
 								usedSpace += new Blob([key, value]).size;
 							}
 							// 总容量5MB
-							totalSpace = 5 * 1024 * 1024; 
+							totalSpace = 5 * 1024 * 1024;
 							break;
-							
+
 						case 'indexedDB':
 							// 使用StorageManager API获取IndexedDB空间信息
 							if (navigator.storage && navigator.storage.estimate) {
@@ -1536,7 +2173,7 @@ SOFTWARE.
 								totalSpace = indexedDBInfo.total;
 							}
 							break;
-							
+
 						case 'cacheStorage':
 							// 计算CacheStorage使用量
 							const cacheInfo = await this.calculateCacheStorageSpace();
@@ -1549,11 +2186,11 @@ SOFTWARE.
 					usedSpace = 0;
 					totalSpace = 0;
 				}
-				
+
 				// 更新UI
 				document.getElementById('usedSpace').textContent = this.formatBytes(usedSpace);
 				document.getElementById('totalSpace').textContent = this.formatBytes(totalSpace);
-				
+
 				// 更新进度条
 				const percentage = totalSpace > 0 ? Math.min(100, Math.round((usedSpace / totalSpace) * 100)) : 0;
 				document.getElementById('usageProgress').style.width = `${percentage}%`;
@@ -1561,11 +2198,11 @@ SOFTWARE.
 
 
 			// 计算IndexedDB空间
-			calculateIndexedDBSpace: async function() {
+			calculateIndexedDBSpace: async function () {
 				return new Promise((resolve) => {
 					let used = 0;
 					let total = 0;
-					
+
 					if (navigator.storage && navigator.storage.estimate) {
 						navigator.storage.estimate().then(estimation => {
 							resolve({
@@ -1584,11 +2221,11 @@ SOFTWARE.
 			},
 
 			// 计算CacheStorage空间
-			calculateCacheStorageSpace: async function() {
+			calculateCacheStorageSpace: async function () {
 				return new Promise(async (resolve) => {
 					let used = 0;
 					let total = 0;
-					
+
 					if (navigator.storage && navigator.storage.estimate) {
 						const estimation = await navigator.storage.estimate();
 						used = estimation.usage;
@@ -1609,58 +2246,55 @@ SOFTWARE.
 						}
 						total = 100 * 1024 * 1024; // 默认100MB
 					}
-					
+
 					resolve({ used, total });
 				});
 			},
 
 			// 辅助-格式化字节大小
-			formatBytes: function(bytes, decimals = 2) {
+			formatBytes: function (bytes, decimals = 2) {
 				if (bytes === 0) return '0 Bytes';
-				
+
 				const k = 1024;
 				const dm = decimals < 0 ? 0 : decimals;
 				const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-				
+
 				const i = Math.floor(Math.log(bytes) / Math.log(k));
-				
+
 				// 小于1KB时显示Bytes
 				if (i === 0) {
 					return bytes + ' ' + sizes[i];
 				}
-				
+
 				return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
 			},
-            
-            // 辅助-格式化日期
-            formatDate: function(date) {
-                const now = new Date();
-                const diff = Math.floor((now - date) / (1000 * 60)); // 分钟差
-                
-                if (diff < 1) return '刚刚';
-                if (diff < 60) return `${diff}分钟前`;
-                
-                const diffHours = Math.floor(diff / 60);
-                if (diffHours < 24) return `${diffHours}小时前`;
-                
-                const diffDays = Math.floor(diffHours / 24);
-                if (diffDays < 7) return `${diffDays}天前`;
-                
-                return date.toLocaleDateString('zh-CN', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: 'numeric'
-                });
-            }
-        };
 
-        
-        // 初始化
-        document.addEventListener('DOMContentLoaded', function() {
-            storageManager.init();
-        });
+			// 辅助-格式化日期
+			formatDate: function (date) {
+				const now = new Date();
+				const diff = Math.floor((now - date) / (1000 * 60)); // 分钟差
 
-		
-    </script>
+				if (diff < 1) return '刚刚';
+				if (diff < 60) return `${diff}分钟前`;
+
+				const diffHours = Math.floor(diff / 60);
+				if (diffHours < 24) return `${diffHours}小时前`;
+
+				const diffDays = Math.floor(diffHours / 24);
+				if (diffDays < 7) return `${diffDays}天前`;
+
+				return date.toLocaleDateString('zh-CN', {
+					year: 'numeric',
+					month: 'short',
+					day: 'numeric'
+				});
+			}
+		};
+
+		// 初始化
+		document.addEventListener('DOMContentLoaded', function () {
+			storageManager.init();
+		});
+	</script>
 </body>
 </html>
