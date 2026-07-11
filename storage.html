@@ -2,7 +2,7 @@
 Momotan Storage Explorer
 网站本地存储管理工具 / Website local storage management tool
 Copyright©2026, Aphasia
-v2.0.0 release 2026/07/11
+v2.0.1 release 2026/07/11
 基于 MIT 协议开源 / Licensed under the MIT License.
 开源地址 / Open source address: https://github.com/kvetc/Momotan-Storage-Explorer
 MIT 协议 / MIT License：
@@ -333,6 +333,7 @@ SOFTWARE.
 		}
 
 		.summary-item {
+			font-size: 16px;
 			display: flex;
 			justify-content: space-between;
 			margin-bottom: 6px;
@@ -340,6 +341,7 @@ SOFTWARE.
 		}
 
 		.summary-label {
+			font-size: 16px;
 			font-weight: 500;
 			color: #555;
 			transition: all 0.2s ease;
@@ -350,6 +352,7 @@ SOFTWARE.
 		}
 
 		.summary-value {
+			font-size: 16px;
 			color: #333;
 			font-weight: 600;
 			transition: all 0.2s ease;
@@ -580,6 +583,18 @@ SOFTWARE.
 
 			.search-input-wrapper {
 				width: 310px;
+			}
+			.summary-item {
+				font-size: 15px;
+			}
+			.summary-label {
+				font-size: 15px;
+			}
+			.summary-value {
+				font-size: 15px;
+			}
+			.storage-detail-title {
+				font-size: 16px;
 			}
 		}
 
@@ -1175,6 +1190,10 @@ SOFTWARE.
 
 		.inline-action-btn:hover {
 			background-color: #e8e8e8;
+			color: #454545;
+		}
+		.inline-action-btn.active {
+			background-color: #e8e8e8;
 			color: var(--primary-color);
 		}
 
@@ -1183,6 +1202,10 @@ SOFTWARE.
 		}
 
 		.dark-theme .inline-action-btn:hover {
+			background-color: #3a3a3a;
+			color: #eee;
+		}
+		.dark-theme .inline-action-btn.active {
 			background-color: #3a3a3a;
 			color: var(--primary-color);
 		}
@@ -2017,7 +2040,11 @@ SOFTWARE.
 				document.getElementById('cacheStorageBtn').addEventListener('click', () => { this.showStorage('cacheStorage'); styleShowStorage('cacheStorage') });
 
 				// 清除全部按钮
-				document.getElementById('clearAllBtn').addEventListener('click', () => this.clearAllStorage());
+				document.getElementById('clearAllBtn').addEventListener('click', () => {
+					const clearAllBtn = document.getElementById('clearAllBtn');
+					if (clearAllBtn && clearAllBtn.classList.contains('disabled')) return;
+					this.clearAllStorage();
+				});
 
 				// 新增/新建按钮
 				const addStorageBtn = document.getElementById('addStorageBtn');
@@ -2038,7 +2065,7 @@ SOFTWARE.
 
 				// 关于按钮
 				document.getElementById('about').addEventListener('click', () => {
-					alert('Momotan Storage Explorer\n网站本地存储管理工具\nCopyright©2026, Aphasia\nv2.0.0 release 2026/07/11\n\n基于 MIT 协议开源 / Licensed under the MIT License.\n开源地址 / Open source address: https://github.com/kvetc/Momotan-Storage-Explorer\n\n操作说明：\nEnter/Space: 确认 / Confirm\nESC: 取消 / Cancel\nCtrl+S: 保存 / Save\nDelete: 删除 / Delete');
+					alert('Momotan Storage Explorer\n网站本地存储管理工具\nCopyright©2026, Aphasia\nv2.0.1 release 2026/07/11\n\n基于 MIT 协议开源 / Licensed under the MIT License.\n开源地址 / Open source address: https://github.com/kvetc/Momotan-Storage-Explorer\n\n操作说明：\nEnter/Space: 确认 / Confirm\nESC: 取消 / Cancel\nCtrl+S: 保存 / Save\nDelete: 删除 / Delete');
 				});
 
 				// 搜索栏
@@ -2181,24 +2208,31 @@ SOFTWARE.
 				this.updateAddButtonState();
 			},
 
-			// 更新左侧新增按钮状态
+			// 更新左侧按钮状态（新增/删除全部）
 			updateAddButtonState: function () {
 				const addStorageBtn = document.getElementById('addStorageBtn');
-				if (!addStorageBtn) return;
+				if (addStorageBtn) {
+					addStorageBtn.classList.remove('disabled');
+					if (this.currentStorageType === 'localStorage') {
+						addStorageBtn.title = '新增 localStorage';
+					} else if (this.currentStorageType === 'indexedDB') {
+						addStorageBtn.title = '新建 IndexedDB';
+					} else {
+						// CacheStorage 或未选择时禁用
+						addStorageBtn.title = this.currentStorageType === 'cacheStorage' ? 'CacheStorage 不可新建' : '请选择存储类型';
+						addStorageBtn.classList.add('disabled');
+					}
+				}
 
-				addStorageBtn.classList.remove('disabled');
-				if (this.currentStorageType === 'localStorage') {
-					addStorageBtn.title = '新增 localStorage';
-					addStorageBtn.style.pointerEvents = '';
-					addStorageBtn.style.opacity = '';
-				} else if (this.currentStorageType === 'indexedDB') {
-					addStorageBtn.title = '新建 IndexedDB';
-					addStorageBtn.style.pointerEvents = '';
-					addStorageBtn.style.opacity = '';
-				} else {
-					// CacheStorage 或未选择时禁用
-					addStorageBtn.title = this.currentStorageType === 'cacheStorage' ? 'CacheStorage 不可新建' : '请选择存储类型';
-					addStorageBtn.classList.add('disabled');
+				const clearAllBtn = document.getElementById('clearAllBtn');
+				if (clearAllBtn) {
+					clearAllBtn.classList.remove('disabled');
+					if (this.currentStorageType) {
+						clearAllBtn.title = '删除 (Delete)';
+					} else {
+						clearAllBtn.title = '请选择存储类型';
+						clearAllBtn.classList.add('disabled');
+					}
 				}
 			},
 
@@ -2610,14 +2644,14 @@ SOFTWARE.
 
 				let tempKey = '';
 				if (storageType === 'localStorage') {
-					tempKey = 'new-localstorage-item';
+					tempKey = 'new-localstorage';
 					this.renderLocalStorageEditor(tempKey, '', true);
 				} else if (storageType === 'indexedDB') {
-					tempKey = 'new-indexeddb-database';
+					tempKey = 'new-indexeddb';
 					this.renderIndexedDBEditor(tempKey, { name: tempKey, version: 1, objectStores: [] }, true);
 				}
 
-				document.getElementById('storageItemTitle').textContent = '（新增）' + tempKey;
+				document.getElementById('storageItemTitle').textContent = '[新增] ' + tempKey;
 				document.getElementById('editorHeader').style.display = 'flex';
 				document.getElementById('editorPlaceholder').style.display = 'none';
 				document.getElementById('editorContent').style.display = 'block';
@@ -2822,7 +2856,9 @@ SOFTWARE.
 					e.preventDefault();
 					const container = storeSection.querySelector('.records-container');
 					if (container) {
-						container.style.display = container.style.display === 'none' ? 'block' : 'none';
+						const isHidden = container.style.display === 'none';
+						container.style.display = isHidden ? 'block' : 'none';
+						btn.classList.toggle('active', isHidden);
 					}
 				} else if (action === 'add-record') {
 					e.preventDefault();
@@ -2885,7 +2921,7 @@ SOFTWARE.
 				section.innerHTML = `
 					<div class="detail-section-title">
 						对象存储: <input type="text" class="section-title-input" value="new-store" data-field="store-name">
-						<button class="inline-action-btn inline-action-btn-p" title="查看/隐藏记录" data-action="toggle-records">${this.expandIconSvg}<p>记录项</p></button>
+						<button class="inline-action-btn inline-action-btn-p active" title="查看/隐藏记录" data-action="toggle-records">${this.expandIconSvg}<p>记录项</p></button>
 						<button class="inline-action-btn danger" title="删除对象存储" data-action="delete-store">${this.deleteIconSvg}</button>
 					</div>
 					<table class="detail-table">
