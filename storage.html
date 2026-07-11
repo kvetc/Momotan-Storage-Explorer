@@ -2,7 +2,7 @@
 Momotan Storage Explorer
 网站本地存储管理工具 / Website local storage management tool
 Copyright©2026, Aphasia
-v1.0.5 release 2026/07/07
+v2.0.0 release 2026/07/11
 基于 MIT 协议开源 / Licensed under the MIT License.
 开源地址 / Open source address: https://github.com/kvetc/Momotan-Storage-Explorer
 MIT 协议 / MIT License：
@@ -43,6 +43,7 @@ SOFTWARE.
 		:root {
 			--primary-color: #a74e66;
 			--primary-color-grey: #555555;
+			--primary-color-grey-disabled: #bbbbbb;
 			--danger-color: #f44336;
 			--light-bg: #f5f5f5;
 			--dark-bg: #303030;
@@ -55,6 +56,7 @@ SOFTWARE.
 		.dark-theme {
 			--primary-color: #ffc5d3;
 			--primary-color-grey: #dddddd;
+			--primary-color-grey-disabled: #777777;
 		}
 
 		* {
@@ -149,6 +151,7 @@ SOFTWARE.
 			flex: 1;
 			position: relative;
 			scrollbar-width: none;
+			margin-bottom: 0px;
 			transition: all 0.2s ease;
 		}
 
@@ -200,7 +203,7 @@ SOFTWARE.
 		.storage-size {
 			font-size: 15px;
 			color: #666;
-			margin-bottom: 8px;
+			margin-bottom: 4px;
 			transition: all 0.2s ease;
 		}
 
@@ -211,7 +214,7 @@ SOFTWARE.
 		.storage-time {
 			font-size: 13px;
 			color: #999;
-			margin-top: 8px;
+			margin-top: 4px;
 		}
 
 		/* 右侧编辑区域 */
@@ -243,9 +246,11 @@ SOFTWARE.
 		}
 
 		.storage-detail-title {
+			flex-shrink: 1;
 			font-size: 19px;
 			font-weight: 600;
 			color: #333;
+			word-break: break-all;
 			transition: all 0.2s ease;
 		}
 
@@ -255,12 +260,12 @@ SOFTWARE.
 
 		.editor-actions {
 			display: flex;
-			gap: 10px;
+			gap: 5px;
 		}
 
 		.editor-body {
 			flex: 1;
-			padding: 20px 20px 0px 20px;
+			padding: 0px;
 			overflow-y: auto;
 		}
 
@@ -302,7 +307,7 @@ SOFTWARE.
 			position: relative;
 			color: #aaa;
 			font-size: 16px;
-			transform: translateX(12px) translateY(10px);
+			margin: 10px 12px;
 			transition: all 0.2s ease;
 		}
 
@@ -547,6 +552,15 @@ SOFTWARE.
 			background-color: #303030;
 		}
 
+		.otherbotton.disabled {
+			color: var(--primary-color-grey-disabled);
+			cursor: not-allowed;
+		}
+
+		.dark-theme .otherbotton.disabled {
+			color: var(--primary-color-grey-disabled);
+		}
+
 		.styleShowStorage {
 			box-shadow: inset 3px 0 0 var(--primary-color);
 			background-color: #f5f5f5;
@@ -592,11 +606,11 @@ SOFTWARE.
 			}
 
 			.editor {
-				height: calc(100% - 315px);
+				height: calc(100% - 300px);
 			}
 
 			.editor-body {
-				padding: 15px 15px 0px 15px;
+				padding: 0px;
 			}
 
 			.editor-header {
@@ -665,6 +679,7 @@ SOFTWARE.
 				gap: 0px;
 				overflow-x: auto;
 				overflow-y: hidden;
+				margin-bottom: 0px;
 				height: 240px;
 			}
 
@@ -911,6 +926,552 @@ SOFTWARE.
 			word-break: break-word;
 			line-height: 1.5;
 		}
+
+		/* 详情表格 */
+		.editor-content {
+			width: 100%;
+			height: 100%;
+			overflow-y: auto;
+			padding: 12px;
+			transition: all 0.2s ease;
+		}
+
+		.detail-section {
+			margin-bottom: 24px;
+			transition: all 0.2s ease;
+		}
+
+		.detail-section-title {
+			display: flex;
+			width: 100%;
+			align-items: center;
+			font-size: 15px;
+			font-weight: 600;
+			color: var(--primary-color);
+			margin-bottom: 10px;
+			padding-left: 4px;
+			transition: all 0.2s ease;
+		}
+
+		.detail-table {
+			width: 100%;
+			border-collapse: collapse;
+			font-size: 15px;
+			margin-bottom: 10px;
+			border: 1px solid var(--border-color);
+			/* border-radius: 8px; */
+			overflow: hidden;
+			transition: all 0.2s ease;
+		}
+
+		.dark-theme .detail-table {
+			border-color: var(--border-color-dark);
+		}
+
+		.detail-table th,
+		.detail-table td {
+			padding: 10px 12px;
+			text-align: left;
+			border-bottom: 1px solid var(--border-color);
+			border-right: 1px solid var(--border-color);
+			vertical-align: top;
+			word-break: break-all;
+			flex-shrink: 1;
+			transition: all 0.2s ease;
+		}
+
+		.dark-theme .detail-table th,
+		.dark-theme .detail-table td {
+			border-bottom-color: var(--border-color-dark);
+			border-right-color: var(--border-color-dark);
+		}
+
+		.detail-table th {
+			border-right: 1px solid var(--border-color);
+		}
+
+		.dark-theme .detail-table th {
+			border-right-color: var(--border-color-dark);
+		}
+
+		.detail-table th {
+			background-color: var(--light-bg);
+			font-weight: 600;
+			color: #555;
+			font-size: 14px;
+			width: 172px;
+			min-width: 172px;
+			transition: all 0.2s ease;
+		}
+
+		.dark-theme .detail-table th {
+			background-color: var(--dark-bg);
+			color: #ccc;
+		}
+
+		.detail-table tr:nth-child(even) td {
+			background-color: #fafafa;
+			border-right: 1px solid var(--border-color);
+		}
+
+		.dark-theme .detail-table tr:nth-child(even) td {
+			background-color: #2d2d2d;
+			border-right-color: var(--border-color-dark);
+		}
+
+		.detail-table tr:hover td {
+			background-color: #f5f5f5;
+		}
+
+		.dark-theme .detail-table tr:hover td {
+			background-color: #353535;
+		}
+
+		.detail-table td:last-child {
+			width: calc(100% - 120px);
+		}
+
+		.editable-input {
+			width: calc(100% + 24px);
+			min-width: 0;
+			min-height: calc(100% + 20px);
+			padding: 10px 12px 10px 12px;
+			margin: -10px -12px;
+			border: 1px solid transparent;
+			border-radius: 0px;
+			background: transparent;
+			color: #333;
+			font-size: 15px;
+			font-family: inherit;
+			outline: none;
+			min-width: 0;
+			transition: all 0.2s ease;
+		}
+
+		.dark-theme .editable-input {
+			background: transparent;
+			color: #eee;
+		}
+
+		.editable-input:hover {
+			border-color: var(--primary-color);
+		}
+
+		.editable-select {
+			min-height: calc(100% + 20px);
+			-webkit-appearance: none;
+			-moz-appearance: none;
+			appearance: none;
+		}
+
+		.editable-textarea {
+			min-height: 120px;
+			margin: -10px -12px -14px -12px;
+			resize: vertical;
+			white-space: pre-wrap;
+			word-break: break-word;
+			transition: all 0.2s ease, height 0s;
+		}
+		
+		@supports (field-sizing: content) {
+    		.editable-textarea {
+        		height: auto;
+        		field-sizing: content;
+    		}
+		}
+
+		.section-title-input {
+			padding: 6px 8px;
+			margin: 0px 5px;
+			border: 1px solid transparent;
+			border-radius: 0px;
+			background: transparent;
+			color: #333;
+			font-size: 15px;
+			font-family: inherit;
+			outline: none;
+			min-width:0px;
+			flex-shrink: 1;
+			flex: 1;
+			transition: all 0.2s ease;
+		}
+
+		.dark-theme .section-title-input {
+			background: transparent;
+			color: #eee;
+		}
+
+		.section-title-input:hover {
+			background-color: var(--light-bg);
+			border-color: var(--primary-color);
+		}
+		.dark-theme .section-title-input:hover {
+			background-color: var(--dark-bg);
+			border-color: var(--primary-color);
+		}
+
+
+		.value-cell-textarea {
+			padding: 8px 10px;
+			margin: -8px -10px -12px -10px;
+			border: 1px solid transparent;
+			border-radius: 0px;
+			background: transparent;
+			color: #333;
+			font-size: 15px;
+			font-family: inherit;
+			outline: none;
+			min-width:0px;
+			flex-shrink: 1;
+			flex: 1;
+			min-height: 120px;
+			width: calc(100% + 20px);
+			resize: vertical;
+			white-space: pre-wrap;
+			word-break: break-word;
+			transition: all 0.2s ease, height 0s;
+		}
+
+		.dark-theme .value-cell-textarea {
+			background: transparent;
+			color: #eee;
+		}
+
+		.value-cell-textarea:hover {
+			border-color: var(--primary-color);
+		}
+		.dark-theme .value-cell-textarea:hover {
+			border-color: var(--primary-color);
+		}
+
+		/* 行内操作按钮 */
+		.inline-action-btn {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			width: 32px;
+			height: 32px;
+			margin-left: 0px;
+			border: none;
+			border-radius: 0px;
+			background: transparent;
+			color: #666;
+			cursor: pointer;
+			-webkit-tap-highlight-color: transparent;
+			transition: all 0.2s ease;
+		}
+
+		.inline-action-btn-p {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			gap: 4px;
+			padding: 0px 8px;
+			width: auto;
+		}
+		.inline-action-btn-p p {
+			font-size: 13px;
+		}
+
+		.inline-action-btn:hover {
+			background-color: #e8e8e8;
+			color: var(--primary-color);
+		}
+
+		.dark-theme .inline-action-btn {
+			color: #ccc;
+		}
+
+		.dark-theme .inline-action-btn:hover {
+			background-color: #3a3a3a;
+			color: var(--primary-color);
+		}
+
+		.inline-action-btn svg {
+			width: 16px;
+			height: 16px;
+		}
+
+		.inline-action-btn.danger:hover {
+			background-color: #ffebee;
+			color: var(--danger-color);
+		}
+
+		.dark-theme .inline-action-btn.danger:hover {
+			background-color: #4a2a2a;
+		}
+
+		/* editorHeader 操作按钮 */
+		.action-btn {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			width: 36px;
+			height: 36px;
+			border: none;
+			background: transparent;
+			color: #666;
+			cursor: pointer;
+			-webkit-tap-highlight-color: transparent;
+			transition: all 0.2s ease;
+		}
+
+		.action-btn:hover {
+			background-color: #f0f0f0;
+		}
+
+		.dark-theme .action-btn {
+			color: #ccc;
+		}
+
+		.dark-theme .action-btn:hover {
+			background-color: #3a3a3a;
+		}
+
+		.action-btn.danger:hover {
+			background-color: #ffebee;
+			color: var(--danger-color);
+		}
+
+		.dark-theme .action-btn.danger:hover {
+			background-color: #4a2a2a;
+		}
+
+		.action-btn svg {
+			width: 18px;
+			height: 18px;
+		}
+
+		/* 记录表格 */
+		.records-table {
+			width: 100%;
+			border-collapse: collapse;
+			font-size: 14px;
+			margin-top: 8px;
+			border: 1px solid var(--border-color);
+			/* border-radius: 8px; */
+			overflow: hidden;
+			transition: all 0.2s ease;
+		}
+
+		.dark-theme .records-table {
+			border-color: var(--border-color-dark);
+		}
+
+		.records-table th,
+		.records-table td {
+			padding: 8px 10px;
+			text-align: left;
+			border-bottom: 1px solid var(--border-color);
+			vertical-align: top;
+			transition: all 0.2s ease;
+		}
+
+		.dark-theme .records-table th,
+		.dark-theme .records-table td {
+			border-bottom-color: var(--border-color-dark);
+		}
+
+		.records-table th {
+			background-color: #f5f5f5;
+			font-weight: 600;
+			color: #555;
+		}
+
+		.dark-theme .records-table th {
+			background-color: #303030;
+			color: #ccc;
+		}
+
+		.records-table tr:nth-child(even) td {
+			background-color: #fafafa;
+		}
+
+		.dark-theme .records-table tr:nth-child(even) td {
+			background-color: #2d2d2d;
+		}
+
+		.records-table tr:hover td {
+			background-color: #f5f5f5;
+		}
+
+		.dark-theme .records-table tr:hover td {
+			background-color: #353535;
+		}
+
+		.records-table .key-cell {
+			font-size: 15px;
+			font-weight: 500;
+			width: 25%;
+			min-width: 60px;
+			word-break: break-all;
+		}
+
+		.records-table .value-cell {
+			border: 1px solid var(--border-color);
+			width: 70%;
+		}
+		.dark-theme .records-table .value-cell {
+			border: 1px solid var(--border-color-dark);
+		}
+
+
+		.records-table .action-cell {
+			width: 5%;
+			min-width: 30px;
+			text-align: right;
+			white-space: nowrap;
+		}
+
+		.records-table .key-cell .editable-input {
+			margin: -8px -12px -10px -10px;
+			width: calc(100% + 20px);
+		}
+
+		.new-btn {
+			position: fixed;	
+    		bottom: 0px;
+    		left: 65px;
+    		width: 350px;
+    		height: 32px;
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
+			padding: 8px 14px;
+    		background: var(--light-bg);
+			border: none;
+			border-top: 1px solid var(--border-color);
+			border-right: 1px solid var(--border-color);
+			color: var(--primary-color);
+    		display: flex;
+    		align-items: center;
+    		justify-content: center;
+    		cursor: pointer;
+    		box-shadow: 0 4px 16px var(--accent-opacity3);
+			-webkit-tap-highlight-color: transparent;
+    		transition: all 0.2s ease;
+    		z-index: 9;
+		}
+
+		.dark-theme .new-btn {
+			background: var(--dark-bg);
+			border-top: 1px solid var(--border-color-dark);
+			border-right: 1px solid var(--border-color-dark);
+		}
+		.new-btn:hover {
+			background: #faf0f3;
+		}
+		.dark-theme .new-btn:hover {
+			background: #3a3537;
+		}
+		.new-btn svg {
+			width: 16px;
+			height: 16px;
+		}
+
+		/* 新增按钮 */
+		.add-btn {
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
+			padding: 8px 14px;
+			margin-top: 8px;
+			border: 1px dashed var(--border-color);
+			background: transparent;
+			color: var(--primary-color);
+			font-size: 14px;
+			cursor: pointer;
+			-webkit-tap-highlight-color: transparent;
+			transition: all 0.2s ease;
+		}
+
+		.add-btn:hover {
+			background-color: #faf0f3;
+			border-style: solid;
+		}
+
+		.dark-theme .add-btn {
+			border-color: var(--border-color-dark);
+		}
+
+		.dark-theme .add-btn:hover {
+			background-color: #3a3537;
+		}
+
+		.add-btn svg {
+			width: 16px;
+			height: 16px;
+		}
+
+		/* 空记录提示 */
+		.empty-records {
+			color: #999;
+			font-size: 14px;
+			padding: 12px;
+			text-align: center;
+		}
+
+		.dark-theme .empty-records {
+			color: #777;
+		}
+
+		/* 左侧列表操作区 */
+		.storage-item-actions {
+			position: absolute;
+			top: 0px;
+			right: 0px;
+			display: flex;
+			gap: 0px;
+			opacity: 0;
+			transition: opacity 0.2s ease;
+		}
+
+		.storage-item:hover .storage-item-actions {
+			opacity: 1;
+		}
+
+		@media (max-width: 900px) {
+			.new-btn {
+				width: 310px;
+			}
+		}
+
+		@media (max-width: 600px) {
+			.new-btn {
+				bottom: auto;
+				top: 195px;
+    			left: 0px;
+    			width: 120px;
+    			height: 40px;
+				font-size: 12px;
+				border-bottom: 1px solid var(--border-color);
+			}
+			.dark-theme .new-btn {
+				border-bottom: 1px solid var(--border-color-dark);
+			}
+			.storage-item-actions {
+				opacity: 1;
+				top: 0px;
+				right: 0px;
+				gap: 0px;
+			}
+			.inline-action-btn {
+				width: 28px;
+				height: 28px;
+				margin-left: 0px;
+			}
+			.inline-action-btn svg {
+				width: 15px;
+				height: 15px;
+			}
+			.inline-action-btn-p {
+			width: auto;
+			}
+			.inline-action-btn-p p {
+				font-size: 14px;
+			}
+
+		}
 	</style>
 </head>
 
@@ -1003,6 +1564,7 @@ SOFTWARE.
 			</div>
 
 
+			<div class="otherbotton" id="addStorageBtn" title="新增"></div>
 			<div class="otherbotton" id="clearAllBtn" title="删除 (Delete)">
 				<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
 					stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1058,11 +1620,24 @@ SOFTWARE.
 			<div class="editor-header" id="editorHeader" style="display: none;">
 				<div class="storage-detail-title" id="storageItemTitle">-</div>
 				<div class="editor-actions">
+					<button class="action-btn" id="saveEditorBtn" title="保存 (Ctrl+S)">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+							<polyline points="17 21 17 13 7 13 7 21"></polyline>
+							<polyline points="7 3 7 8 15 8"></polyline>
+						</svg>
+					</button>
+					<button class="action-btn danger" id="deleteEditorBtn" title="删除 (Delete)">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<polyline points="3 6 5 6 21 6"></polyline>
+							<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+						</svg>
+					</button>
 				</div>
 			</div>
 			<div class="editor-body" id="editorBody">
-				<div class="placeholder" id="editorPlaceholder">选择存储项查看详情</div>
-				<textarea class="storage-details" id="storageDetails" style="display: none;" readonly></textarea>
+				<div class="placeholder2" id="editorPlaceholder">选择存储项查看详情</div>
+				<div class="editor-content" id="editorContent" style="display: none;"></div>
 			</div>
 		</div>
 	</div>
@@ -1444,12 +2019,26 @@ SOFTWARE.
 				// 清除全部按钮
 				document.getElementById('clearAllBtn').addEventListener('click', () => this.clearAllStorage());
 
+				// 新增/新建按钮
+				const addStorageBtn = document.getElementById('addStorageBtn');
+				if (addStorageBtn) {
+					addStorageBtn.innerHTML = this.newIconSvg;
+					addStorageBtn.addEventListener('click', () => {
+						if (this.currentStorageType === 'localStorage') {
+							this.createNewItem('localStorage');
+						} else if (this.currentStorageType === 'indexedDB') {
+							this.createNewItem('indexedDB');
+						}
+					});
+				}
+				this.updateAddButtonState();
+
 				// 主题切换
 				document.getElementById('themeToggle').addEventListener('click', this.toggleTheme);
 
 				// 关于按钮
 				document.getElementById('about').addEventListener('click', () => {
-					alert('Momotan Storage Explorer\n\n网站本地存储管理工具 / Website local storage management tool\nCopyright©2026, Aphasia\nv1.0.5 release 2026/07/07\n\n基于 MIT 协议开源 / Licensed under the MIT License.\n开源地址 / Open source address: https://github.com/kvetc/Momotan-Storage-Explorer');
+					alert('Momotan Storage Explorer\n网站本地存储管理工具\nCopyright©2026, Aphasia\nv2.0.0 release 2026/07/11\n\n基于 MIT 协议开源 / Licensed under the MIT License.\n开源地址 / Open source address: https://github.com/kvetc/Momotan-Storage-Explorer\n\n操作说明：\nEnter/Space: 确认 / Confirm\nESC: 取消 / Cancel\nCtrl+S: 保存 / Save\nDelete: 删除 / Delete');
 				});
 
 				// 搜索栏
@@ -1457,6 +2046,55 @@ SOFTWARE.
 				searchInput.addEventListener('input', (e) => {
 					this.filterStorageItems(e.target.value);
 				});
+
+				// editorHeader 保存按钮
+				document.getElementById('saveEditorBtn').addEventListener('click', () => {
+					this.saveCurrentItem();
+				});
+
+				// editorHeader 删除按钮
+				document.getElementById('deleteEditorBtn').addEventListener('click', () => {
+					if (this.currentSelection) {
+						this.confirmDelete(this.currentSelection.type, this.currentSelection.key);
+					}
+				});
+
+				// 全局快捷键
+				document.addEventListener('keydown', (e) => {
+					// Ctrl+S 保存
+					if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+						e.preventDefault();
+						if (this.currentSelection) {
+							this.saveCurrentItem();
+						}
+					}
+					// Delete 删除当前选中项
+					if (e.key === 'Delete' && this.currentSelection && !this.isEditingInput(e.target)) {
+						e.preventDefault();
+						this.confirmDelete(this.currentSelection.type, this.currentSelection.key);
+					}
+				});
+
+				// 页面关闭前提示未保存
+				window.addEventListener('beforeunload', (e) => {
+					if (this.isDirty) {
+						e.preventDefault();
+						e.returnValue = '';
+					}
+				});
+
+				// IndexedDB 编辑器事件委托（只绑定一次）
+				const editorContent = document.getElementById('editorContent');
+				if (editorContent) {
+					editorContent.addEventListener('click', (e) => this.handleEditorClick(e));
+					editorContent.addEventListener('input', (e) => this.handleEditorInput(e));
+					editorContent.addEventListener('change', (e) => this.handleEditorInput(e));
+				}
+			},
+
+			// 判断当前焦点是否在输入框内
+			isEditingInput: function (target) {
+				return target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
 			},
 
 			// 搜索过滤存储项
@@ -1517,7 +2155,7 @@ SOFTWARE.
 			},
 
 			// 显示指定存储类型的内容
-			showStorage: function (storageType) {
+			showStorage: async function (storageType) {
 				// 更新当前存储类型
 				this.currentStorageType = storageType;
 				document.getElementById('storageTypeLabel').textContent =
@@ -1525,7 +2163,7 @@ SOFTWARE.
 						storageType === 'indexedDB' ? 'IndexedDB' : 'CacheStorage';
 
 				// 清除选择状态
-				this.clearSelection();
+				await this.clearSelection();
 
 				// 清空搜索框
 				const searchInput = document.getElementById('storageSearchInput');
@@ -1538,17 +2176,78 @@ SOFTWARE.
 
 				// 更新存储空间信息
 				this.updateStorageSpaceInfo(storageType);
+
+				// 更新左侧新增按钮状态
+				this.updateAddButtonState();
+			},
+
+			// 更新左侧新增按钮状态
+			updateAddButtonState: function () {
+				const addStorageBtn = document.getElementById('addStorageBtn');
+				if (!addStorageBtn) return;
+
+				addStorageBtn.classList.remove('disabled');
+				if (this.currentStorageType === 'localStorage') {
+					addStorageBtn.title = '新增 localStorage';
+					addStorageBtn.style.pointerEvents = '';
+					addStorageBtn.style.opacity = '';
+				} else if (this.currentStorageType === 'indexedDB') {
+					addStorageBtn.title = '新建 IndexedDB';
+					addStorageBtn.style.pointerEvents = '';
+					addStorageBtn.style.opacity = '';
+				} else {
+					// CacheStorage 或未选择时禁用
+					addStorageBtn.title = this.currentStorageType === 'cacheStorage' ? 'CacheStorage 不可新建' : '请选择存储类型';
+					addStorageBtn.classList.add('disabled');
+				}
+			},
+
+			// 当前编辑器状态
+			currentSelection: null,
+			isDirty: false,
+
+			// 标记编辑器为未保存状态
+			markDirty: function () {
+				this.isDirty = true;
+				const saveBtn = document.getElementById('saveEditorBtn');
+				if (saveBtn) saveBtn.style.color = 'var(--primary-color)';
+			},
+
+			// 清除未保存标记
+			clearDirty: function () {
+				this.isDirty = false;
+				const saveBtn = document.getElementById('saveEditorBtn');
+				if (saveBtn) saveBtn.style.color = '';
+			},
+
+			// 检查是否需要保存，返回 true 表示可以继续（已保存或放弃）
+			confirmDiscardChanges: async function () {
+				if (!this.isDirty) return true;
+				const result = await confirm('当前有未保存的更改，是否保存？\n点击“确定”保存，点击“取消”放弃更改。');
+				if (result) {
+					await this.saveCurrentItem();
+					return !this.isDirty;
+				}
+				this.isDirty = false;
+				return true;
 			},
 
 			// 清除当前选择
-			clearSelection: function () {
+			clearSelection: async function () {
+				if (this.isDirty) {
+					const canProceed = await this.confirmDiscardChanges();
+					if (!canProceed) return;
+				}
 				const selectedItem = document.querySelector('.storage-item.selected');
 				if (selectedItem) {
 					selectedItem.classList.remove('selected');
 				}
+				this.currentSelection = null;
+				this.clearDirty();
 				document.getElementById('editorHeader').style.display = 'none';
 				document.getElementById('editorPlaceholder').style.display = 'block';
-				document.getElementById('storageDetails').style.display = 'none';
+				document.getElementById('editorContent').style.display = 'none';
+				document.getElementById('editorContent').innerHTML = '';
 			},
 
 			// 加载存储项
@@ -1573,9 +2272,22 @@ SOFTWARE.
 				this.filterStorageItems(searchInput ? searchInput.value : '');
 			},
 
+			// 操作按钮 SVG
+			editIconSvg: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>`,
+			deleteIconSvg: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`,
+			addIconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="4" x2="12" y2="20"></line><line x1="4" y1="12" x2="20" y2="12"></line></svg>`,
+			newIconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8.342a2 2 0 0 0-.602-1.43l-4.44-4.342A2 2 0 0 0 13.56 2H6a2 2 0 0 0-2 2Z"></path><line x1="12" y1="9" x2="12" y2="16"></line><line x1="8.5" y1="12.5" x2="15.5" y2="12.5"></line></svg>`,
+			expandIconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="2 1.5 16 16" fill="currentColor" aria-hidden="true" data-slot="icon"><path fill-rule="evenodd" d="M2 3.75A.75.75 0 0 1 2.75 3h11.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 3.75ZM2 7.5a.75.75 0 0 1 .75-.75h7.508a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 7.5ZM14 7a.75.75 0 0 1 .75.75v6.59l1.95-2.1a.75.75 0 1 1 1.1 1.02l-3.25 3.5a.75.75 0 0 1-1.1 0l-3.25-3.5a.75.75 0 1 1 1.1-1.02l1.95 2.1V7.75A.75.75 0 0 1 14 7ZM2 11.25a.75.75 0 0 1 .75-.75h4.562a.75.75 0 0 1 0 1.5H2.75a.75.75 0 0 1-.75-.75Z" clip-rule="evenodd"></path></svg>`,
+
+			// 判断是否点击了操作按钮
+			isActionButton: function (target) {
+				return target.closest && target.closest('.storage-item-actions, .inline-action-btn, .delete-item-btn');
+			},
+
 			// 加载localStorage
 			loadLocalStorageItems: function () {
 				const storageItemsList = document.getElementById('storageItemsList');
+				storageItemsList.innerHTML = '';
 
 				// 遍历所有localStorage
 				for (let i = 0; i < localStorage.length; i++) {
@@ -1594,23 +2306,29 @@ SOFTWARE.
 					storageItem.innerHTML = `
                         <div class="storage-title">${key}</div>
                         <div class="storage-size">${this.formatBytes(size)}</div>
-                        <div class="delete-item-btn" title="删除 (Delete)"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="3 6 5 6 21 6"></polyline>
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                        </svg></div>
+                        <div class="storage-item-actions">
+                            <button class="inline-action-btn" title="编辑" data-action="edit" style="display: none;">${this.editIconSvg}</button>
+                            <button class="inline-action-btn danger" title="删除" data-action="delete">${this.deleteIconSvg}</button>
+                        </div>
                     `;
 
-					// 点击事件
+					// 点击事件（选中/编辑）
 					storageItem.addEventListener('click', (e) => {
-						if (!e.target.classList.contains('delete-item-btn')) {
+						if (!this.isActionButton(e.target)) {
 							this.selectStorageItem('localStorage', key, value);
 						}
 					});
 
+					// 编辑按钮
+					storageItem.querySelector('[data-action="edit"]').addEventListener('click', (e) => {
+						e.stopPropagation();
+						this.selectStorageItem('localStorage', key, value);
+					});
+
 					// 删除按钮
-					const deleteBtn = storageItem.querySelector('.delete-item-btn');
-					deleteBtn.addEventListener('click', () => {
-						this.deleteStorageItem('localStorage', key);
+					storageItem.querySelector('[data-action="delete"]').addEventListener('click', (e) => {
+						e.stopPropagation();
+						this.confirmDelete('localStorage', key);
 					});
 
 					storageItemsList.appendChild(storageItem);
@@ -1637,7 +2355,6 @@ SOFTWARE.
 
 						if (databases.length === 0) {
 							storageItemsList.innerHTML = '<div class="placeholder2">未找到IndexedDB数据库</div>';
-							return;
 						}
 
 						databases.forEach(dbInfo => {
@@ -1646,46 +2363,81 @@ SOFTWARE.
 							storageItem.dataset.name = dbInfo.name;
 							storageItem.dataset.type = 'indexedDB';
 
-							// 计算数据库大小-异步
-							const getDatabaseSize = (dbName) => {
+							// 计算数据库统计信息（记录数 + 字节大小）
+							const getDatabaseStats = (dbName) => {
 								return new Promise((resolve) => {
 									const request = indexedDB.open(dbName);
 									request.onsuccess = (event) => {
 										const db = event.target.result;
-										const transaction = db.transaction(db.objectStoreNames, 'readonly');
+										if (db.objectStoreNames.length === 0) {
+											db.close();
+											resolve({ count: 0, size: 0 });
+											return;
+										}
+										let count = 0;
 										let size = 0;
+										let completed = 0;
 
 										Array.from(db.objectStoreNames).forEach(storeName => {
+											const transaction = db.transaction(storeName, 'readonly');
 											const store = transaction.objectStore(storeName);
+
+											// 记录数
 											const countRequest = store.count();
 											countRequest.onsuccess = (e) => {
-												size += e.target.result;
+												count += e.target.result;
+											};
+
+											// 字节大小（通过游标累计，避免大量数据入内存）
+											const cursorRequest = store.openCursor();
+											cursorRequest.onsuccess = (e) => {
+												const cursor = e.target.result;
+												if (cursor) {
+													size += this.calculateRecordSize(cursor.value);
+													cursor.continue();
+												}
+											};
+
+											transaction.oncomplete = () => {
+												completed++;
+												if (completed === db.objectStoreNames.length) {
+													db.close();
+													resolve({ count, size });
+												}
+											};
+											transaction.onerror = () => {
+												completed++;
+												if (completed === db.objectStoreNames.length) {
+													db.close();
+													resolve({ count, size });
+												}
 											};
 										});
-
-										transaction.oncomplete = () => {
-											db.close();
-											resolve(size);
-										};
 									};
+									request.onerror = () => resolve({ count: 0, size: 0 });
 								});
 							};
 
-							getDatabaseSize(dbInfo.name).then(size => {
+							getDatabaseStats(dbInfo.name).then(stats => {
 								storageItem.innerHTML = `
 									<div class="storage-title">${dbInfo.name}</div>
-									<div class="storage-size">${size} 条记录</div>
+									<div class="storage-size">${this.formatBytes(stats.size)}</div>
+									<div class="storage-size">${stats.count} 条记录</div>
 									<div class="storage-time">版本: ${dbInfo.version}</div>
-									<div class="delete-item-btn" title="删除 (Delete)"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-										<polyline points="3 6 5 6 21 6"></polyline>
-										<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-									</svg></div>
+									<div class="storage-item-actions">
+										<button class="inline-action-btn" title="编辑" data-action="edit" style="display: none;">${this.editIconSvg}</button>
+										<button class="inline-action-btn danger" title="删除" data-action="delete">${this.deleteIconSvg}</button>
+									</div>
 								`;
 
-								const deleteBtn = storageItem.querySelector('.delete-item-btn');
-								deleteBtn.addEventListener('click', (e) => {
-									e.stopPropagation(); // 阻止父元素点击
-									this.deleteStorageItem('indexedDB', dbInfo.name);
+								storageItem.querySelector('[data-action="edit"]').addEventListener('click', (e) => {
+									e.stopPropagation();
+									this.selectStorageItem('indexedDB', dbInfo.name, dbInfo);
+								});
+
+								storageItem.querySelector('[data-action="delete"]').addEventListener('click', (e) => {
+									e.stopPropagation();
+									this.confirmDelete('indexedDB', dbInfo.name);
 								});
 
 								// 应用当前搜索过滤
@@ -1695,13 +2447,17 @@ SOFTWARE.
 
 							// 点击事件
 							storageItem.addEventListener('click', (e) => {
-								if (!e.target.classList.contains('delete-item-btn')) {
+								if (!this.isActionButton(e.target)) {
 									this.selectStorageItem('indexedDB', dbInfo.name, dbInfo);
 								}
 							});
 
 							storageItemsList.appendChild(storageItem);
 						});
+
+						// 应用当前搜索过滤
+						const searchInput = document.getElementById('storageSearchInput');
+						this.filterStorageItems(searchInput ? searchInput.value : '');
 					}).catch(error => {
 						storageItemsList.innerHTML = `<div class="placeholder2">获取数据库列表失败: ${error.message}</div>`;
 					});
@@ -1729,11 +2485,14 @@ SOFTWARE.
 						const cachePromises = cacheNames.map(cacheName => {
 							return caches.open(cacheName).then(cache => {
 								return cache.keys().then(requests => {
-									return {
-										name: cacheName,
-										items: requests.length,
-										date: null // CacheStorage不提供创建日期
-									};
+									return this.calculateCacheSize(cache, requests).then(size => {
+										return {
+											name: cacheName,
+											items: requests.length,
+											size: size,
+											date: null // CacheStorage API 不暴露缓存创建日期
+										};
+									});
 								});
 							});
 						});
@@ -1747,25 +2506,25 @@ SOFTWARE.
 
 								storageItem.innerHTML = `
 									<div class="storage-title">${cacheInfo.name}</div>
+									<div class="storage-size">${this.formatBytes(cacheInfo.size || 0)}</div>
 									<div class="storage-size">${cacheInfo.items} 项资源</div>
 									<div class="storage-time">${cacheInfo.date ? this.formatDate(cacheInfo.date) : '日期未知'}</div>
-									<div class="delete-item-btn" title="删除 (Delete)"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-										<polyline points="3 6 5 6 21 6"></polyline>
-										<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-									</svg></div>
+									<div class="storage-item-actions">
+										<button class="inline-action-btn danger" title="删除" data-action="delete">${this.deleteIconSvg}</button>
+									</div>
 								`;
 
 								// 点击事件
 								storageItem.addEventListener('click', (e) => {
-									if (!e.target.classList.contains('delete-item-btn')) {
+									if (!this.isActionButton(e.target)) {
 										this.selectStorageItem('cacheStorage', cacheInfo.name, cacheInfo);
 									}
 								});
 
 								// 删除按钮
-								const deleteBtn = storageItem.querySelector('.delete-item-btn');
-								deleteBtn.addEventListener('click', () => {
-									this.deleteStorageItem('cacheStorage', cacheInfo.name);
+								storageItem.querySelector('[data-action="delete"]').addEventListener('click', (e) => {
+									e.stopPropagation();
+									this.confirmDelete('cacheStorage', cacheInfo.name);
 								});
 
 								storageItemsList.appendChild(storageItem);
@@ -1787,6 +2546,12 @@ SOFTWARE.
 
 			// 选择存储项
 			selectStorageItem: async function (storageType, key, value) {
+				// 切换前检查未保存
+				if (this.currentSelection && this.isDirty) {
+					const canProceed = await this.confirmDiscardChanges();
+					if (!canProceed) return;
+				}
+
 				// 清除之前的选择
 				const selectedItems = document.querySelectorAll('.storage-item.selected');
 				selectedItems.forEach(item => item.classList.remove('selected'));
@@ -1803,79 +2568,415 @@ SOFTWARE.
 				// 显示编辑器
 				document.getElementById('editorHeader').style.display = 'flex';
 				document.getElementById('editorPlaceholder').style.display = 'none';
-				document.getElementById('storageDetails').style.display = 'block';
+				document.getElementById('editorContent').style.display = 'block';
+				document.getElementById('editorContent').innerHTML = '<div class="placeholder">加载中...</div>';
 
-				// 显示详细信息
-				let details = '加载中...';
-				document.getElementById('storageDetails').value = details;
+				this.clearDirty();
 
 				try {
 					switch (storageType) {
 						case 'localStorage':
-							const itemValue = localStorage.getItem(key);
-							const itemSize = new Blob([key + itemValue]).size;
-							details = `键名 / Key:\n${key}\n\n键值 / Value:\n${itemValue}\n\n大小 / Size:\n${this.formatBytes(itemSize)}`;
+							const itemValue = value !== undefined ? value : localStorage.getItem(key);
+							this.renderLocalStorageEditor(key, itemValue, false);
 							break;
 
 						case 'indexedDB':
-							// 获取数据库详细信息
 							const dbInfo = await this.getIndexedDBDetails(key);
-							details = `数据库 / Database:\n${key}\n\n版本 / Version:\n${dbInfo.version}\n\n对象存储 / Object Stores:\n`;
-
-							// 列出所有对象存储
-							if (dbInfo.objectStores) {
-								dbInfo.objectStores.forEach(store => {
-									details += `${store.name} (${store.indexes.length} indexes)\n`;
-								});
-							}
-
-							// 添加所有内容的分隔标题
-							details += `\n数据库内容 / Database Contents:\n\n`;
-
-							// 列出所有对象存储的内容
-							for (const storeInfo of dbInfo.objectStores) {
-								details += `-> ${storeInfo.name}\n`;
-
-								// 显示每个对象存储的前50条记录
-								if (storeInfo.data && storeInfo.data.length > 0) {
-									const maxItems = Math.min(storeInfo.data.length, 50);
-									for (let i = 0; i < maxItems; i++) {
-										const item = storeInfo.data[i];
-										details += `  ${i + 1}. ${JSON.stringify(item.value)}\n`;
-									}
-
-									// 添加更多提示
-									if (storeInfo.data.length > 50) {
-										details += `  ...and ${storeInfo.data.length - 50} more items\n`;
-									}
-								} else {
-									details += `未找到数据 / No data found\n`;
-								}
-								details += `\n`;
-							}
-
-							details += `创建于 / Created:\n${this.formatDate(dbInfo.date)}（仅供参考）`;
+							this.renderIndexedDBEditor(key, dbInfo, false);
 							break;
 
 						case 'cacheStorage':
-							// 获取缓存详细信息
 							const cacheInfo = await this.getCacheDetails(key);
-							details = `缓存名称 / Cache Name:\n${key}\n\n总大小 / Total Size:\n${this.formatBytes(cacheInfo.size)}\n\n项目数量 / Number of Items:\n${cacheInfo.items}\n\n已缓存的资源 / Cached Resources:\n`;
-
-							// 列出资源URL
-							if (cacheInfo.resources && cacheInfo.resources.length > 0) {
-								const maxItems = Math.min(cacheInfo.resources.length, 50);
-								for (let i = 0; i < maxItems; i++) {
-									details += `${cacheInfo.resources[i]}\n`;
-								}
-							}
+							this.renderCacheStorageEditor(key, cacheInfo);
 							break;
 					}
 				} catch (error) {
-					details = `获取详细信息失败: ${error.message}`;
+					document.getElementById('editorContent').innerHTML = `<div class="placeholder">获取详细信息失败: ${error.message}</div>`;
+				}
+			},
+
+			// 创建新项
+			createNewItem: async function (storageType) {
+				if (this.isDirty) {
+					const canProceed = await this.confirmDiscardChanges();
+					if (!canProceed) return;
 				}
 
-				document.getElementById('storageDetails').value = details;
+				// 清除之前的选择
+				const selectedItems = document.querySelectorAll('.storage-item.selected');
+				selectedItems.forEach(item => item.classList.remove('selected'));
+
+				this.clearDirty();
+
+				let tempKey = '';
+				if (storageType === 'localStorage') {
+					tempKey = 'new-localstorage-item';
+					this.renderLocalStorageEditor(tempKey, '', true);
+				} else if (storageType === 'indexedDB') {
+					tempKey = 'new-indexeddb-database';
+					this.renderIndexedDBEditor(tempKey, { name: tempKey, version: 1, objectStores: [] }, true);
+				}
+
+				document.getElementById('storageItemTitle').textContent = '（新增）' + tempKey;
+				document.getElementById('editorHeader').style.display = 'flex';
+				document.getElementById('editorPlaceholder').style.display = 'none';
+				document.getElementById('editorContent').style.display = 'block';
+			},
+
+			// 渲染 localStorage 编辑器
+			renderLocalStorageEditor: function (key, value, isNew) {
+				this.currentSelection = { type: 'localStorage', key: key, originalKey: isNew ? null : key, isNew: isNew };
+				const size = new Blob([key + value]).size;
+
+				const html = `
+					<div class="detail-section">
+						<div class="detail-section-title">基本信息</div>
+						<table class="detail-table">
+							<tr>
+								<th>键名 / Key</th>
+								<td><input type="text" class="editable-input" id="localKeyInput" value="${this.escapeHtml(key)}" placeholder="请输入键名"></td>
+							</tr>
+							<tr>
+								<th>键值 / Value</th>
+								<td><textarea class="editable-input editable-textarea" id="localValueInput" placeholder="请输入键值">${this.escapeHtml(value)}</textarea></td>
+							</tr>
+							<tr>
+								<th>大小 / Size</th>
+								<td>${this.formatBytes(size)}</td>
+							</tr>
+						</table>
+					</div>
+				`;
+
+				document.getElementById('editorContent').innerHTML = html;
+
+				// 监听变化
+				document.getElementById('localKeyInput').addEventListener('input', () => this.markDirty());
+				document.getElementById('localValueInput').addEventListener('input', () => this.markDirty());
+			},
+
+			// HTML 转义
+			escapeHtml: function (text) {
+				if (text === null || text === undefined) return '';
+				const div = document.createElement('div');
+				div.textContent = String(text);
+				return div.innerHTML;
+			},
+
+			// 渲染 CacheStorage 编辑器（只读）
+			renderCacheStorageEditor: function (cacheName, cacheInfo) {
+				this.currentSelection = { type: 'cacheStorage', key: cacheName };
+
+				let resourcesHtml = '';
+				if (cacheInfo.resources && cacheInfo.resources.length > 0) {
+					const maxItems = Math.min(cacheInfo.resources.length, 100);
+					resourcesHtml = `
+						<table class="detail-table">
+							<tr><!-- <th>#</th> --><th>资源 URL</th></tr>
+							${cacheInfo.resources.slice(0, maxItems).map((url, i) => `
+								<tr>
+									<!-- <td>${i + 1}</td> -->
+									<td>${this.escapeHtml(url)}</td>
+								</tr>
+							`).join('')}
+						</table>
+						${cacheInfo.resources.length > maxItems ? `<div class="empty-records">还有 ${cacheInfo.resources.length - maxItems} 项资源未显示</div>` : ''}
+					`;
+				} else {
+					resourcesHtml = '<div class="empty-records">该缓存为空</div>';
+				}
+
+				const html = `
+					<div class="detail-section">
+						<div class="detail-section-title">缓存信息</div>
+						<table class="detail-table">
+							<tr><th>缓存名称</th><td>${this.escapeHtml(cacheName)}</td></tr>
+							<tr><th>总大小</th><td>${this.formatBytes(cacheInfo.size)}</td></tr>
+							<tr><th>项目数量</th><td>${cacheInfo.items}</td></tr>
+						</table>
+					</div>
+					<div class="detail-section">
+						<div class="detail-section-title">已缓存的资源</div>
+						${resourcesHtml}
+					</div>
+				`;
+
+				document.getElementById('editorContent').innerHTML = html;
+			},
+
+			// 渲染 IndexedDB 编辑器
+			renderIndexedDBEditor: function (dbName, dbInfo, isNew) {
+				this.currentSelection = { type: 'indexedDB', key: dbName, originalName: isNew ? null : dbName, isNew: isNew, dbInfo: dbInfo };
+
+				let objectStoresHtml = '';
+				if (dbInfo.objectStores && dbInfo.objectStores.length > 0) {
+					objectStoresHtml = dbInfo.objectStores.map((store, index) => {
+						const recordsHtml = this.renderRecordsTable(store, index);
+						const indexesStr = store.indexes && store.indexes.length ? this.escapeHtml(store.indexes.join(', ')) : '';
+						return `
+							<div class="detail-section object-store-section" data-store-index="${index}" data-original-name="${this.escapeHtml(store.name)}" data-key-path="${store.keyPath ? this.escapeHtml(store.keyPath) : ''}" data-auto-increment="${store.autoIncrement ? 'true' : 'false'}">
+								<div class="detail-section-title">
+									对象存储: <input type="text" class="section-title-input" value="${this.escapeHtml(store.name)}" data-field="store-name">
+									<button class="inline-action-btn inline-action-btn-p" title="查看/隐藏记录" data-action="toggle-records">${this.expandIconSvg}<p>记录项</p></button>
+									<button class="inline-action-btn danger" title="删除对象存储" data-action="delete-store">${this.deleteIconSvg}</button>
+								</div>
+								<table class="detail-table">
+									<tr><th>原始名称</th><td><input type="text" class="editable-input" value="${this.escapeHtml(store.name)}" data-field="store-original-name"></td></tr>
+									<tr><th>键路径 / Key Path</th><td><input type="text" class="editable-input" value="${store.keyPath ? this.escapeHtml(store.keyPath) : ''}" placeholder="（无）" data-field="store-key-path"></td></tr>
+									<tr><th>自增 / Auto Increment</th><td>
+										<select class="editable-input editable-select" data-field="store-auto-increment">
+											<option value="false" ${store.autoIncrement ? '' : 'selected'}>否</option>
+											<option value="true" ${store.autoIncrement ? 'selected' : ''}>是</option>
+										</select>
+									</td></tr>
+									<tr><th>索引 / Indexes</th><td><input type="text" class="editable-input" value="${indexesStr}" placeholder="多个索引用逗号分隔" data-field="store-indexes"></td></tr>
+									<tr><th>记录数</th><td data-field="record-count">${store.data ? store.data.length : 0}</td></tr>
+								</table>
+								<div class="records-container" style="display:none; margin-top:12px;">
+									${recordsHtml}
+									<button class="add-btn" data-action="add-record">${this.addIconSvg} 新增记录</button>
+								</div>
+							</div>
+						`;
+					}).join('');
+				} else {
+					objectStoresHtml = '<div class="empty-records" id="emptyStoresMsg">该数据库暂无对象存储</div>';
+				}
+
+				const dbNameField = isNew
+					? `<input type="text" class="editable-input" id="dbNameInput" value="${this.escapeHtml(dbName)}" placeholder="请输入数据库名称">`
+					: this.escapeHtml(dbName);
+
+				const html = `
+					<div class="detail-section">
+						<div class="detail-section-title">数据库信息</div>
+						<table class="detail-table">
+							<tr><th>数据库名称</th><td>${dbNameField}</td></tr>
+							<tr><th>版本 / Version</th><td>${dbInfo.version || 1}</td></tr>
+							<tr><th>对象存储数</th><td data-field="object-store-count">${dbInfo.objectStores ? dbInfo.objectStores.length : 0}</td></tr>
+							<tr><th>总大小</th><td data-field="total-size">${this.formatBytes(dbInfo.totalSize || 0)}</td></tr>
+							<tr><th>总记录数</th><td data-field="total-records">${dbInfo.totalRecords || 0} 条记录</td></tr>
+						</table>
+					</div>
+					<div class="detail-section" id="objectStoresSection">
+						<div class="detail-section-title">对象存储列表</div>
+						${objectStoresHtml}
+						<button class="add-btn" id="addObjectStoreBtn" data-action="add-object-store">${this.addIconSvg} 新增对象存储</button>
+					</div>
+				`;
+
+				document.getElementById('editorContent').innerHTML = html;
+
+				// 新数据库名称变化
+				const dbNameInput = document.getElementById('dbNameInput');
+				if (dbNameInput) {
+					dbNameInput.addEventListener('input', () => {
+						this.markDirty();
+						document.getElementById('storageItemTitle').textContent = '（新增）' + dbNameInput.value;
+					});
+				}
+			},
+
+			// 渲染记录表格
+			renderRecordsTable: function (store, storeIndex) {
+				if (!store.data || store.data.length === 0) {
+					return '<div class="empty-records">该对象存储暂无记录</div>';
+				}
+				const keyEditable = !store.keyPath && !store.autoIncrement;
+				return `
+					<table class="records-table">
+						<tr>
+							<th class="key-cell">键 / Key</th>
+							<th class="value-cell">值 / Value (JSON)</th>
+							<th class="action-cell">操作</th>
+						</tr>
+						${store.data.map((record, recordIndex) => `
+							<tr data-record-index="${recordIndex}" data-original-key="${this.escapeHtml(JSON.stringify(record.key))}">
+								<td class="key-cell">
+									${keyEditable ? `<input type="text" class="editable-input" value="${this.escapeHtml(JSON.stringify(record.key))}" data-field="record-key">` : `<span>${this.escapeHtml(JSON.stringify(record.key))}</span>`}
+								</td>
+								<td class="value-cell">
+									<textarea class="value-cell-textarea" data-field="record-value">${this.escapeHtml(JSON.stringify(record.value, null, 2))}</textarea>
+								</td>
+								<td class="action-cell">
+									<button class="inline-action-btn danger" title="删除记录" data-action="delete-record">${this.deleteIconSvg}</button>
+								</td>
+							</tr>
+						`).join('')}
+					</table>
+				`;
+			},
+
+			// IndexedDB 编辑器点击事件委托
+			handleEditorClick: function (e) {
+				const btn = e.target.closest('[data-action]');
+				if (!btn) return;
+
+				const action = btn.dataset.action;
+				const storeSection = btn.closest('.object-store-section');
+
+				if (action === 'delete-store') {
+					e.preventDefault();
+					this.deleteStoreSection(btn);
+				} else if (action === 'toggle-records') {
+					e.preventDefault();
+					const container = storeSection.querySelector('.records-container');
+					if (container) {
+						container.style.display = container.style.display === 'none' ? 'block' : 'none';
+					}
+				} else if (action === 'add-record') {
+					e.preventDefault();
+					this.addRecord(storeSection);
+				} else if (action === 'delete-record') {
+					e.preventDefault();
+					this.deleteRecordRow(btn);
+				} else if (action === 'add-object-store') {
+					e.preventDefault();
+					this.addObjectStore();
+				}
+			},
+
+			// IndexedDB 编辑器输入事件委托
+			handleEditorInput: function (e) {
+				const field = e.target.dataset.field;
+				if (!field) return;
+
+				if (field === 'store-name') {
+					this.markDirty();
+					// 同步原始名称输入框
+					const section = e.target.closest('.object-store-section');
+					if (section) {
+						const originalInput = section.querySelector('[data-field="store-original-name"]');
+						if (originalInput) originalInput.value = e.target.value;
+					}
+				} else if (field === 'store-original-name') {
+					this.markDirty();
+					// 同步标题输入框
+					const section = e.target.closest('.object-store-section');
+					if (section) {
+						const nameInput = section.querySelector('[data-field="store-name"]');
+						if (nameInput) nameInput.value = e.target.value;
+					}
+				} else if (field === 'store-key-path') {
+					this.markDirty();
+					const section = e.target.closest('.object-store-section');
+					if (section) section.dataset.keyPath = e.target.value.trim();
+				} else if (field === 'store-auto-increment') {
+					this.markDirty();
+					const section = e.target.closest('.object-store-section');
+					if (section) section.dataset.autoIncrement = e.target.value;
+				} else if (field === 'store-indexes') {
+					this.markDirty();
+				} else if (['record-key', 'record-value'].includes(field)) {
+					this.markDirty();
+				}
+			},
+
+			// 新增对象存储
+			addObjectStore: function () {
+				this.markDirty();
+				const section = document.createElement('div');
+				section.className = 'detail-section object-store-section';
+				section.dataset.storeIndex = 'new-' + Date.now();
+				section.dataset.originalName = '';
+				section.dataset.isNew = 'true';
+				section.dataset.keyPath = '';
+				section.dataset.autoIncrement = 'false';
+				section.innerHTML = `
+					<div class="detail-section-title">
+						对象存储: <input type="text" class="section-title-input" value="new-store" data-field="store-name">
+						<button class="inline-action-btn inline-action-btn-p" title="查看/隐藏记录" data-action="toggle-records">${this.expandIconSvg}<p>记录项</p></button>
+						<button class="inline-action-btn danger" title="删除对象存储" data-action="delete-store">${this.deleteIconSvg}</button>
+					</div>
+					<table class="detail-table">
+						<tr><th>原始名称</th><td><input type="text" class="editable-input" value="new-store" data-field="store-original-name"></td></tr>
+						<tr><th>键路径 / Key Path</th><td><input type="text" class="editable-input" value="" placeholder="（无）" data-field="store-key-path"></td></tr>
+						<tr><th>自增 / Auto Increment</th><td>
+							<select class="editable-input" data-field="store-auto-increment">
+								<option value="false" selected>否</option>
+								<option value="true">是</option>
+							</select>
+						</td></tr>
+						<tr><th>索引 / Indexes</th><td><input type="text" class="editable-input" value="" placeholder="多个索引用逗号分隔" data-field="store-indexes"></td></tr>
+						<tr><th>记录数</th><td data-field="record-count">0</td></tr>
+					</table>
+					<div class="records-container" style="display:block; margin-top:12px;">
+						<div class="empty-records">该对象存储暂无记录</div>
+						<button class="add-btn" data-action="add-record">${this.addIconSvg} 新增记录</button>
+					</div>
+				`;
+
+				const emptyMsg = document.getElementById('emptyStoresMsg');
+				if (emptyMsg) emptyMsg.remove();
+
+				document.getElementById('objectStoresSection').insertBefore(section, document.getElementById('addObjectStoreBtn'));
+			},
+
+			// 删除对象存储区域
+			deleteStoreSection: function (btn) {
+				this.markDirty();
+				const section = btn.closest('.object-store-section');
+				section.dataset.deleted = 'true';
+				section.style.display = 'none';
+			},
+
+			// 新增记录
+			addRecord: function (storeSection) {
+				this.markDirty();
+				const container = storeSection.querySelector('.records-container');
+				let table = container.querySelector('.records-table');
+				const emptyMsg = container.querySelector('.empty-records');
+				if (emptyMsg) emptyMsg.remove();
+
+				const hasKeyPath = storeSection.dataset.keyPath && storeSection.dataset.keyPath !== 'null' && storeSection.dataset.keyPath !== '';
+				const autoIncrement = storeSection.dataset.autoIncrement === 'true';
+				const keyEditable = !hasKeyPath && !autoIncrement;
+
+				if (!table) {
+					table = document.createElement('table');
+					table.className = 'records-table';
+					table.innerHTML = `
+						<tr>
+							<th class="key-cell">键 / Key</th>
+							<th class="value-cell">值 / Value (JSON)</th>
+							<th class="action-cell">操作</th>
+						</tr>
+					`;
+					container.insertBefore(table, container.querySelector('.add-btn'));
+				}
+
+				const row = document.createElement('tr');
+				row.dataset.recordIndex = 'new-' + Date.now();
+				row.dataset.originalKey = '';
+				row.dataset.isNew = 'true';
+				row.innerHTML = `
+					<td class="key-cell">${keyEditable ? `<input type="text" class="editable-input" value="" placeholder="键" data-field="record-key">` : (autoIncrement ? '<span>（自增）</span>' : '<span>（含于值中）</span>')}</td>
+					<td class="value-cell"><textarea class="value-cell-textarea" placeholder='值，例如 {"a":1}' data-field="record-value"></textarea></td>
+					<td class="action-cell"><button class="inline-action-btn danger" title="删除记录" data-action="delete-record">${this.deleteIconSvg}</button></td>
+				`;
+				table.appendChild(row);
+			},
+
+			// 删除记录行
+			deleteRecordRow: function (btn) {
+				this.markDirty();
+				const row = btn.closest('tr');
+				row.dataset.deleted = 'true';
+				row.style.display = 'none';
+			},
+
+			// 估算单条记录占用的字节数
+			calculateRecordSize: function (value) {
+				try {
+					if (value === null || value === undefined) return 0;
+					if (typeof value === 'string') return new Blob([value]).size;
+					if (value instanceof Blob) return value.size;
+					if (value instanceof ArrayBuffer) return value.byteLength;
+					if (ArrayBuffer.isView(value)) return value.byteLength;
+					return new Blob([JSON.stringify(value)]).size;
+				} catch (e) {
+					return 0;
+				}
 			},
 
 			// 获取IndexedDB详细信息
@@ -1901,48 +3002,73 @@ SOFTWARE.
 							const db = event.target.result;
 							const objectStores = [];
 
+							if (db.objectStoreNames.length === 0) {
+								db.close();
+								resolve({ ...dbInfo, objectStores: [], totalSize: 0, totalRecords: 0, date: new Date() });
+								return;
+							}
+
+							let pendingStores = db.objectStoreNames.length;
+
 							// 收集对象存储信息
 							Array.from(db.objectStoreNames).forEach(storeName => {
 								const transaction = db.transaction(storeName, 'readonly');
 								const objectStore = transaction.objectStore(storeName);
 								const indexes = Array.from(objectStore.indexNames);
 
-								// 获取对象存储的数据（最多100条）
+								// 获取对象存储的数据（最多200条），同时统计总大小和总记录数
 								const data = [];
-								const dataRequest = objectStore.getAll();
-								dataRequest.onsuccess = (e) => {
-									if (!e.target.result.length) {
-										reject(new Error('数据库为空'));
+								let storeTotalBytes = 0;
+								let storeTotalRecords = 0;
+								const cursorRequest = objectStore.openCursor();
+								cursorRequest.onsuccess = (e) => {
+									const cursor = e.target.result;
+									if (cursor) {
+										storeTotalRecords++;
+										storeTotalBytes += this.calculateRecordSize(cursor.value);
+										if (data.length < 200) {
+											data.push({ id: data.length + 1, key: cursor.key, value: cursor.value });
+										}
+										cursor.continue();
 									}
-									data.push(...e.target.result.slice(0, 100).map((value, index) => ({
-										id: index + 1,
-										value
-									})));
+								};
+								cursorRequest.onerror = () => {
+									// 如果游标失败，退回到 getAll
+									const dataRequest = objectStore.getAll();
+									dataRequest.onsuccess = (e) => {
+										const result = e.target.result || [];
+										storeTotalRecords = result.length;
+										storeTotalBytes = result.reduce((sum, value) => sum + this.calculateRecordSize(value), 0);
+										result.slice(0, 200).forEach((value, index) => {
+											const key = objectStore.keyPath ? value[objectStore.keyPath] : (objectStore.autoIncrement ? index + 1 : value);
+											data.push({ id: index + 1, key: key, value });
+										});
+									};
 								};
 
-								objectStores.push({
-									name: storeName,
-									indexes: indexes,
-									data: data
-								});
-							});
-
-							// 等待所有数据请求完成
-							const checkComplete = () => {
-								if (objectStores.every(store => store.data.length > 0 ||
-									store.dataRequest && store.dataRequest.readyState === 'done')) {
-									db.close();
-									resolve({
-										...dbInfo,
-										objectStores: objectStores,
-										date: new Date()
+								transaction.oncomplete = () => {
+									objectStores.push({
+										name: storeName,
+										indexes: indexes,
+										data: data,
+										keyPath: objectStore.keyPath,
+										autoIncrement: objectStore.autoIncrement,
+										size: storeTotalBytes,
+										records: storeTotalRecords
 									});
-								} else {
-									setTimeout(checkComplete, 50);
-								}
-							};
-
-							checkComplete();
+									pendingStores--;
+									if (pendingStores === 0) {
+										db.close();
+										resolve({
+											...dbInfo,
+											objectStores: objectStores,
+											totalSize: objectStores.reduce((sum, s) => sum + (s.size || 0), 0),
+											totalRecords: objectStores.reduce((sum, s) => sum + (s.records || 0), 0),
+											date: new Date()
+										});
+									}
+								};
+							});
 						};
 					}).catch(reject);
 				});
@@ -1999,14 +3125,413 @@ SOFTWARE.
 				}
 			},
 
-			// 删除存储项
-			deleteStorageItem: async function (storageType, key) {
+
+
+			// 保存当前项
+			saveCurrentItem: async function () {
+				if (!this.currentSelection) return;
+
+				try {
+					if (this.currentSelection.type === 'localStorage') {
+						await this.saveLocalStorage();
+					} else if (this.currentSelection.type === 'indexedDB') {
+						await this.saveIndexedDB();
+					} else {
+						alert('当前类型不支持保存');
+						return;
+					}
+					this.clearDirty();
+					this.loadStorageItems(this.currentStorageType);
+					alert('保存成功');
+				} catch (error) {
+					console.error('保存失败:', error);
+					alert(`保存失败: ${error.message}`);
+				}
+			},
+
+			// 保存 localStorage
+			saveLocalStorage: function () {
+				const newKey = document.getElementById('localKeyInput').value.trim();
+				const newValue = document.getElementById('localValueInput').value;
+
+				if (!newKey) {
+					throw new Error('键名不能为空');
+				}
+
+				const originalKey = this.currentSelection.originalKey;
+				if (originalKey && originalKey !== newKey) {
+					localStorage.removeItem(originalKey);
+				}
+				localStorage.setItem(newKey, newValue);
+
+				this.currentSelection.key = newKey;
+				this.currentSelection.originalKey = newKey;
+				this.currentSelection.isNew = false;
+				document.getElementById('storageItemTitle').textContent = newKey;
+			},
+
+			// 解析 JSON 值，失败则返回原字符串
+			parseJsonValue: function (value) {
+				if (value === undefined || value === null || value === '') return '';
+				const trimmed = value.trim();
+				if (trimmed === '') return '';
+				try {
+					return JSON.parse(trimmed);
+				} catch (e) {
+					return value;
+				}
+			},
+
+			// 保存 IndexedDB
+			saveIndexedDB: async function () {
+				const dbNameInput = document.getElementById('dbNameInput');
+				const dbName = dbNameInput ? dbNameInput.value.trim() : this.currentSelection.key;
+				const isNew = this.currentSelection.isNew;
+
+				if (!dbName) {
+					throw new Error('数据库名称不能为空');
+				}
+				const dbInfo = this.currentSelection.dbInfo || { version: 1, objectStores: [] };
+
+				// 收集 DOM 中的对象存储状态
+				const allSections = document.querySelectorAll('.object-store-section');
+				const stores = [];
+				const deletedStores = [];
+
+				for (const section of allSections) {
+					const isDeleted = section.dataset.deleted === 'true';
+					const originalStoreName = section.dataset.originalName || '';
+					const isNewStore = section.dataset.isNew === 'true';
+					const nameInput = section.querySelector('[data-field="store-name"]');
+					const newStoreName = nameInput ? nameInput.value.trim() : '';
+					const originalNameInput = section.querySelector('[data-field="store-original-name"]');
+					const displayOriginalName = originalNameInput ? originalNameInput.value.trim() : originalStoreName;
+					const keyPathInput = section.querySelector('[data-field="store-key-path"]');
+					const keyPath = keyPathInput ? keyPathInput.value.trim() : '';
+					const autoIncrementInput = section.querySelector('[data-field="store-auto-increment"]');
+					const autoIncrement = autoIncrementInput ? autoIncrementInput.value === 'true' : false;
+					const indexesInput = section.querySelector('[data-field="store-indexes"]');
+					const indexes = indexesInput ? indexesInput.value.split(',').map(s => s.trim()).filter(Boolean) : [];
+
+					if (isDeleted) {
+						if (!isNewStore && originalStoreName) {
+							deletedStores.push(originalStoreName);
+						}
+						continue;
+					}
+
+					if (!newStoreName) {
+						throw new Error('对象存储名称不能为空');
+					}
+
+					const records = [];
+					const rows = section.querySelectorAll('.records-table tr[data-record-index]:not([data-deleted="true"])');
+					for (const row of rows) {
+						const keyInput = row.querySelector('[data-field="record-key"]');
+						const valueInput = row.querySelector('[data-field="record-value"]');
+						const originalKeyStr = row.dataset.originalKey || '';
+						const isNewRecord = row.dataset.isNew === 'true';
+
+						let recordKey;
+						if (keyInput) {
+							recordKey = this.parseJsonValue(keyInput.value);
+						} else {
+							recordKey = originalStoreName ? this.parseJsonValue(originalKeyStr) : undefined;
+						}
+
+						let recordValue;
+						if (valueInput) {
+							recordValue = this.parseJsonValue(valueInput.value);
+						}
+
+						records.push({
+							originalKey: originalKeyStr ? this.parseJsonValue(originalKeyStr) : undefined,
+							key: recordKey,
+							value: recordValue,
+							isNew: isNewRecord
+						});
+					}
+
+					// 对比原始对象存储元数据，判断是否需要重建或修改索引
+					const originalStore = originalStoreName ? (dbInfo.objectStores || []).find(s => s.name === originalStoreName) : null;
+					let wasRecreated = false;
+					let indexChanged = false;
+					if (originalStore) {
+						const origKeyPath = originalStore.keyPath || '';
+						const origAutoIncrement = !!originalStore.autoIncrement;
+						const origIndexes = originalStore.indexes || [];
+						if (origKeyPath !== keyPath || origAutoIncrement !== autoIncrement) {
+							wasRecreated = true;
+						}
+						if (origIndexes.length !== indexes.length || !origIndexes.every(idx => indexes.includes(idx))) {
+							indexChanged = true;
+						}
+					}
+
+					// 重命名或重建都需要先删除旧对象存储
+					if (!isNewStore && originalStoreName && (originalStoreName !== newStoreName || wasRecreated)) {
+						if (!deletedStores.includes(originalStoreName)) {
+							deletedStores.push(originalStoreName);
+						}
+					}
+
+					stores.push({
+						originalName: originalStoreName,
+						displayOriginalName: displayOriginalName,
+						newName: newStoreName,
+						isNew: isNewStore,
+						wasRecreated: wasRecreated,
+						indexChanged: indexChanged,
+						keyPath: keyPath,
+						autoIncrement: autoIncrement,
+						indexes: indexes,
+						records: records
+					});
+				}
+
+				// 校验对象存储名称唯一性
+				const storeNames = stores.map(s => s.newName);
+				const duplicates = storeNames.filter((name, index) => storeNames.indexOf(name) !== index);
+				if (duplicates.length > 0) {
+					throw new Error(`对象存储名称重复: ${duplicates.join(', ')}`);
+				}
+
+				// 新建数据库时检查名称是否已存在
+				if (isNew && window.indexedDB && window.indexedDB.databases) {
+					const existing = await indexedDB.databases();
+					if (existing.some(db => db.name === dbName)) {
+						throw new Error(`数据库 "${dbName}" 已存在，请更换名称`);
+					}
+				}
+
+				const hasStructuralChanges = isNew || deletedStores.length > 0 || stores.some(s =>
+					s.isNew || s.wasRecreated || s.indexChanged || s.originalName !== s.newName
+				);
+
+				if (hasStructuralChanges) {
+					await this.applyIndexedDBStructuralChanges(dbName, isNew ? 0 : dbInfo.version, deletedStores, stores, dbInfo);
+				}
+
+				await this.applyIndexedDBRecordChanges(dbName, stores, dbInfo);
+
+				// 更新当前选择状态并刷新右侧详情
+				this.currentSelection.key = dbName;
+				this.currentSelection.originalName = dbName;
+				this.currentSelection.isNew = false;
+				this.currentSelection.dbInfo = await this.getIndexedDBDetails(dbName);
+				document.getElementById('storageItemTitle').textContent = dbName;
+				this.renderIndexedDBEditor(dbName, this.currentSelection.dbInfo, false);
+			},
+
+			// 应用 IndexedDB 结构变更
+			applyIndexedDBStructuralChanges: function (dbName, currentVersion, deletedStores, stores, dbInfo) {
+				return new Promise((resolve, reject) => {
+					const newVersion = currentVersion > 0 ? currentVersion + 1 : 1;
+					const request = indexedDB.open(dbName, newVersion);
+
+					request.onerror = () => reject(new Error(`打开数据库 ${dbName} 失败`));
+					request.onblocked = () => reject(new Error(`数据库 ${dbName} 被阻塞，请关闭其他标签页`));
+
+					request.onupgradeneeded = (event) => {
+						const db = event.target.result;
+
+						// 删除对象存储（包含显式删除、重命名、重建）
+						deletedStores.forEach(storeName => {
+							if (db.objectStoreNames.contains(storeName)) {
+								db.deleteObjectStore(storeName);
+							}
+						});
+
+						// 创建/重建对象存储
+						stores.forEach(store => {
+							if (store.isNew || store.wasRecreated || (store.originalName && store.originalName !== store.newName)) {
+								if (db.objectStoreNames.contains(store.newName)) {
+									db.deleteObjectStore(store.newName);
+								}
+								const options = {};
+								if (store.keyPath) options.keyPath = store.keyPath;
+								if (store.autoIncrement) options.autoIncrement = true;
+								const objectStore = db.createObjectStore(store.newName, options);
+								// 创建索引
+								(store.indexes || []).forEach(indexName => {
+									if (!objectStore.indexNames.contains(indexName)) {
+										objectStore.createIndex(indexName, indexName);
+									}
+								});
+							} else if (store.indexChanged && dbInfo) {
+								// 仅索引变化：在原对象存储上增删索引
+								if (db.objectStoreNames.contains(store.newName)) {
+									const objectStore = event.target.transaction.objectStore(store.newName);
+									const originalStore = (dbInfo.objectStores || []).find(s => s.name === store.originalName);
+									const origIndexes = originalStore ? (originalStore.indexes || []) : [];
+									const newIndexes = store.indexes || [];
+									origIndexes.forEach(idx => {
+										if (!newIndexes.includes(idx) && objectStore.indexNames.contains(idx)) {
+											objectStore.deleteIndex(idx);
+										}
+									});
+									newIndexes.forEach(idx => {
+										if (!objectStore.indexNames.contains(idx)) {
+											objectStore.createIndex(idx, idx);
+										}
+									});
+								}
+							}
+						});
+					};
+
+					request.onsuccess = (event) => {
+						const db = event.target.result;
+						db.close();
+						resolve();
+					};
+				});
+			},
+
+			// 应用 IndexedDB 记录变更
+			applyIndexedDBRecordChanges: function (dbName, stores, dbInfo) {
+				return new Promise((resolve, reject) => {
+					const request = indexedDB.open(dbName);
+					request.onerror = () => reject(new Error(`打开数据库 ${dbName} 失败`));
+					request.onblocked = () => reject(new Error(`数据库 ${dbName} 被阻塞，请关闭其他标签页`));
+
+					request.onsuccess = (event) => {
+						const db = event.target.result;
+
+						const storePromises = stores.map(store => {
+							if (!db.objectStoreNames.contains(store.newName)) {
+								return Promise.resolve();
+							}
+
+							return new Promise((res, rej) => {
+								const transaction = db.transaction(store.newName, 'readwrite');
+								transaction.onerror = (e) => rej(e.target.error);
+								transaction.onabort = () => rej(transaction.error || new Error('事务已中止，可能存在重复键或其他约束错误'));
+								transaction.oncomplete = () => res();
+
+								const objectStore = transaction.objectStore(store.newName);
+								const keyPath = objectStore.keyPath;
+								const autoIncrement = objectStore.autoIncrement;
+
+								// 新对象存储、重命名、重建后，原有记录已随旧存储删除，
+								// 因此把当前所有记录都当作新记录写入
+								const forceAsNew = store.isNew || store.wasRecreated || (store.originalName && store.originalName !== store.newName);
+
+								// 计算实际使用的 key
+								const getRecordKey = (record) => {
+									if (keyPath) {
+										if (record.value && typeof record.value === 'object' && keyPath in record.value) {
+											return record.value[keyPath];
+										}
+										return undefined;
+									}
+									return record.key;
+								};
+
+								try {
+									if (!forceAsNew && dbInfo) {
+										// 删除已不存在的旧记录
+										const originalStore = (dbInfo.objectStores || []).find(s => s.name === (store.originalName || store.newName));
+										if (originalStore && originalStore.data) {
+											const survivingOriginalKeys = new Set();
+											store.records.forEach(record => {
+												if (!record.isNew) {
+													survivingOriginalKeys.add(record.originalKey);
+												}
+											});
+											originalStore.data.forEach(origRecord => {
+												if (!survivingOriginalKeys.has(origRecord.key)) {
+													objectStore.delete(origRecord.key);
+												}
+											});
+										}
+									}
+
+									store.records.forEach(record => {
+										const isNewRecord = record.isNew || forceAsNew;
+										const effectiveKey = getRecordKey(record);
+
+										// 校验：带 keyPath 且自增时，value 必须是对象
+										if (keyPath && autoIncrement && (record.value === null || typeof record.value !== 'object')) {
+											throw new Error('自增且含 Key Path 的对象存储，记录值必须是对象');
+										}
+
+										if (keyPath) {
+											// key 包含在 value 中，不能显式传 key
+											if (isNewRecord) {
+												objectStore.add(record.value);
+											} else {
+												// 如果 key 发生变化，先删除旧记录
+												if (record.originalKey !== undefined && record.originalKey !== effectiveKey) {
+													objectStore.delete(record.originalKey);
+												}
+												objectStore.put(record.value);
+											}
+										} else if (autoIncrement) {
+											// 自增时，key 可选
+											if (isNewRecord) {
+												if (effectiveKey === undefined || effectiveKey === '') {
+													objectStore.add(record.value);
+												} else {
+													objectStore.add(record.value, effectiveKey);
+												}
+											} else {
+												if (record.originalKey !== undefined && record.originalKey !== effectiveKey) {
+													objectStore.delete(record.originalKey);
+													objectStore.add(record.value, effectiveKey);
+												} else {
+													objectStore.put(record.value, effectiveKey);
+												}
+											}
+										} else {
+											// 无 keyPath 且非自增，必须提供 key
+											if (effectiveKey === undefined || effectiveKey === '') {
+												throw new Error('记录键不能为空');
+											}
+											if (isNewRecord) {
+												objectStore.add(record.value, effectiveKey);
+											} else {
+												if (record.originalKey !== undefined && record.originalKey !== effectiveKey) {
+													objectStore.delete(record.originalKey);
+													objectStore.add(record.value, effectiveKey);
+												} else {
+													objectStore.put(record.value, effectiveKey);
+												}
+											}
+										}
+									});
+								} catch (e) {
+									rej(e);
+								}
+							});
+						});
+
+						Promise.all(storePromises).then(() => {
+							db.close();
+							resolve();
+						}).catch(err => {
+							db.close();
+							reject(err);
+						});
+					};
+				});
+			},
+
+			// 确认删除
+			confirmDelete: async function (storageType, key) {
 				var alertText = "确定删除 " + key + " 吗？\n\n注意：不建议在这里删除任何数据，可能会引发很多未知问题。";
 				if (storageType == 'localStorage') alertText = alertText + "\n删除该存储项后，可能导致部分网站功能异常，本地数据丢失。";
 				if (storageType == 'indexedDB') alertText = alertText + "\n删除该存储项后，可能导致需要大容量储存的网站出现异常，本地数据丢失。";
 				if (storageType == 'cacheStorage') alertText = alertText + "\n删除该存储项后，可能导致使用了 PWA 技术的网站出现异常。";
 				if (await confirm(alertText)) {
-					try {
+					await this.doDeleteStorageItem(storageType, key);
+				}
+			},
+
+			// 删除存储项
+			doDeleteStorageItem: async function (storageType, key) {
+
+				try {
 						switch (storageType) {
 							case 'localStorage':
 								localStorage.removeItem(key);
@@ -2042,9 +3567,15 @@ SOFTWARE.
 								break;
 
 							case 'cacheStorage':
-								// 删除缓存
+								// 删除缓存并同步注销 Service Worker
 								if ('caches' in window) {
 									await caches.delete(key);
+								}
+								if ('serviceWorker' in navigator) {
+									const registrations = await navigator.serviceWorker.getRegistrations();
+									for (const registration of registrations) {
+										await registration.unregister();
+									}
 								}
 								break;
 						}
@@ -2053,12 +3584,11 @@ SOFTWARE.
 						this.loadStorageItems(this.currentStorageType);
 
 						// 清除编辑器
-						this.clearSelection();
+						await this.clearSelection();
 					} catch (error) {
 						console.error('删除失败:', error);
 						alert(`删除失败: ${error.message}`);
 					}
-				}
 				refreshLeftItems();
 			},
 
@@ -2137,7 +3667,7 @@ SOFTWARE.
 					this.loadStorageItems(this.currentStorageType);
 
 					// 清除编辑器
-					this.clearSelection();
+					await this.clearSelection();
 				}
 				refreshLeftItems();
 			},
