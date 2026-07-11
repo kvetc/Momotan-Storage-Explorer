@@ -1,7 +1,7 @@
 # Momotan-Storage-Explorer
 Website local storage management tool / 网站本地存储管理工具
 
-v2.0.1 release 2026/07/11
+v2.0.2 release 2026/07/12
 
 Simply place this HTML file in your website directory and it's ready to use / 将该html文件放至你的网站目录即可使用
 
