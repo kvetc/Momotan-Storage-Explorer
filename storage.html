@@ -2,7 +2,7 @@
 Momotan Storage Explorer
 网站本地存储管理工具 / Website local storage management tool
 Copyright©2026, Aphasia
-v2.0.1 release 2026/07/11
+v2.0.2 release 2026/07/12
 基于 MIT 协议开源 / Licensed under the MIT License.
 开源地址 / Open source address: https://github.com/kvetc/Momotan-Storage-Explorer
 MIT 协议 / MIT License：
@@ -598,30 +598,61 @@ SOFTWARE.
 			}
 		}
 
-		@media (max-width: 600px) {
+		@media (max-width: 700px) {
+
+			.summary-item {
+				font-size: 13px;
+				display: block;
+				margin-bottom: 6px;
+				transition: all 0.2s ease;
+			}
+
+			.summary-item span {
+				display: block;
+			}
+			.summary-label {
+				font-size: 13px;
+			}
+			.summary-value {
+				font-size: 13px;
+			}
 
 			.storage-title {
-				font-size: 16px;
+				font-size: 15px;
+				margin-bottom: 3px;
 			}
 
 			.storage-size {
-				font-size: 14px;
+				font-size: 13px;
+				margin-bottom: 0px;
 			}
 
 			.storage-time {
-				font-size: 12px;
+				font-size: 11px;
+				margin-top: 2px;
 			}
 
 			.storage-summary {
-				width: 120px;
+				width: 105px;
+				padding: 12px 12px 12px 12px;
+				position: relative;
+				height: auto;
+				font-size: 14px;
+				border-right: 1px solid var(--border-color);
 			}
 
+			.dark-theme .storage-summary {
+				height: auto;
+				border-right: 1px solid var(--border-color-dark);
+			}
+
+
 			.search-input-wrapper {
-				width: 120px;
+				width: 105px;
 			}
 
 			.editor {
-				height: calc(100% - 300px);
+				height: calc(100% - 260px);
 			}
 
 			.editor-body {
@@ -662,40 +693,18 @@ SOFTWARE.
 				border-right: none;
 			}
 
-			.storage-summary {
-				position: relative;
-				height: auto;
-				font-size: 14px;
-				border-right: 1px solid var(--border-color);
-			}
-
-			.dark-theme .storage-summary {
-				height: auto;
-				border-right: 1px solid var(--border-color-dark);
-			}
-
-			.summary-item {
-				display: block;
-				margin-bottom: 6px;
-				transition: all 0.2s ease;
-			}
-
-			.summary-item span {
-				display: block;
-			}
-
 			.storage-items-list {
 				border-bottom: 1px solid var(--border-color);
 				border-right: none;
 				display: grid;
-				grid-template-rows: repeat(2, 120px);
+				grid-template-rows: repeat(2, 100px);
 				grid-auto-columns: 120px;
 				grid-auto-flow: column;
 				gap: 0px;
 				overflow-x: auto;
 				overflow-y: hidden;
 				margin-bottom: 0px;
-				height: 240px;
+				height: 200px;
 			}
 
 			.dark-theme .storage-items-list {
@@ -704,9 +713,9 @@ SOFTWARE.
 			}
 
 			.storage-item {
-				padding: 16px 15px 15px 15px;
+				padding: 12px 15px 12px 12px;
 				flex: 0 0 auto;
-				height: 120px;
+				height: 100px;
 				width: 120px;
 				max-width: 120px;
 				min-width: 120px;
@@ -1459,7 +1468,7 @@ SOFTWARE.
 			}
 		}
 
-		@media (max-width: 600px) {
+		@media (max-width: 700px) {
 			.new-btn {
 				bottom: auto;
 				top: 195px;
@@ -2065,7 +2074,7 @@ SOFTWARE.
 
 				// 关于按钮
 				document.getElementById('about').addEventListener('click', () => {
-					alert('Momotan Storage Explorer\n网站本地存储管理工具\nCopyright©2026, Aphasia\nv2.0.1 release 2026/07/11\n\n基于 MIT 协议开源 / Licensed under the MIT License.\n开源地址 / Open source address: https://github.com/kvetc/Momotan-Storage-Explorer\n\n操作说明：\nEnter/Space: 确认 / Confirm\nESC: 取消 / Cancel\nCtrl+S: 保存 / Save\nDelete: 删除 / Delete');
+					alert('Momotan Storage Explorer\n网站本地存储管理工具\nCopyright©2026, Aphasia\nv2.0.2 release 2026/07/12\n\n基于 MIT 协议开源 / Licensed under the MIT License.\n开源地址 / Open source address: https://github.com/kvetc/Momotan-Storage-Explorer\n\n操作说明：\nEnter/Space: 确认 / Confirm\nESC: 取消 / Cancel\nCtrl+S: 保存 / Save\nDelete: 删除 / Delete');
 				});
 
 				// 搜索栏
@@ -3489,7 +3498,7 @@ SOFTWARE.
 
 										// 校验：带 keyPath 且自增时，value 必须是对象
 										if (keyPath && autoIncrement && (record.value === null || typeof record.value !== 'object')) {
-											throw new Error('自增且含 Key Path 的对象存储，记录值必须是对象');
+											throw new Error('自增且含 Key Path 的对象存储，记录值必须对象，即必须含有 Key Path 所对应的键值对');
 										}
 
 										if (keyPath) {
