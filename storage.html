@@ -2,7 +2,7 @@
 Momotan Storage Explorer
 网站本地存储管理工具 / Website local storage management tool
 Copyright©2026, Aphasia
-v2.0.2 release 2026/07/12
+v2.0.3 release 2026/07/24
 基于 MIT 协议开源 / Licensed under the MIT License.
 开源地址 / Open source address: https://github.com/kvetc/Momotan-Storage-Explorer
 MIT 协议 / MIT License：
@@ -1168,6 +1168,53 @@ SOFTWARE.
 			border-color: var(--primary-color);
 		}
 
+		/* 二进制记录预览 */
+		.binary-value-cell {
+			display: flex;
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 8px;
+		}
+
+		.binary-preview {
+			max-width: 220px;
+			max-height: 140px;
+			background: rgba(135, 135, 135, 0.15);
+			object-fit: contain;
+			display: block;
+		}
+
+		.binary-info {
+			color: #333;
+			font-size: 13px;
+			word-break: break-all;
+			transition: all 0.2s ease;
+		}
+
+		.dark-theme .binary-info {
+			color: #eee;
+		}
+
+		.binary-download-btn {
+			border: none;
+			appearance: none;
+			cursor: pointer;
+			padding: 6px 12px;
+			font-size: 13px;
+			font-family: inherit;
+			background: var(--primary-color);
+			color: #fff;
+			transition: all 0.2s ease;
+		}
+
+		.dark-theme .binary-download-btn {
+			color: #5a2230;
+		}
+
+		.binary-download-btn:hover {
+			opacity: 0.85;
+		}
+
 		/* 行内操作按钮 */
 		.inline-action-btn {
 			display: inline-flex;
@@ -1198,11 +1245,11 @@ SOFTWARE.
 		}
 
 		.inline-action-btn:hover {
-			background-color: #e8e8e8;
+			background-color: #f5f5f5;
 			color: #454545;
 		}
 		.inline-action-btn.active {
-			background-color: #e8e8e8;
+			background-color: #f2f2f2;
 			color: var(--primary-color);
 		}
 
@@ -1211,7 +1258,7 @@ SOFTWARE.
 		}
 
 		.dark-theme .inline-action-btn:hover {
-			background-color: #3a3a3a;
+			background-color: #353535;
 			color: #eee;
 		}
 		.dark-theme .inline-action-btn.active {
@@ -1445,6 +1492,15 @@ SOFTWARE.
 
 		.dark-theme .empty-records {
 			color: #777;
+		}
+
+		/* 记录截断警告 */
+		.records-truncated-warning {
+			color: var(--primary-color);
+			font-size: 13px;
+			padding: 8px 12px;
+			margin-bottom: 8px;
+			border: 1px dashed var(--primary-color);
 		}
 
 		/* 左侧列表操作区 */
@@ -2074,7 +2130,7 @@ SOFTWARE.
 
 				// 关于按钮
 				document.getElementById('about').addEventListener('click', () => {
-					alert('Momotan Storage Explorer\n网站本地存储管理工具\nCopyright©2026, Aphasia\nv2.0.2 release 2026/07/12\n\n基于 MIT 协议开源 / Licensed under the MIT License.\n开源地址 / Open source address: https://github.com/kvetc/Momotan-Storage-Explorer\n\n操作说明：\nEnter/Space: 确认 / Confirm\nESC: 取消 / Cancel\nCtrl+S: 保存 / Save\nDelete: 删除 / Delete');
+					alert('Momotan Storage Explorer\n网站本地存储管理工具\nCopyright©2026, Aphasia\nv2.0.3 release 2026/07/24\n\n基于 MIT 协议开源 / Licensed under the MIT License.\n开源地址 / Open source address: https://github.com/kvetc/Momotan-Storage-Explorer\n\n操作说明：\nEnter/Space: 确认 / Confirm\nESC: 取消 / Cancel\nCtrl+S: 保存 / Save\nDelete: 删除 / Delete');
 				});
 
 				// 搜索栏
@@ -2287,6 +2343,7 @@ SOFTWARE.
 				}
 				this.currentSelection = null;
 				this.clearDirty();
+				this.revokeBinaryPreviews();
 				document.getElementById('editorHeader').style.display = 'none';
 				document.getElementById('editorPlaceholder').style.display = 'block';
 				document.getElementById('editorContent').style.display = 'none';
@@ -2337,8 +2394,8 @@ SOFTWARE.
 					const key = localStorage.key(i);
 					const value = localStorage.getItem(key);
 
-					// 计算存储大小
-					const size = new Blob([key + value]).size;
+					// 计算存储大小（按 UTF-16 码元计量，与浏览器口径一致）
+					const size = this.localStorageEntrySize(key, value);
 
 					// 创建存储项元素
 					const storageItem = document.createElement('div');
@@ -2347,7 +2404,7 @@ SOFTWARE.
 					storageItem.dataset.type = 'localStorage';
 
 					storageItem.innerHTML = `
-                        <div class="storage-title">${key}</div>
+                        <div class="storage-title">${this.escapeHtml(key)}</div>
                         <div class="storage-size">${this.formatBytes(size)}</div>
                         <div class="storage-item-actions">
                             <button class="inline-action-btn" title="编辑" data-action="edit" style="display: none;">${this.editIconSvg}</button>
@@ -2406,64 +2463,9 @@ SOFTWARE.
 							storageItem.dataset.name = dbInfo.name;
 							storageItem.dataset.type = 'indexedDB';
 
-							// 计算数据库统计信息（记录数 + 字节大小）
-							const getDatabaseStats = (dbName) => {
-								return new Promise((resolve) => {
-									const request = indexedDB.open(dbName);
-									request.onsuccess = (event) => {
-										const db = event.target.result;
-										if (db.objectStoreNames.length === 0) {
-											db.close();
-											resolve({ count: 0, size: 0 });
-											return;
-										}
-										let count = 0;
-										let size = 0;
-										let completed = 0;
-
-										Array.from(db.objectStoreNames).forEach(storeName => {
-											const transaction = db.transaction(storeName, 'readonly');
-											const store = transaction.objectStore(storeName);
-
-											// 记录数
-											const countRequest = store.count();
-											countRequest.onsuccess = (e) => {
-												count += e.target.result;
-											};
-
-											// 字节大小（通过游标累计，避免大量数据入内存）
-											const cursorRequest = store.openCursor();
-											cursorRequest.onsuccess = (e) => {
-												const cursor = e.target.result;
-												if (cursor) {
-													size += this.calculateRecordSize(cursor.value);
-													cursor.continue();
-												}
-											};
-
-											transaction.oncomplete = () => {
-												completed++;
-												if (completed === db.objectStoreNames.length) {
-													db.close();
-													resolve({ count, size });
-												}
-											};
-											transaction.onerror = () => {
-												completed++;
-												if (completed === db.objectStoreNames.length) {
-													db.close();
-													resolve({ count, size });
-												}
-											};
-										});
-									};
-									request.onerror = () => resolve({ count: 0, size: 0 });
-								});
-							};
-
-							getDatabaseStats(dbInfo.name).then(stats => {
+							this.getDatabaseStats(dbInfo.name).then(stats => {
 								storageItem.innerHTML = `
-									<div class="storage-title">${dbInfo.name}</div>
+									<div class="storage-title">${this.escapeHtml(dbInfo.name)}</div>
 									<div class="storage-size">${this.formatBytes(stats.size)}</div>
 									<div class="storage-size">${stats.count} 条记录</div>
 									<div class="storage-time">版本: ${dbInfo.version}</div>
@@ -2502,7 +2504,7 @@ SOFTWARE.
 						const searchInput = document.getElementById('storageSearchInput');
 						this.filterStorageItems(searchInput ? searchInput.value : '');
 					}).catch(error => {
-						storageItemsList.innerHTML = `<div class="placeholder2">获取数据库列表失败: ${error.message}</div>`;
+						storageItemsList.innerHTML = `<div class="placeholder2">获取数据库列表失败: ${this.escapeHtml(error.message)}</div>`;
 					});
 				} else {
 					storageItemsList.innerHTML = '<div class="placeholder2">您的浏览器不支持IndexedDB数据库枚举</div>';
@@ -2548,7 +2550,7 @@ SOFTWARE.
 								storageItem.dataset.type = 'cacheStorage';
 
 								storageItem.innerHTML = `
-									<div class="storage-title">${cacheInfo.name}</div>
+									<div class="storage-title">${this.escapeHtml(cacheInfo.name)}</div>
 									<div class="storage-size">${this.formatBytes(cacheInfo.size || 0)}</div>
 									<div class="storage-size">${cacheInfo.items} 项资源</div>
 									<div class="storage-time">${cacheInfo.date ? this.formatDate(cacheInfo.date) : '日期未知'}</div>
@@ -2577,10 +2579,10 @@ SOFTWARE.
 							const searchInput = document.getElementById('storageSearchInput');
 							this.filterStorageItems(searchInput ? searchInput.value : '');
 						}).catch(error => {
-							storageItemsList.innerHTML = `<div class="placeholder2">获取缓存详情失败: ${error.message}</div>`;
+							storageItemsList.innerHTML = `<div class="placeholder2">获取缓存详情失败: ${this.escapeHtml(error.message)}</div>`;
 						});
 					}).catch(error => {
-						storageItemsList.innerHTML = `<div class="placeholder2">获取缓存列表失败: ${error.message}</div>`;
+						storageItemsList.innerHTML = `<div class="placeholder2">获取缓存列表失败: ${this.escapeHtml(error.message)}</div>`;
 					});
 				} else {
 					storageItemsList.innerHTML = '<div class="placeholder2">您的浏览器不支持CacheStorage</div>';
@@ -2599,8 +2601,10 @@ SOFTWARE.
 				const selectedItems = document.querySelectorAll('.storage-item.selected');
 				selectedItems.forEach(item => item.classList.remove('selected'));
 
-				// 设置当前选择
-				const currentItem = document.querySelector(`.storage-item[data-key="${key}"], .storage-item[data-name="${key}"]`);
+				// 设置当前选择（遍历比较 dataset，避免键名含引号/反斜杠时选择器语法错误）
+				const currentItem = Array.from(document.querySelectorAll('.storage-item')).find(item =>
+					item.dataset.key === key || item.dataset.name === key
+				);
 				if (currentItem) {
 					currentItem.classList.add('selected');
 				}
@@ -2634,7 +2638,7 @@ SOFTWARE.
 							break;
 					}
 				} catch (error) {
-					document.getElementById('editorContent').innerHTML = `<div class="placeholder">获取详细信息失败: ${error.message}</div>`;
+					document.getElementById('editorContent').innerHTML = `<div class="placeholder">获取详细信息失败: ${this.escapeHtml(error.message)}</div>`;
 				}
 			},
 
@@ -2669,7 +2673,8 @@ SOFTWARE.
 			// 渲染 localStorage 编辑器
 			renderLocalStorageEditor: function (key, value, isNew) {
 				this.currentSelection = { type: 'localStorage', key: key, originalKey: isNew ? null : key, isNew: isNew };
-				const size = new Blob([key + value]).size;
+				// value 可能为 null（选择期间键被外部删除），按 '' 处理
+				const size = this.localStorageEntrySize(key, value);
 
 				const html = `
 					<div class="detail-section">
@@ -2749,6 +2754,7 @@ SOFTWARE.
 
 			// 渲染 IndexedDB 编辑器
 			renderIndexedDBEditor: function (dbName, dbInfo, isNew) {
+				this.revokeBinaryPreviews();
 				this.currentSelection = { type: 'indexedDB', key: dbName, originalName: isNew ? null : dbName, isNew: isNew, dbInfo: dbInfo };
 
 				let objectStoresHtml = '';
@@ -2825,27 +2831,58 @@ SOFTWARE.
 				if (!store.data || store.data.length === 0) {
 					return '<div class="empty-records">该对象存储暂无记录</div>';
 				}
+				if (!this._binaryPreviewUrls) this._binaryPreviewUrls = [];
 				const keyEditable = !store.keyPath && !store.autoIncrement;
+				// 加载被截断时给出明显警告，提示结构变更可能影响未加载的记录
+				const truncatedWarning = (typeof store.records === 'number' && store.records > store.data.length)
+					? `<div class="records-truncated-warning">仅加载前 ${store.data.length} 条记录（共 ${store.records} 条），为避免数据丢失，涉及结构变更时请谨慎操作</div>`
+					: '';
 				return `
+					${truncatedWarning}
 					<table class="records-table">
 						<tr>
 							<th class="key-cell">键 / Key</th>
 							<th class="value-cell">值 / Value (JSON)</th>
 							<th class="action-cell">操作</th>
 						</tr>
-						${store.data.map((record, recordIndex) => `
-							<tr data-record-index="${recordIndex}" data-original-key="${this.escapeHtml(JSON.stringify(record.key))}">
+						${store.data.map((record, recordIndex) => {
+							const bin = this.getRecordBinaryInfo(record.value);
+							let valueCellHtml;
+							let binaryAttr = '';
+							if (bin) {
+								// 二进制记录：显示预览与信息，不提供文本编辑，防止 JSON 化后损坏数据
+								binaryAttr = ' data-binary="true"';
+								const url = URL.createObjectURL(bin.blob);
+								const blobIndex = this._binaryPreviewUrls.push(url) - 1;
+								let previewHtml = '';
+								if (bin.mime.startsWith('image/')) {
+									previewHtml = `<img class="binary-preview" src="${url}" alt="">`;
+								} else if (bin.mime.startsWith('video/')) {
+									previewHtml = `<video class="binary-preview" src="${url}" controls muted playsinline></video>`;
+								}
+								valueCellHtml = `
+									<div class="binary-value-cell">
+										${previewHtml}
+										<span class="binary-info">[二进制数据] ${this.escapeHtml(bin.mime || '未知类型')} · ${this.formatBytes(bin.size)}（不可直接编辑）</span>
+										<button class="binary-download-btn" data-action="download-binary" data-blob-index="${blobIndex}" data-mime="${this.escapeHtml(bin.mime)}">下载</button>
+									</div>`;
+							} else {
+								valueCellHtml = `<textarea class="value-cell-textarea" data-field="record-value">${this.escapeHtml(JSON.stringify(record.value, null, 2))}</textarea>`;
+							}
+							return `
+							<tr data-record-index="${recordIndex}" data-original-key="${this.escapeHtml(JSON.stringify(record.key))}"${binaryAttr}>
 								<td class="key-cell">
 									${keyEditable ? `<input type="text" class="editable-input" value="${this.escapeHtml(JSON.stringify(record.key))}" data-field="record-key">` : `<span>${this.escapeHtml(JSON.stringify(record.key))}</span>`}
 								</td>
 								<td class="value-cell">
-									<textarea class="value-cell-textarea" data-field="record-value">${this.escapeHtml(JSON.stringify(record.value, null, 2))}</textarea>
+									${valueCellHtml}
 								</td>
 								<td class="action-cell">
 									<button class="inline-action-btn danger" title="删除记录" data-action="delete-record">${this.deleteIconSvg}</button>
 								</td>
 							</tr>
-						`).join('')}
+						`;
+						}).join('')}
 					</table>
 				`;
 			},
@@ -2878,6 +2915,24 @@ SOFTWARE.
 				} else if (action === 'add-object-store') {
 					e.preventDefault();
 					this.addObjectStore();
+				} else if (action === 'download-binary') {
+					e.preventDefault();
+					// 下载二进制记录
+					const url = this._binaryPreviewUrls && this._binaryPreviewUrls[parseInt(btn.dataset.blobIndex, 10)];
+					if (!url) return;
+					const mime = btn.dataset.mime || '';
+					const ext = (mime.split('/')[1] || 'bin').split(';')[0];
+					const row = btn.closest('tr');
+					let name = 'binary';
+					if (row) {
+						try { name = JSON.parse(row.dataset.originalKey || '"binary"'); } catch (e2) { }
+					}
+					const a = document.createElement('a');
+					a.href = url;
+					a.download = `${name}.${ext}`;
+					document.body.appendChild(a);
+					a.click();
+					document.body.removeChild(a);
 				}
 			},
 
@@ -3010,18 +3065,62 @@ SOFTWARE.
 				row.style.display = 'none';
 			},
 
-			// 估算单条记录占用的字节数
+			// 估算单条记录占用的字节数（递归处理嵌套在对象/数组中的二进制数据）
 			calculateRecordSize: function (value) {
 				try {
 					if (value === null || value === undefined) return 0;
 					if (typeof value === 'string') return new Blob([value]).size;
+					if (typeof value === 'number' || typeof value === 'boolean') return 8;
 					if (value instanceof Blob) return value.size;
 					if (value instanceof ArrayBuffer) return value.byteLength;
 					if (ArrayBuffer.isView(value)) return value.byteLength;
+					if (Array.isArray(value)) {
+						return value.reduce((sum, item) => sum + this.calculateRecordSize(item), 0);
+					}
+					if (typeof value === 'object') {
+						return Object.keys(value).reduce((sum, key) => {
+							return sum + new Blob([key]).size + this.calculateRecordSize(value[key]);
+						}, 0);
+					}
 					return new Blob([JSON.stringify(value)]).size;
 				} catch (e) {
 					return 0;
 				}
+			},
+
+			// 识别记录值中的二进制内容（ArrayBuffer / TypedArray / Blob，或含 buffer 字段的对象）
+			getRecordBinaryInfo: function (value) {
+				try {
+					if (!value || typeof value !== 'object') return null;
+					if (value instanceof Blob) {
+						return { blob: value, mime: value.type || '', size: value.size };
+					}
+					let buffer = null;
+					let mime = '';
+					if (value instanceof ArrayBuffer) {
+						buffer = value;
+					} else if (ArrayBuffer.isView(value)) {
+						buffer = value.buffer;
+					} else if (value.buffer instanceof ArrayBuffer) {
+						buffer = value.buffer;
+						mime = typeof value.mime === 'string' ? value.mime : '';
+					} else if (ArrayBuffer.isView(value.buffer)) {
+						buffer = value.buffer.buffer;
+						mime = typeof value.mime === 'string' ? value.mime : '';
+					}
+					if (!buffer) return null;
+					return { blob: new Blob([buffer], { type: mime }), mime, size: buffer.byteLength };
+				} catch (e) {
+					return null;
+				}
+			},
+
+			// 释放二进制预览创建的 blob URL
+			revokeBinaryPreviews: function () {
+				if (this._binaryPreviewUrls && this._binaryPreviewUrls.length) {
+					this._binaryPreviewUrls.forEach(u => URL.revokeObjectURL(u));
+				}
+				this._binaryPreviewUrls = [];
 			},
 
 			// 获取IndexedDB详细信息
@@ -3061,7 +3160,7 @@ SOFTWARE.
 								const objectStore = transaction.objectStore(storeName);
 								const indexes = Array.from(objectStore.indexNames);
 
-								// 获取对象存储的数据（最多200条），同时统计总大小和总记录数
+								// 获取对象存储的数据（最多1000条），同时统计总大小和总记录数
 								const data = [];
 								let storeTotalBytes = 0;
 								let storeTotalRecords = 0;
@@ -3071,24 +3170,54 @@ SOFTWARE.
 									if (cursor) {
 										storeTotalRecords++;
 										storeTotalBytes += this.calculateRecordSize(cursor.value);
-										if (data.length < 200) {
+										if (data.length < 1000) {
 											data.push({ id: data.length + 1, key: cursor.key, value: cursor.value });
 										}
 										cursor.continue();
 									}
 								};
-								cursorRequest.onerror = () => {
-									// 如果游标失败，退回到 getAll
+								cursorRequest.onerror = (e) => {
+									// 阻止事务因游标失败而中止，在同一（未失败的）事务上回退到 getAll/getAllKeys
+									e.preventDefault();
+									e.stopPropagation();
+									// 点号 keyPath（如 'a.b'）逐段取值
+									const getKeyByPath = (value) => {
+										if (!objectStore.keyPath) return undefined;
+										return String(objectStore.keyPath).split('.').reduce((obj, seg) => {
+											return (obj !== null && typeof obj === 'object') ? obj[seg] : undefined;
+										}, value);
+									};
+									const keysRequest = objectStore.getAllKeys();
 									const dataRequest = objectStore.getAll();
-									dataRequest.onsuccess = (e) => {
-										const result = e.target.result || [];
+									let allKeys = [];
+									keysRequest.onsuccess = (ke) => {
+										allKeys = ke.target.result || [];
+									};
+									dataRequest.onsuccess = (de) => {
+										const result = de.target.result || [];
 										storeTotalRecords = result.length;
 										storeTotalBytes = result.reduce((sum, value) => sum + this.calculateRecordSize(value), 0);
 										result.slice(0, 200).forEach((value, index) => {
-											const key = objectStore.keyPath ? value[objectStore.keyPath] : (objectStore.autoIncrement ? index + 1 : value);
+											let key;
+											if (objectStore.keyPath && value !== null && typeof value === 'object') {
+												// 内联键：从 value 中按 keyPath 提取
+												key = getKeyByPath(value);
+											} else {
+												// out-of-line 键（含 value 为原始类型的情况）：取真实键
+												key = allKeys[index];
+											}
 											data.push({ id: index + 1, key: key, value });
 										});
 									};
+								};
+
+								transaction.onerror = () => {
+									db.close();
+									reject(transaction.error || new Error(`读取对象存储 ${storeName} 失败`));
+								};
+								transaction.onabort = () => {
+									db.close();
+									reject(transaction.error || new Error(`读取对象存储 ${storeName} 被中止`));
 								};
 
 								transaction.oncomplete = () => {
@@ -3187,6 +3316,7 @@ SOFTWARE.
 					}
 					this.clearDirty();
 					this.loadStorageItems(this.currentStorageType);
+					this.updateStorageSpaceInfo(this.currentStorageType);
 					alert('保存成功');
 				} catch (error) {
 					console.error('保存失败:', error);
@@ -3269,36 +3399,65 @@ SOFTWARE.
 						throw new Error('对象存储名称不能为空');
 					}
 
+					// 对比原始对象存储元数据，判断是否需要重建或修改索引
+					const originalStore = originalStoreName ? (dbInfo.objectStores || []).find(s => s.name === originalStoreName) : null;
+
 					const records = [];
 					const rows = section.querySelectorAll('.records-table tr[data-record-index]:not([data-deleted="true"])');
 					for (const row of rows) {
 						const keyInput = row.querySelector('[data-field="record-key"]');
 						const valueInput = row.querySelector('[data-field="record-value"]');
-						const originalKeyStr = row.dataset.originalKey || '';
 						const isNewRecord = row.dataset.isNew === 'true';
+						const isBinary = row.dataset.binary === 'true';
+
+						// 原始键直接引用内存中保存的键对象，不做 JSON 往返，
+						// 避免 Date/数组/ArrayBuffer 键在序列化后变质
+						let originalKeyRef;
+						if (!isNewRecord && originalStore && originalStore.data) {
+							const recordIndex = parseInt(row.dataset.recordIndex, 10);
+							if (Number.isInteger(recordIndex) && originalStore.data[recordIndex]) {
+								originalKeyRef = originalStore.data[recordIndex].key;
+							}
+						}
 
 						let recordKey;
 						if (keyInput) {
 							recordKey = this.parseJsonValue(keyInput.value);
 						} else {
-							recordKey = originalStoreName ? this.parseJsonValue(originalKeyStr) : undefined;
+							recordKey = originalKeyRef;
 						}
 
 						let recordValue;
-						if (valueInput) {
+						if (isBinary) {
+							// 二进制记录不可文本编辑，保存时回填原始值，防止被 JSON 化损坏
+							recordValue = undefined;
+						} else if (valueInput) {
 							recordValue = this.parseJsonValue(valueInput.value);
 						}
 
 						records.push({
-							originalKey: originalKeyStr ? this.parseJsonValue(originalKeyStr) : undefined,
+							originalKey: originalKeyRef,
 							key: recordKey,
 							value: recordValue,
-							isNew: isNewRecord
+							isNew: isNewRecord,
+							binaryIndex: isBinary ? parseInt(row.dataset.recordIndex, 10) : undefined
 						});
 					}
 
-					// 对比原始对象存储元数据，判断是否需要重建或修改索引
-					const originalStore = originalStoreName ? (dbInfo.objectStores || []).find(s => s.name === originalStoreName) : null;
+					// 回填二进制记录的原始值
+					if (originalStore && originalStore.data) {
+						records.forEach(rec => {
+							if (rec.binaryIndex !== undefined && originalStore.data[rec.binaryIndex]) {
+								rec.value = originalStore.data[rec.binaryIndex].value;
+							}
+						});
+					}
+					// 找不到原始值的二进制记录视为放弃，避免写入空值损坏数据
+					for (let i = records.length - 1; i >= 0; i--) {
+						if (records[i].binaryIndex !== undefined && records[i].value === undefined) {
+							records.splice(i, 1);
+						}
+					}
 					let wasRecreated = false;
 					let indexChanged = false;
 					if (originalStore) {
@@ -3354,6 +3513,15 @@ SOFTWARE.
 				);
 
 				if (hasStructuralChanges) {
+					// 结构变更会删除旧对象存储并按内存记录重写，而内存中仅加载了前 200 条。
+					// 先在旧存储被删除前读取其全部记录并与编辑结果合并，避免未加载的记录丢失。
+					for (const store of stores) {
+						const willRewrite = !store.isNew && store.originalName &&
+							(store.wasRecreated || store.originalName !== store.newName);
+						if (!isNew && willRewrite) {
+							await this.mergeFullStoreRecords(dbName, store, dbInfo);
+						}
+					}
 					await this.applyIndexedDBStructuralChanges(dbName, isNew ? 0 : dbInfo.version, deletedStores, stores, dbInfo);
 				}
 
@@ -3433,6 +3601,226 @@ SOFTWARE.
 				});
 			},
 
+			// 比较两个 IndexedDB 键是否相等（支持数组/Date/二进制键；类型不可比较时视为不相等）
+			idbKeysEqual: function (a, b) {
+				if (a === b) return true;
+				if (a === undefined || b === undefined) return false;
+				try {
+					return indexedDB.cmp(a, b) === 0;
+				} catch (e) {
+					return false;
+				}
+			},
+
+			// 校验一个值是否为合法的 IndexedDB 键
+			isValidIdbKey: function (key) {
+				if (typeof key === 'number') return !Number.isNaN(key);
+				if (typeof key === 'string') return true;
+				if (key instanceof Date) return !Number.isNaN(key.getTime());
+				if (key instanceof ArrayBuffer || ArrayBuffer.isView(key)) return true;
+				if (Array.isArray(key)) return key.length > 0 && key.every(item => this.isValidIdbKey(item));
+				return false;
+			},
+
+			// 读取对象存储的全部记录（不受编辑器 200 条加载上限影响）
+			readAllStoreRecords: function (dbName, storeName) {
+				return new Promise((resolve, reject) => {
+					const request = indexedDB.open(dbName);
+					request.onerror = () => reject(new Error(`打开数据库 ${dbName} 失败`));
+					request.onblocked = () => reject(new Error(`数据库 ${dbName} 被阻塞，请关闭其他标签页`));
+					request.onsuccess = (event) => {
+						const db = event.target.result;
+						if (!db.objectStoreNames.contains(storeName)) {
+							db.close();
+							reject(new Error(`对象存储 ${storeName} 不存在`));
+							return;
+						}
+						const transaction = db.transaction(storeName, 'readonly');
+						const objectStore = transaction.objectStore(storeName);
+						let allKeys = [];
+						let allValues = [];
+						const keysRequest = objectStore.getAllKeys();
+						const valuesRequest = objectStore.getAll();
+						keysRequest.onsuccess = (e) => { allKeys = e.target.result || []; };
+						valuesRequest.onsuccess = (e) => { allValues = e.target.result || []; };
+						transaction.oncomplete = () => {
+							db.close();
+							resolve(allValues.map((value, index) => ({ key: allKeys[index], value: value })));
+						};
+						transaction.onerror = () => {
+							db.close();
+							reject(transaction.error || new Error(`读取对象存储 ${storeName} 失败`));
+						};
+						transaction.onabort = () => {
+							db.close();
+							reject(transaction.error || new Error(`读取对象存储 ${storeName} 被中止`));
+						};
+					};
+				});
+			},
+
+			// 结构变更重写前，用原存储的全量记录与编辑器中的改动合并：
+			// 未加载进编辑器（超出 200 条上限）的记录原样保留，
+			// 已加载但被删除的记录丢弃，编辑过/新增的记录以编辑器内容为准。
+			mergeFullStoreRecords: async function (dbName, store, dbInfo) {
+				const originalStore = (dbInfo.objectStores || []).find(s => s.name === store.originalName);
+				if (!originalStore) return;
+				// 未发生截断（已加载全部记录）时，编辑器中的记录即为全量，无需合并
+				if (originalStore.data && typeof originalStore.records === 'number' &&
+					originalStore.data.length >= originalStore.records) return;
+				const fullRecords = await this.readAllStoreRecords(dbName, store.originalName);
+				const loadedKeys = (originalStore.data || []).map(r => r.key);
+				const editedRecords = store.records.filter(r => !r.isNew && r.originalKey !== undefined);
+				const newRecords = store.records.filter(r => r.isNew);
+				const merged = [];
+				fullRecords.forEach(fullRecord => {
+					const edited = editedRecords.find(r => this.idbKeysEqual(r.originalKey, fullRecord.key));
+					if (edited) {
+						merged.push(edited);
+						return;
+					}
+					const wasLoaded = loadedKeys.some(k => this.idbKeysEqual(k, fullRecord.key));
+					if (!wasLoaded) {
+						// 超出加载上限、未出现在编辑器中的记录：原样保留
+						merged.push({ originalKey: fullRecord.key, key: fullRecord.key, value: fullRecord.value, isNew: false });
+					}
+					// 已加载但不在编辑器记录中的，视为用户已删除，不再保留
+				});
+				store.records = merged.concat(newRecords);
+			},
+
+			// 为单个对象存储生成写操作计划（纯内存计算与校验，不触碰数据库）。
+			// 任何校验失败都会在此抛出异常，保证失败时不产生任何写操作。
+			buildIndexedDBWritePlan: function (store, dbInfo) {
+				const keyPath = store.keyPath || null;
+				const autoIncrement = !!store.autoIncrement;
+
+				// 新对象存储、重命名、重建后，原有记录已随旧存储删除，
+				// 因此把当前所有记录都当作新记录写入
+				const forceAsNew = store.isNew || store.wasRecreated || (store.originalName && store.originalName !== store.newName);
+
+				// 点号 keyPath（如 'a.b'）逐段取值
+				const extractKey = (value) => {
+					if (value === null || typeof value !== 'object') return undefined;
+					return String(keyPath).split('.').reduce((obj, seg) => {
+						return (obj !== null && typeof obj === 'object') ? obj[seg] : undefined;
+					}, value);
+				};
+
+				// 计算实际使用的 key
+				const getRecordKey = (record) => {
+					if (keyPath) {
+						return extractKey(record.value);
+					}
+					return record.key;
+				};
+
+				// 第一阶段：逐条校验并算出目标键
+				const entries = store.records.map(record => {
+					const isNewRecord = record.isNew || forceAsNew;
+
+					// 校验：带 keyPath 且自增时，value 必须是对象
+					if (keyPath && autoIncrement && (record.value === null || typeof record.value !== 'object')) {
+						throw new Error('自增且含 Key Path 的对象存储，记录值必须对象，即必须含有 Key Path 所对应的键值对');
+					}
+
+					const effectiveKey = getRecordKey(record);
+
+					if (!keyPath && !autoIncrement && (effectiveKey === undefined || effectiveKey === '')) {
+						throw new Error('记录键不能为空');
+					}
+					if (keyPath && !autoIncrement && effectiveKey === undefined) {
+						throw new Error(`记录值缺少 Key Path "${keyPath}" 对应的字段`);
+					}
+					if (effectiveKey !== undefined && effectiveKey !== '' && !this.isValidIdbKey(effectiveKey)) {
+						throw new Error(`记录键无效（键必须是数字、字符串、日期、二进制数据或数组）: ${JSON.stringify(effectiveKey)}`);
+					}
+
+					return { record, isNewRecord, effectiveKey };
+				});
+
+				// 校验：新增或被修改的键不得与其他记录的目标键冲突
+				entries.forEach((entry, index) => {
+					if (entry.effectiveKey === undefined || entry.effectiveKey === '') return;
+					const keyIntroduced = entry.record.isNew ||
+						(entry.record.originalKey !== undefined && !this.idbKeysEqual(entry.record.originalKey, entry.effectiveKey));
+					if (!keyIntroduced) return;
+					const duplicated = entries.some((other, otherIndex) => {
+						return otherIndex !== index && other.effectiveKey !== undefined && other.effectiveKey !== '' &&
+							this.idbKeysEqual(other.effectiveKey, entry.effectiveKey);
+					});
+					if (duplicated) {
+						throw new Error(`记录键重复: ${JSON.stringify(entry.effectiveKey)}`);
+					}
+				});
+
+				// 第二阶段：构造写操作序列
+				const ops = [];
+
+				if (!forceAsNew && dbInfo) {
+					// 删除已不存在的旧记录（按键对象比较，而非引用比较）
+					const originalStore = (dbInfo.objectStores || []).find(s => s.name === (store.originalName || store.newName));
+					if (originalStore && originalStore.data) {
+						originalStore.data.forEach(origRecord => {
+							const survives = store.records.some(record => {
+								return !record.isNew && record.originalKey !== undefined &&
+									this.idbKeysEqual(record.originalKey, origRecord.key);
+							});
+							if (!survives) {
+								ops.push({ type: 'delete', key: origRecord.key });
+							}
+						});
+					}
+				}
+
+				entries.forEach(({ record, isNewRecord, effectiveKey }) => {
+					const keyChanged = record.originalKey !== undefined && !this.idbKeysEqual(record.originalKey, effectiveKey);
+
+					if (keyPath) {
+						// key 包含在 value 中，不能显式传 key
+						if (isNewRecord) {
+							ops.push({ type: 'add', value: record.value });
+						} else {
+							// 如果 key 发生变化，先删除旧记录
+							if (keyChanged) {
+								ops.push({ type: 'delete', key: record.originalKey });
+							}
+							ops.push({ type: 'put', value: record.value });
+						}
+					} else if (autoIncrement) {
+						// 自增时，key 可选
+						if (isNewRecord) {
+							if (effectiveKey === undefined || effectiveKey === '') {
+								ops.push({ type: 'add', value: record.value });
+							} else {
+								ops.push({ type: 'add', value: record.value, key: effectiveKey });
+							}
+						} else {
+							if (keyChanged) {
+								ops.push({ type: 'delete', key: record.originalKey });
+								ops.push({ type: 'add', value: record.value, key: effectiveKey });
+							} else {
+								ops.push({ type: 'put', value: record.value, key: effectiveKey });
+							}
+						}
+					} else {
+						// 无 keyPath 且非自增，必须提供 key（已在第一阶段校验）
+						if (isNewRecord) {
+							ops.push({ type: 'add', value: record.value, key: effectiveKey });
+						} else {
+							if (keyChanged) {
+								ops.push({ type: 'delete', key: record.originalKey });
+								ops.push({ type: 'add', value: record.value, key: effectiveKey });
+							} else {
+								ops.push({ type: 'put', value: record.value, key: effectiveKey });
+							}
+						}
+					}
+				});
+
+				return ops;
+			},
+
 			// 应用 IndexedDB 记录变更
 			applyIndexedDBRecordChanges: function (dbName, stores, dbInfo) {
 				return new Promise((resolve, reject) => {
@@ -3443,109 +3831,50 @@ SOFTWARE.
 					request.onsuccess = (event) => {
 						const db = event.target.result;
 
-						const storePromises = stores.map(store => {
-							if (!db.objectStoreNames.contains(store.newName)) {
-								return Promise.resolve();
-							}
+						// 第一阶段：在内存中为所有对象存储生成写计划并完成全部校验，
+						// 任何一个校验失败都不开启写事务，确保不会产生任何写操作
+						let plans;
+						try {
+							plans = stores
+								.filter(store => db.objectStoreNames.contains(store.newName))
+								.map(store => ({ store: store, ops: this.buildIndexedDBWritePlan(store, dbInfo) }));
+						} catch (e) {
+							db.close();
+							reject(e);
+							return;
+						}
 
+						// 第二阶段：校验全部通过后，才逐存储开启读写事务并执行写计划
+						const storePromises = plans.map(plan => {
 							return new Promise((res, rej) => {
-								const transaction = db.transaction(store.newName, 'readwrite');
+								const transaction = db.transaction(plan.store.newName, 'readwrite');
 								transaction.onerror = (e) => rej(e.target.error);
 								transaction.onabort = () => rej(transaction.error || new Error('事务已中止，可能存在重复键或其他约束错误'));
 								transaction.oncomplete = () => res();
 
-								const objectStore = transaction.objectStore(store.newName);
-								const keyPath = objectStore.keyPath;
-								const autoIncrement = objectStore.autoIncrement;
-
-								// 新对象存储、重命名、重建后，原有记录已随旧存储删除，
-								// 因此把当前所有记录都当作新记录写入
-								const forceAsNew = store.isNew || store.wasRecreated || (store.originalName && store.originalName !== store.newName);
-
-								// 计算实际使用的 key
-								const getRecordKey = (record) => {
-									if (keyPath) {
-										if (record.value && typeof record.value === 'object' && keyPath in record.value) {
-											return record.value[keyPath];
-										}
-										return undefined;
-									}
-									return record.key;
-								};
+								const objectStore = transaction.objectStore(plan.store.newName);
 
 								try {
-									if (!forceAsNew && dbInfo) {
-										// 删除已不存在的旧记录
-										const originalStore = (dbInfo.objectStores || []).find(s => s.name === (store.originalName || store.newName));
-										if (originalStore && originalStore.data) {
-											const survivingOriginalKeys = new Set();
-											store.records.forEach(record => {
-												if (!record.isNew) {
-													survivingOriginalKeys.add(record.originalKey);
-												}
-											});
-											originalStore.data.forEach(origRecord => {
-												if (!survivingOriginalKeys.has(origRecord.key)) {
-													objectStore.delete(origRecord.key);
-												}
-											});
-										}
-									}
-
-									store.records.forEach(record => {
-										const isNewRecord = record.isNew || forceAsNew;
-										const effectiveKey = getRecordKey(record);
-
-										// 校验：带 keyPath 且自增时，value 必须是对象
-										if (keyPath && autoIncrement && (record.value === null || typeof record.value !== 'object')) {
-											throw new Error('自增且含 Key Path 的对象存储，记录值必须对象，即必须含有 Key Path 所对应的键值对');
-										}
-
-										if (keyPath) {
-											// key 包含在 value 中，不能显式传 key
-											if (isNewRecord) {
-												objectStore.add(record.value);
+									plan.ops.forEach(op => {
+										if (op.type === 'delete') {
+											objectStore.delete(op.key);
+										} else if (op.type === 'add') {
+											if (op.key === undefined) {
+												objectStore.add(op.value);
 											} else {
-												// 如果 key 发生变化，先删除旧记录
-												if (record.originalKey !== undefined && record.originalKey !== effectiveKey) {
-													objectStore.delete(record.originalKey);
-												}
-												objectStore.put(record.value);
+												objectStore.add(op.value, op.key);
 											}
-										} else if (autoIncrement) {
-											// 自增时，key 可选
-											if (isNewRecord) {
-												if (effectiveKey === undefined || effectiveKey === '') {
-													objectStore.add(record.value);
-												} else {
-													objectStore.add(record.value, effectiveKey);
-												}
+										} else if (op.type === 'put') {
+											if (op.key === undefined) {
+												objectStore.put(op.value);
 											} else {
-												if (record.originalKey !== undefined && record.originalKey !== effectiveKey) {
-													objectStore.delete(record.originalKey);
-													objectStore.add(record.value, effectiveKey);
-												} else {
-													objectStore.put(record.value, effectiveKey);
-												}
-											}
-										} else {
-											// 无 keyPath 且非自增，必须提供 key
-											if (effectiveKey === undefined || effectiveKey === '') {
-												throw new Error('记录键不能为空');
-											}
-											if (isNewRecord) {
-												objectStore.add(record.value, effectiveKey);
-											} else {
-												if (record.originalKey !== undefined && record.originalKey !== effectiveKey) {
-													objectStore.delete(record.originalKey);
-													objectStore.add(record.value, effectiveKey);
-												} else {
-													objectStore.put(record.value, effectiveKey);
-												}
+												objectStore.put(op.value, op.key);
 											}
 										}
 									});
 								} catch (e) {
+									// 执行期异常：中止事务回滚全部写入，避免只写了一半
+									try { transaction.abort(); } catch (e2) { }
 									rej(e);
 								}
 							});
@@ -3567,7 +3896,7 @@ SOFTWARE.
 				var alertText = "确定删除 " + key + " 吗？\n\n注意：不建议在这里删除任何数据，可能会引发很多未知问题。";
 				if (storageType == 'localStorage') alertText = alertText + "\n删除该存储项后，可能导致部分网站功能异常，本地数据丢失。";
 				if (storageType == 'indexedDB') alertText = alertText + "\n删除该存储项后，可能导致需要大容量储存的网站出现异常，本地数据丢失。";
-				if (storageType == 'cacheStorage') alertText = alertText + "\n删除该存储项后，可能导致使用了 PWA 技术的网站出现异常。";
+				if (storageType == 'cacheStorage') alertText = alertText + "\n删除该缓存后，其中缓存的全部资源将被一并删除。";
 				if (await confirm(alertText)) {
 					await this.doDeleteStorageItem(storageType, key);
 				}
@@ -3583,50 +3912,64 @@ SOFTWARE.
 								break;
 
 							case 'indexedDB':
-								// 打开选定的数据库
-								const openRequest = indexedDB.open(key);
-								openRequest.onsuccess = (event) => {
-									const db = event.target.result;
-									// 获取所有对象存储名称
-									const storeNames = Array.from(db.objectStoreNames);
-
-									// 遍历每个对象存储并清空数据
-									storeNames.forEach(storeName => {
-										const transaction = db.transaction(storeName, 'readwrite');
-										const objectStore = transaction.objectStore(storeName);
-										const clearRequest = objectStore.clear();
-
-										clearRequest.onsuccess = () => {
-											console.log(`对象存储 ${storeName} 数据已清空`);
+								// 打开选定的数据库并清空所有对象存储，等待清空真正完成后再继续
+								await new Promise((resolve) => {
+									const openRequest = indexedDB.open(key);
+									openRequest.onsuccess = (event) => {
+										const db = event.target.result;
+										// 获取所有对象存储名称
+										const storeNames = Array.from(db.objectStoreNames);
+										if (storeNames.length === 0) {
+											db.close();
+											resolve();
+											return;
+										}
+										let completed = 0;
+										const done = () => {
+											completed++;
+											if (completed === storeNames.length) {
+												db.close(); // 操作完成后关闭数据库
+												resolve();
+											}
 										};
-										clearRequest.onerror = (e) => {
-											console.error(`清空 ${storeName} 失败:`, e.target.error);
-										};
-									});
 
-									db.close(); // 操作完成后关闭数据库
-								};
-								openRequest.onerror = (e) => {
-									console.error(`打开数据库 ${key} 失败:`, e.target.error);
-								};
+										// 遍历每个对象存储并清空数据
+										storeNames.forEach(storeName => {
+											const transaction = db.transaction(storeName, 'readwrite');
+											const objectStore = transaction.objectStore(storeName);
+											const clearRequest = objectStore.clear();
+
+											clearRequest.onsuccess = () => {
+												console.log(`对象存储 ${storeName} 数据已清空`);
+											};
+											clearRequest.onerror = (e) => {
+												console.error(`清空 ${storeName} 失败:`, e.target.error);
+											};
+											transaction.oncomplete = done;
+											transaction.onerror = done;
+											transaction.onabort = done;
+										});
+									};
+									openRequest.onerror = (e) => {
+										console.error(`打开数据库 ${key} 失败:`, e.target.error);
+										resolve();
+									};
+								});
 								break;
 
 							case 'cacheStorage':
-								// 删除缓存并同步注销 Service Worker
+								// 仅删除缓存本身及其资源，不影响 Service Worker 注册
 								if ('caches' in window) {
 									await caches.delete(key);
-								}
-								if ('serviceWorker' in navigator) {
-									const registrations = await navigator.serviceWorker.getRegistrations();
-									for (const registration of registrations) {
-										await registration.unregister();
-									}
 								}
 								break;
 						}
 
 						// 重新加载存储项
 						this.loadStorageItems(this.currentStorageType);
+
+						// 刷新用量摘要
+						this.updateStorageSpaceInfo(this.currentStorageType);
 
 						// 清除编辑器
 						await this.clearSelection();
@@ -3655,14 +3998,30 @@ SOFTWARE.
 
 						case 'indexedDB':
 							if (window.indexedDB && window.indexedDB.databases) {
-								indexedDB.databases().then(databases => {
-									databases.forEach(dbInfo => {
+								try {
+									const databases = await indexedDB.databases();
+									// 等待所有数据库清空真正完成后再继续
+									await Promise.all(databases.map(dbInfo => new Promise((resolve) => {
 										// 打开数据库
 										const request = indexedDB.open(dbInfo.name, dbInfo.version);
 										request.onsuccess = (event) => {
 											const db = event.target.result;
+											const storeNames = Array.from(db.objectStoreNames);
+											if (storeNames.length === 0) {
+												db.close();
+												resolve();
+												return;
+											}
+											let completed = 0;
+											const done = () => {
+												completed++;
+												if (completed === storeNames.length) {
+													db.close(); // 操作完成后关闭数据库
+													resolve();
+												}
+											};
 											// 遍历所有对象存储
-											Array.from(db.objectStoreNames).forEach(storeName => {
+											storeNames.forEach(storeName => {
 												// 读写
 												const transaction = db.transaction(storeName, 'readwrite');
 												const objectStore = transaction.objectStore(storeName);
@@ -3675,16 +4034,19 @@ SOFTWARE.
 												clearRequest.onerror = (e) => {
 													console.error(`清空 ${storeName} 失败:`, e.target.error);
 												};
+												transaction.oncomplete = done;
+												transaction.onerror = done;
+												transaction.onabort = done;
 											});
-											db.close(); // 操作完成后关闭数据库
 										};
 										request.onerror = (e) => {
 											console.error(`打开数据库 ${dbInfo.name} 失败:`, e.target.error);
+											resolve();
 										};
-									});
-								}).catch(error => {
+									})));
+								} catch (error) {
 									console.error('获取数据库列表失败:', error);
-								});
+								}
 							} else {
 								console.error('浏览器不支持IndexedDB枚举');
 							}
@@ -3693,23 +4055,21 @@ SOFTWARE.
 							break;
 
 						case 'cacheStorage':
-							navigator.serviceWorker.getRegistrations().then(registrations => {
-								for (let registration of registrations) {
-									registration.unregister();
-								}
-							});
-							caches.keys().then(cacheNames => {
+							await caches.keys().then(cacheNames => {
 								return Promise.all(
 									cacheNames.map(cacheName => caches.delete(cacheName))
 								);
 							});
-							console.log('已删除所有缓存并注销 Service Workers');
-							alert(`已删除所有缓存并注销 Service Workers`);
+							console.log('已删除所有缓存');
+							alert(`已删除所有缓存`);
 							break;
 					}
 
 					// 重新加载存储项
 					this.loadStorageItems(this.currentStorageType);
+
+					// 刷新用量摘要
+					this.updateStorageSpaceInfo(this.currentStorageType);
 
 					// 清除编辑器
 					await this.clearSelection();
@@ -3721,40 +4081,48 @@ SOFTWARE.
 			updateStorageSpaceInfo: async function (storageType) {
 				let usedSpace = 0;
 				let totalSpace = 0;
+				let usedEstimated = false;
+				let totalEstimated = false;
+				let usedTitle = '';
+				let totalTitle = '';
 
 				try {
 					switch (storageType) {
 						case 'localStorage':
-							// 已用空间
+							// 已用空间（按 UTF-16 码元计量，与浏览器口径一致）
 							for (let i = 0; i < localStorage.length; i++) {
 								const key = localStorage.key(i);
 								const value = localStorage.getItem(key);
-								usedSpace += new Blob([key, value]).size;
+								usedSpace += this.localStorageEntrySize(key, value);
 							}
-							// 总容量5MB
+							// 总容量无 API 可读，按保守的 5MB 估算
 							totalSpace = 5 * 1024 * 1024;
+							totalEstimated = true;
+							usedTitle = 'localStorage 已用（按键和值的 UTF-16 长度计算）';
+							totalTitle = 'localStorage 配额无 API 可读，浏览器通常为 5-10MB，此为保守估算';
 							break;
 
-						case 'indexedDB':
-							// 使用StorageManager API获取IndexedDB空间信息
-							if (navigator.storage && navigator.storage.estimate) {
-								const estimation = await navigator.storage.estimate();
-								usedSpace = estimation.usage;
-								totalSpace = estimation.quota;
-							} else {
-								// 浏览器不支持StorageManager时的备选
-								const indexedDBInfo = await this.calculateIndexedDBSpace();
-								usedSpace = indexedDBInfo.used;
-								totalSpace = indexedDBInfo.total;
-							}
+						case 'indexedDB': {
+							const indexedDBInfo = await this.calculateIndexedDBSpace();
+							usedSpace = indexedDBInfo.used;
+							totalSpace = indexedDBInfo.total;
+							usedEstimated = indexedDBInfo.usedEstimated;
+							totalEstimated = indexedDBInfo.totalEstimated;
+							usedTitle = usedEstimated ? 'IndexedDB 已用（估算）' : 'IndexedDB 已用（精确）';
+							totalTitle = totalEstimated ? '整个源的配额未知，此为估算值' : '整个源的配额（所有存储类型共享）';
 							break;
+						}
 
-						case 'cacheStorage':
-							// 计算CacheStorage使用量
+						case 'cacheStorage': {
 							const cacheInfo = await this.calculateCacheStorageSpace();
 							usedSpace = cacheInfo.used;
 							totalSpace = cacheInfo.total;
+							usedEstimated = cacheInfo.usedEstimated;
+							totalEstimated = cacheInfo.totalEstimated;
+							usedTitle = usedEstimated ? 'CacheStorage 已用（估算）' : 'CacheStorage 已用（精确）';
+							totalTitle = totalEstimated ? '整个源的配额未知，此为估算值' : '整个源的配额（所有存储类型共享）';
 							break;
+						}
 					}
 				} catch (error) {
 					console.error("计算存储空间失败:", error);
@@ -3762,9 +4130,13 @@ SOFTWARE.
 					totalSpace = 0;
 				}
 
-				// 更新UI
-				document.getElementById('usedSpace').textContent = this.formatBytes(usedSpace);
-				document.getElementById('totalSpace').textContent = this.formatBytes(totalSpace);
+				// 更新UI（估算值加"约"前缀，并在 title 中说明口径）
+				const usedSpaceEl = document.getElementById('usedSpace');
+				const totalSpaceEl = document.getElementById('totalSpace');
+				usedSpaceEl.textContent = (usedEstimated ? '约 ' : '') + this.formatBytes(usedSpace);
+				totalSpaceEl.textContent = (totalEstimated ? '约 ' : '') + this.formatBytes(totalSpace);
+				usedSpaceEl.title = usedTitle;
+				totalSpaceEl.title = totalTitle;
 
 				// 更新进度条
 				const percentage = totalSpace > 0 ? Math.min(100, Math.round((usedSpace / totalSpace) * 100)) : 0;
@@ -3772,63 +4144,176 @@ SOFTWARE.
 			},
 
 
-			// 计算IndexedDB空间
-			calculateIndexedDBSpace: async function () {
-				return new Promise((resolve) => {
-					let used = 0;
-					let total = 0;
+			// localStorage 单项大小：浏览器按 UTF-16 码元计量（每码元 2 字节），value 为 null 时按 '' 处理
+			localStorageEntrySize: function (key, value) {
+				return ((key ? key.length : 0) + (value ? value.length : 0)) * 2;
+			},
 
-					if (navigator.storage && navigator.storage.estimate) {
-						navigator.storage.estimate().then(estimation => {
-							resolve({
-								used: estimation.usage,
-								total: estimation.quota
-							});
+			// 计算单个 IndexedDB 数据库的统计信息（记录数 + 字节大小，游标流式累计）
+			getDatabaseStats: function (dbName) {
+				return new Promise((resolve) => {
+					const request = indexedDB.open(dbName);
+					request.onsuccess = (event) => {
+						const db = event.target.result;
+						if (db.objectStoreNames.length === 0) {
+							db.close();
+							resolve({ count: 0, size: 0 });
+							return;
+						}
+						let count = 0;
+						let size = 0;
+						let completed = 0;
+
+						Array.from(db.objectStoreNames).forEach(storeName => {
+							const transaction = db.transaction(storeName, 'readonly');
+							const store = transaction.objectStore(storeName);
+
+							// 记录数
+							const countRequest = store.count();
+							countRequest.onsuccess = (e) => {
+								count += e.target.result;
+							};
+
+							// 字节大小（通过游标累计，避免大量数据入内存）
+							const cursorRequest = store.openCursor();
+							cursorRequest.onsuccess = (e) => {
+								const cursor = e.target.result;
+								if (cursor) {
+									size += this.calculateRecordSize(cursor.value);
+									cursor.continue();
+								}
+							};
+
+							transaction.oncomplete = () => {
+								completed++;
+								if (completed === db.objectStoreNames.length) {
+									db.close();
+									resolve({ count, size });
+								}
+							};
+							transaction.onerror = () => {
+								completed++;
+								if (completed === db.objectStoreNames.length) {
+									db.close();
+									resolve({ count, size });
+								}
+							};
 						});
-					} else {
-						// 备选：使用默认值
-						resolve({
-							used: 0,
-							total: 50 * 1024 * 1024 // 默认50MB
-						});
-					}
+					};
+					request.onerror = () => resolve({ count: 0, size: 0 });
 				});
 			},
 
-			// 计算CacheStorage空间
-			calculateCacheStorageSpace: async function () {
-				return new Promise(async (resolve) => {
-					let used = 0;
-					let total = 0;
-
-					if (navigator.storage && navigator.storage.estimate) {
+			// 计算IndexedDB空间
+			// 已用大小：优先取 estimate().usageDetails.indexedDB（精确）；
+			// 否则枚举所有数据库逐项求和（估算），并以整个源的总占用作为上限。
+			// 总量：estimate().quota（整个源共享的配额）。
+			calculateIndexedDBSpace: async function () {
+				let total = 0;
+				let totalEstimated = true;
+				let originUsage;
+				if (navigator.storage && navigator.storage.estimate) {
+					try {
 						const estimation = await navigator.storage.estimate();
-						used = estimation.usage;
-						total = estimation.quota;
-					} else if ('caches' in window) {
-						// 遍历所有缓存并计算大小
+						if (Number.isFinite(estimation.quota)) {
+							total = estimation.quota;
+							totalEstimated = false;
+						}
+						originUsage = estimation.usage;
+						// Chrome 非标准属性 usageDetails 中可能包含按类型拆分的精确用量
+						const details = estimation.usageDetails;
+						if (details && Number.isFinite(details.indexedDB)) {
+							return { used: details.indexedDB, total: total, usedEstimated: false, totalEstimated: totalEstimated };
+						}
+					} catch (e) {
+						console.error('获取存储估算失败:', e);
+					}
+				}
+
+				let used = 0;
+				if (window.indexedDB && window.indexedDB.databases) {
+					// 逐项求和（估算）
+					try {
+						const databases = await indexedDB.databases();
+						for (const dbInfo of databases) {
+							const stats = await this.getDatabaseStats(dbInfo.name);
+							used += stats.size;
+						}
+					} catch (e) {
+						console.error('统计 IndexedDB 大小失败:', e);
+					}
+				} else if (Number.isFinite(originUsage)) {
+					// 更粗的兜底：无法枚举数据库时退化为整个源的总占用
+					used = originUsage;
+				}
+				// 合理性约束：逐项之和不应超过整个源的总占用
+				if (Number.isFinite(originUsage) && used > originUsage) {
+					used = originUsage;
+				}
+				if (total === 0) {
+					total = 50 * 1024 * 1024; // 默认50MB（估算）
+					totalEstimated = true;
+				}
+				return { used: used, total: total, usedEstimated: true, totalEstimated: totalEstimated };
+			},
+
+			// 计算CacheStorage空间
+			// 已用大小：优先取 estimate().usageDetails.caches（精确）；
+			// 否则遍历所有缓存逐项求和（估算），并以整个源的总占用作为上限。
+			// 总量：estimate().quota（整个源共享的配额）。
+			calculateCacheStorageSpace: async function () {
+				let total = 0;
+				let totalEstimated = true;
+				let originUsage;
+				if (navigator.storage && navigator.storage.estimate) {
+					try {
+						const estimation = await navigator.storage.estimate();
+						if (Number.isFinite(estimation.quota)) {
+							total = estimation.quota;
+							totalEstimated = false;
+						}
+						originUsage = estimation.usage;
+						// Chrome 非标准属性 usageDetails 中可能包含按类型拆分的精确用量
+						const details = estimation.usageDetails;
+						if (details && Number.isFinite(details.caches)) {
+							return { used: details.caches, total: total, usedEstimated: false, totalEstimated: totalEstimated };
+						}
+					} catch (e) {
+						console.error('获取存储估算失败:', e);
+					}
+				}
+
+				let used = 0;
+				if ('caches' in window) {
+					// 逐项求和（估算）
+					try {
 						const cacheNames = await caches.keys();
 						for (const name of cacheNames) {
 							const cache = await caches.open(name);
 							const requests = await cache.keys();
-							for (const request of requests) {
-								const response = await cache.match(request);
-								if (response) {
-									const blob = await response.blob();
-									used += blob.size;
-								}
-							}
+							used += await this.calculateCacheSize(cache, requests);
 						}
-						total = 100 * 1024 * 1024; // 默认100MB
+					} catch (e) {
+						console.error('统计 CacheStorage 大小失败:', e);
 					}
-
-					resolve({ used, total });
-				});
+				} else if (Number.isFinite(originUsage)) {
+					// 更粗的兜底：无 caches API 时退化为整个源的总占用
+					used = originUsage;
+				}
+				// 合理性约束：逐项之和不应超过整个源的总占用
+				if (Number.isFinite(originUsage) && used > originUsage) {
+					used = originUsage;
+				}
+				if (total === 0) {
+					total = 100 * 1024 * 1024; // 默认100MB（估算）
+					totalEstimated = true;
+				}
+				return { used: used, total: total, usedEstimated: true, totalEstimated: totalEstimated };
 			},
 
 			// 辅助-格式化字节大小
 			formatBytes: function (bytes, decimals = 2) {
-				if (bytes === 0) return '0 Bytes';
+				if (!Number.isFinite(bytes) || bytes <= 0) return '0 Bytes';
 
 				const k = 1024;
 				const dm = decimals < 0 ? 0 : decimals;
