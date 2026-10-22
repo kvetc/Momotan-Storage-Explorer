@@ -2,7 +2,7 @@
 Momotan Storage Explorer
 网站本地存储管理工具 / Website local storage management tool
 Copyright©2026, Aphasia
-v2.0.3 release 2026/07/24
+v3.0.0 release 2026/10/23
 基于 MIT 协议开源 / Licensed under the MIT License.
 开源地址 / Open source address: https://github.com/kvetc/Momotan-Storage-Explorer
 MIT 协议 / MIT License：
@@ -36,6 +36,16 @@ SOFTWARE.
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<script>
+		// 提前应用主题：在首次渲染前给 <html> 加上 dark-theme，避免先闪浅色界面
+		(function () {
+			try {
+				if (localStorage.getItem('storageTheme') === 'dark') {
+					document.documentElement.classList.add('dark-theme');
+				}
+			} catch (e) { }
+		})();
+	</script>
 	<link rel="icon"
 		href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAAMsAAADLAAShkWtsAAAVwSURBVHhe7ZtRaFNXGMf/30mCTWlw1TSTuLYwpYhmyJiO7UHcLFbZBquOiaJQ5hh7ELyisMeFCHvYg+gNfZiDsTG2MQXn9mI7nexVZBvUwVxLndBtlta119W0NPbe8+1hSUm/Nl1vktvlRn9wIfn/P244/5yTe87JvQSXnDp1KhwMBjcCeAbAOmZuJqIIgDoAQVnvETaAKa31lFJqiIh+01r/ZFnWz6lUaloWLwZJYSHOnj0bevDgwS6t9UEAu5n5MVlTJfxNRJeZ+VPLsnpTqZQtCySLBpBMJtWqVasOMPO7ANqkX+UMAkjG4/Fz+/btc6SZp2gA3d3drY7jfMTM7dLzE0R0NRgMvnHkyJHfpYdiAZw+ffp5IvoGQJP0fMooEb1qGMY1acwLwDTN55j5MoCI9HxOhoh2yhDmBNDd3d1q2/Z1ALFCvYYYDYVCWwqHg8q/SCaTyrbtj2u48QAQm5mZ+SSZTM62e/ZFNBrdD+DF2dLaZcfq1atfz79R+PfbDzqOc3JOWQ2jtT55/vz5APIBRKPRlwCsk4U1TNudO3d2IR+A1vqQrHgIOAQAZJrmCmYeBtAoK2qcv8LhcFwB2PgQNh4AotlsdiOl0+m3tdYfSNcta9euxaZNm1BfXy+tJeM4DoaHh9HX14eZmRlpVxwiepNM03yfmd+Rphs2bNiAjo4OEM2bWJbE6OgoLl68iOlpVyvbUnhPMXOzVN2glMK2bdsq1ngAiMVi2Lt3L+rq6qRVUYjoCaWUapCGG+rr68vq9sVoamryPAStdYNi5rA03FDJb17idQiBQGCFWsZtrJLwMgRmVrNrgWomH0I4XFZnXRBfBIBcCHv27Kl4CL4JAB6F4KsA4EEIvgsAuRA6OzsRDJb/++3LAJCbLCUSCSm7xrcBIBdCufg6AFWBq3j5Z/A5jwKQwsPGowCkUGmYGdlstqRjWXaFTNP8nplfkMZSiUQiOHz4sJQBAPfu3cOFCxeQyWSktSSICJs3b8b27dulBQDo7+9Hb2+vlJcMEV3ytAf09/eX3Hjkek9fXx9s+z/vcygZTwNoaWlBIBCQsiuam5srMuUthqdDAAAymQwmJiakvCSUUojFYkUnPFU/BACgoaEB8Xi8pGPNmjVFG18pvD27D/B8CNy6dQuWZUl5SQQCAaxfvx6RyMI3q1RiCHgawMDAAHp6eqTsipUrV6Krq2vB3edKBODpELh//76UXDM5OQmttZQrhqcBJBIJtLW1IRqNlnTEYjG0t7eXfSldDE+HgNdU/RDwAwqA9yuOKoWItAKQlYYbHKfobbieU+5na62nFTOX9VM9NTWFkZERKS8Lt2/flpJbJhSAIam65cqVKxW55Lnhxo0bGBwclLIrlFJ/UDqdfktr/aE03RIKhdDa2lqxf2yKwcwYGRnB3bt3peUapVQXmab5NDP/JM1ah4jAzE8pAL8AKG2y7m9GLcv6VRmGkSWi8ibs/qQnlUrZ+YnQl8KseZj5c+TXAuPj4z1ENCCLapiblmVdBQoemEin0we01l/MKatRlFKvHT169CsUrgbHxsbOAfhuTmUNQkSXxsbGvp59X2ieOXOmhYiuM/PjhXoNMew4ztYTJ078mRfmrAaPHTs2BKATQOmb+VUKM09orV8pbDxkAABgGMY1ItpJRP/PBN8DiGhYKbXj+PHj8yZ88wJALgRmfpaIrkrPh/Tatr3VMIwfpYFiASA3HMbHxzsAHATgu0skEd1k5v2WZb0su30h87daFyCZTAYbGxt3E9EhZu6o4gcsLCLqZebP4vH4t4s9M5xnSQEUYprmCgAJItrCzE9qrVtyd5wv++PzzDwJYIiIBgOBwA+O49w0DMPVBs8/HEsxXaD1V5QAAAAASUVORK5CYII=">
 	<title>Momotan Storage Explorer</title>
@@ -50,7 +60,6 @@ SOFTWARE.
 			--border-color: #ddd;
 			--border-color-dark: #444;
 			--now-bg-color: white;
-			--shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 		}
 
 		.dark-theme {
@@ -86,13 +95,17 @@ SOFTWARE.
 		body {
 			display: flex;
 			height: 100vh;
+			/* 移动端浏览器地址栏伸缩时 dvh 跟随可视高度变化，vh 不会 */
+			height: 100dvh;
+			/* 应用外壳固定不滚动，滚动只发生在各面板内部 */
+			overflow: hidden;
 			background-color: #ffffff;
 			color: #333;
 			scrollbar-width: none;
 			transition: all 0.2s ease;
 		}
 
-		body.dark-theme {
+		html.dark-theme body {
 			background-color: #252525;
 			color: #eee;
 			scrollbar-width: none;
@@ -149,6 +162,9 @@ SOFTWARE.
 		.storage-items-list {
 			overflow-y: auto;
 			flex: 1;
+			/* flex 子项默认 min-height:auto 会拒绝收缩到比内容矮，
+			   导致列表长高撑破容器、body 整体滚动；必须显式归零才能内部滚动 */
+			min-height: 0;
 			position: relative;
 			scrollbar-width: none;
 			margin-bottom: 0px;
@@ -156,7 +172,7 @@ SOFTWARE.
 		}
 
 		.storage-item {
-			padding: 17.5px 15px 15px 15px;
+			padding: 15px 15px 15px 15px;
 			height: 130px;
 			border-bottom: 1px solid var(--border-color);
 			border-left: 0px solid var(--primary-color);
@@ -169,6 +185,12 @@ SOFTWARE.
 		.dark-theme .storage-item {
 			border-bottom: 1px solid var(--border-color-dark);
 			border-left: 0px solid var(--primary-color);
+		}
+
+		/* localStorage / sessionStorage 列表使用紧凑行高 */
+		.storage-items-list.compact-items .storage-item {
+			padding: 7px 15px 7px 15px;
+			height: 65px;
 		}
 
 		.storage-item:hover {
@@ -233,11 +255,12 @@ SOFTWARE.
 
 		.editor-header {
 			height: 65px;
-			padding: 15px 20px;
+			padding: 15px 15px 15px 20px;
 			border-bottom: 1px solid var(--border-color);
 			display: flex;
 			justify-content: space-between;
 			align-items: center;
+			gap: 5px;
 			transition: all 0.2s ease;
 		}
 
@@ -246,7 +269,7 @@ SOFTWARE.
 		}
 
 		.storage-detail-title {
-			flex-shrink: 1;
+			flex: 1;
 			font-size: 19px;
 			font-weight: 600;
 			color: #333;
@@ -265,6 +288,8 @@ SOFTWARE.
 
 		.editor-body {
 			flex: 1;
+			/* 同上：允许 flex 子项收缩，内容超出时内部滚动 */
+			min-height: 0;
 			padding: 0px;
 			overflow-y: auto;
 		}
@@ -318,9 +343,8 @@ SOFTWARE.
 
 		.storage-summary {
 			position: relative;
-			padding: 12px 15px 12px 15px;
-			height: 130px;
-			border-bottom: 1px solid var(--border-color);
+			padding: 0;
+			height: 195px;
 			background-color: #f9f9f9;
 			transition: all 0.2s ease;
 			display: flex;
@@ -328,15 +352,34 @@ SOFTWARE.
 		}
 
 		.dark-theme .storage-summary {
-			border-bottom: 1px solid var(--border-color-dark);
 			background-color: #2d2d2d;
+		}
+
+		/* summary 三组（信息 / 搜索 / 操作按钮）各 65px，与 storage-item 一样以底部分隔线分隔 */
+		.summary-info {
+			height: 65px;
+			padding: 0 15px;
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			border-bottom: 1px solid var(--border-color);
+			transition: all 0.2s ease;
+		}
+
+		.dark-theme .summary-info {
+			border-bottom: 1px solid var(--border-color-dark);
+		}
+
+		.summary-info .usage-bar {
+			margin-bottom: 0;
 		}
 
 		.summary-item {
 			font-size: 16px;
 			display: flex;
 			justify-content: space-between;
-			margin-bottom: 6px;
+			margin-bottom: 4px;
+			min-height: 28px;
 			transition: all 0.2s ease;
 		}
 
@@ -366,7 +409,7 @@ SOFTWARE.
 			height: 8px;
 			background-color: #e0e0e0;
 			border-radius: 4px;
-			margin: 2px 0 6px 0;
+			margin: 0 0 10px 0;
 			overflow: hidden;
 			transition: all 0.2s ease;
 		}
@@ -386,19 +429,16 @@ SOFTWARE.
 			background-color: #ffccd8;
 		}
 
-		.search-bar {
+		.search-input-wrapper {
+			position: relative;
+			width: 100%;
 			height: 65px;
-			padding-top: 10px;
-			flex-shrink: 0;
+			border-bottom: 1px solid var(--border-color);
+			transition: all 0.2s ease;
 		}
 
-		.search-input-wrapper {
-			position: absolute;
-			bottom: 0px;
-			left: 0px;
-			width: 350px;
-			height: 65px;
-			transition: all 0.2s ease;
+		.dark-theme .search-input-wrapper {
+			border-bottom: 1px solid var(--border-color-dark);
 		}
 
 		.search-icon {
@@ -419,8 +459,7 @@ SOFTWARE.
 			min-width: 0px;
 			padding: 0 12px 0 40px;
 			border: none;
-			border-top: 1px solid var(--border-color);
-			border-right: 1px solid var(--border-color);
+			/*border-right: 1px solid var(--border-color);*/
 			background: none;
 			color: #333;
 			font-size: 15px;
@@ -450,39 +489,32 @@ SOFTWARE.
 			width: 100%;
 		}
 
-		.delete-item-btn {
-			position: absolute;
-			top: 0px;
-			right: 0px;
-			width: 36px;
-			height: 36px;
+		/* summary 内操作按钮行（新增/删除全部/导出/导入），四按钮等宽 */
+		.summary-actions {
 			display: flex;
-			align-items: center;
-			justify-content: center;
-			cursor: pointer;
-			background: none;
-			color: #252525;
-			font-size: 12px;
+			height: 65px;
+			border-bottom: 1px solid var(--border-color);
 			transition: all 0.2s ease;
 		}
 
-		.delete-item-btn svg {
-			width: 16px;
-			height: 16px;
-			transition: all 0.2s ease;
+		.dark-theme .summary-actions {
+			border-bottom: 1px solid var(--border-color-dark);
 		}
 
-		.delete-item-btn:hover {
-			background-color: #ffffff;
+		.summary-actions .otherbotton, .dark-theme .summary-actions .otherbotton {
+			flex: 1;
+			width: auto;
+			height: 65px;
+			border-right: none;
+			/*border-bottom: none;*/
 		}
 
-		.dark-theme .delete-item-btn {
-			background: none;
-			color: #f0f0f0;
+		.summary-actions .otherbotton + .otherbotton {
+			border-left: 1px solid var(--border-color);
 		}
 
-		.dark-theme .delete-item-btn:hover {
-			background-color: #252525;
+		.dark-theme .summary-actions .otherbotton + .otherbotton {
+			border-left: 1px solid var(--border-color-dark);
 		}
 
 		.createbotton {
@@ -574,211 +606,6 @@ SOFTWARE.
 			box-shadow: inset 3px 0 0 var(--primary-color);
 			background-color: #303030;
 			color: var(--primary-color)
-		}
-
-		@media (max-width: 900px) {
-			.storage-type-list {
-				width: 310px;
-			}
-
-			.search-input-wrapper {
-				width: 310px;
-			}
-			.summary-item {
-				font-size: 15px;
-			}
-			.summary-label {
-				font-size: 15px;
-			}
-			.summary-value {
-				font-size: 15px;
-			}
-			.storage-detail-title {
-				font-size: 16px;
-			}
-		}
-
-		@media (max-width: 700px) {
-
-			.summary-item {
-				font-size: 13px;
-				display: block;
-				margin-bottom: 6px;
-				transition: all 0.2s ease;
-			}
-
-			.summary-item span {
-				display: block;
-			}
-			.summary-label {
-				font-size: 13px;
-			}
-			.summary-value {
-				font-size: 13px;
-			}
-
-			.storage-title {
-				font-size: 15px;
-				margin-bottom: 3px;
-			}
-
-			.storage-size {
-				font-size: 13px;
-				margin-bottom: 0px;
-			}
-
-			.storage-time {
-				font-size: 11px;
-				margin-top: 2px;
-			}
-
-			.storage-summary {
-				width: 105px;
-				padding: 12px 12px 12px 12px;
-				position: relative;
-				height: auto;
-				font-size: 14px;
-				border-right: 1px solid var(--border-color);
-			}
-
-			.dark-theme .storage-summary {
-				height: auto;
-				border-right: 1px solid var(--border-color-dark);
-			}
-
-
-			.search-input-wrapper {
-				width: 105px;
-			}
-
-			.editor {
-				height: calc(100% - 260px);
-			}
-
-			.editor-body {
-				padding: 0px;
-			}
-
-			.editor-header {
-				padding: 10px 15px;
-				height: 45px;
-			}
-
-			.editor-actions {
-				gap: 2px;
-			}
-
-			.placeholder {
-				transform: translateY(2px);
-			}
-
-			.action-btn {
-				width: 32px;
-				height: 32px;
-			}
-
-			.container {
-				display: block;
-			}
-
-			.storage-type-list {
-				width: 100%;
-				height: auto;
-				display: flex;
-				flex-direction: row;
-				border-right: none;
-			}
-
-			.dark-theme .storage-type-list {
-				border-right: none;
-			}
-
-			.storage-items-list {
-				border-bottom: 1px solid var(--border-color);
-				border-right: none;
-				display: grid;
-				grid-template-rows: repeat(2, 100px);
-				grid-auto-columns: 120px;
-				grid-auto-flow: column;
-				gap: 0px;
-				overflow-x: auto;
-				overflow-y: hidden;
-				margin-bottom: 0px;
-				height: 200px;
-			}
-
-			.dark-theme .storage-items-list {
-				border-bottom: 1px solid var(--border-color-dark);
-				border-right: none;
-			}
-
-			.storage-item {
-				padding: 12px 15px 12px 12px;
-				flex: 0 0 auto;
-				height: 100px;
-				width: 120px;
-				max-width: 120px;
-				min-width: 120px;
-				border-right: 1px solid var(--border-color);
-			}
-
-			.dark-theme .storage-item {
-				border-right: 1px solid var(--border-color-dark);
-			}
-
-			.delete-item-btn {
-				top: 0px;
-				right: 0px;
-				width: 32px;
-				height: 32px;
-			}
-
-			.storage-type-header {
-				padding: 16px 15px 9px 15px;
-				border-bottom: 1px solid var(--border-color);
-				border-right: 1px solid var(--border-color);
-			}
-
-			.dark-theme .storage-type-header {
-				border-bottom: 1px solid var(--border-color-dark);
-				border-right: 1px solid var(--border-color-dark);
-			}
-
-			.leftbar {
-				width: 100%;
-				background: white;
-				border-right: none;
-				border-bottom: 1px solid var(--border-color);
-				height: 60px;
-				display: flex;
-				flex-direction: row;
-				transition: all 0.2s ease;
-			}
-
-			.dark-theme .leftbar {
-				border-bottom: 1px solid var(--border-color-dark);
-				border-right: none;
-			}
-
-			.createbotton {
-				height: 60px;
-				width: 60px;
-				border-bottom: 1px solid var(--border-color);
-			}
-
-			.styleShowStorage {
-				box-shadow: inset 0 3px 0 var(--primary-color)
-			}
-
-			.dark-theme .styleShowStorage {
-				box-shadow: inset 0 3px 0 var(--primary-color)
-			}
-
-			.otherbotton {
-				height: 60px;
-				width: 60px;
-				border-bottom: 1px solid var(--border-color);
-			}
 		}
 
 		/* 自定义弹窗样式 */
@@ -949,6 +776,66 @@ SOFTWARE.
 			white-space: pre-wrap;
 			word-break: break-word;
 			line-height: 1.5;
+		}
+
+		@media (max-width: 440px) {
+			.custom-modal-content {
+				width: 100%;
+				max-width: 440px;
+			}
+
+			.shortcutmodal {
+				background: rgba(0, 0, 0, 0);
+				align-items: flex-end;
+				opacity: 1;
+				transition: all 0.4s ease;
+			}
+
+			.dark-theme .shortcutmodal {
+				background: rgba(0, 0, 0, 0);
+				transition: all 0.4s ease;
+			}
+
+			.shortcutmodal.active {
+				background: rgba(0, 0, 0, 0.2);
+				visibility: visible;
+				transition: all 0.4s ease;
+			}
+
+			.dark-theme .shortcutmodal.active {
+				background: rgba(0, 0, 0, 0.25);
+				visibility: visible;
+				transition: all 0.4s ease;
+			}
+
+			.shortcutmodal-content,
+			.dark-theme .shortcutmodal-content {
+				border-radius: 36px 36px 0px 0px;
+				padding: 23px 25px 28px 25px;
+				width: 100%;
+				max-width: 440px;
+				transform: translateY(100%) perspective(0px) rotateX(0deg) scale(1);
+				transition: all 0.4s cubic-bezier(0.2, 0.6, 0.2, 1);
+			}
+
+			.shortcutmodal-content::before,
+			.dark-theme .shortcutmodal-content::before {
+				content: '';
+				position: absolute;
+				top: 5.5px;
+				left: 50%;
+				transform: translateX(-50%);
+				height: 3px;
+				width: 50px;
+				border-radius: 3px;
+				background: rgba(170,170,170,0.3)
+			}
+
+			.shortcutmodal.active .shortcutmodal-content,
+			.dark-theme .shortcutmodal.active .shortcutmodal-content {
+				transform: translateY(0%) perspective(0px) rotateX(0deg) scale(1);
+				transition: all 0.4s cubic-bezier(0.2, 0.6, 0.2, 1);
+			}
 		}
 
 		/* 详情表格 */
@@ -1407,47 +1294,6 @@ SOFTWARE.
 			width: calc(100% + 20px);
 		}
 
-		.new-btn {
-			position: fixed;	
-    		bottom: 0px;
-    		left: 65px;
-    		width: 350px;
-    		height: 32px;
-			display: inline-flex;
-			align-items: center;
-			gap: 6px;
-			padding: 8px 14px;
-    		background: var(--light-bg);
-			border: none;
-			border-top: 1px solid var(--border-color);
-			border-right: 1px solid var(--border-color);
-			color: var(--primary-color);
-    		display: flex;
-    		align-items: center;
-    		justify-content: center;
-    		cursor: pointer;
-    		box-shadow: 0 4px 16px var(--accent-opacity3);
-			-webkit-tap-highlight-color: transparent;
-    		transition: all 0.2s ease;
-    		z-index: 9;
-		}
-
-		.dark-theme .new-btn {
-			background: var(--dark-bg);
-			border-top: 1px solid var(--border-color-dark);
-			border-right: 1px solid var(--border-color-dark);
-		}
-		.new-btn:hover {
-			background: #faf0f3;
-		}
-		.dark-theme .new-btn:hover {
-			background: #3a3537;
-		}
-		.new-btn svg {
-			width: 16px;
-			height: 16px;
-		}
-
 		/* 新增按钮 */
 		.add-btn {
 			display: inline-flex;
@@ -1519,47 +1365,73 @@ SOFTWARE.
 		}
 
 		@media (max-width: 900px) {
-			.new-btn {
+			.storage-type-list {
 				width: 310px;
+			}
+			.summary-item {
+				font-size: 15px;
+			}
+			.summary-label {
+				font-size: 15px;
+			}
+			.summary-value {
+				font-size: 15px;
+			}
+			.storage-detail-title {
+				font-size: 16px;
 			}
 		}
 
+		/* 移动端返回按钮：PC 端隐藏。
+		   必须用 .action-btn.mobile-back-btn 双类选择器，否则会被后面的 .action-btn { display: inline-flex } 覆盖 */
+		.action-btn.mobile-back-btn {
+			display: none;
+		}
+
+		/* 移动端（≤700px）：布局与 PC 完全一致；默认只显示左侧栏与列表，
+		   打开编辑器时隐藏左侧栏与列表，编辑器独占全屏（由 body.editor-open 控制） */
 		@media (max-width: 700px) {
-			.new-btn {
-				bottom: auto;
-				top: 195px;
-    			left: 0px;
-    			width: 120px;
-    			height: 40px;
-				font-size: 12px;
-				border-bottom: 1px solid var(--border-color);
+			.storage-type-list, .dark-theme .storage-type-list {
+				border-right: none;
 			}
-			.dark-theme .new-btn {
-				border-bottom: 1px solid var(--border-color-dark);
-			}
-			.storage-item-actions {
-				opacity: 1;
-				top: 0px;
-				right: 0px;
-				gap: 0px;
-			}
-			.inline-action-btn {
-				width: 28px;
-				height: 28px;
-				margin-left: 0px;
-			}
-			.inline-action-btn svg {
-				width: 15px;
-				height: 15px;
-			}
-			.inline-action-btn-p {
-			width: auto;
-			}
-			.inline-action-btn-p p {
+
+			.summary-item {
 				font-size: 14px;
 			}
 
+			.storage-item-actions {
+        		opacity: 1;
+			}
+
+			.editor {
+				display: none;
+			}
+
+			.editor-header {
+				padding: 15px 10px;
+			}
+
+			body.editor-open .editor {
+				display: flex;
+			}
+
+			body.editor-open .leftbar,
+			body.editor-open .storage-type-list {
+				display: none;
+			}
+
+			.action-btn.mobile-back-btn {
+				display: inline-flex;
+			}
+
+			/* 列表扩展到占满 leftbar 右侧的全部宽度 */
+			.storage-type-list {
+				width: auto;
+				flex: 1;
+				min-width: 0;
+			}
 		}
+
 	</style>
 </head>
 
@@ -1634,6 +1506,9 @@ SOFTWARE.
 					<path d="M12 10H8"></path>
 				</svg>
 			</div>
+			<div class="createbotton" id="sessionStorageBtn" title="sessionStorage">
+				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M2.75 1h10.5a.75.75 0 0 1 0 1.5h-.75v1.25a4.75 4.75 0 0 1-1.9 3.8l-.333.25a.25.25 0 0 0 0 .4l.333.25a4.75 4.75 0 0 1 1.9 3.8v1.25h.75a.75.75 0 0 1 0 1.5H2.75a.75.75 0 0 1 0-1.5h.75v-1.25a4.75 4.75 0 0 1 1.9-3.8l.333-.25a.25.25 0 0 0 0-.4L5.4 7.55a4.75 4.75 0 0 1-1.9-3.8V2.5h-.75a.75.75 0 0 1 0-1.5ZM11 2.5H5v1.25c0 1.023.482 1.986 1.3 2.6l.333.25c.934.7.934 2.1 0 2.8l-.333.25a3.251 3.251 0 0 0-1.3 2.6v1.25h6v-1.25a3.251 3.251 0 0 0-1.3-2.6l-.333-.25a1.748 1.748 0 0 1 0-2.8l.333-.25a3.251 3.251 0 0 0 1.3-2.6Z"/></svg>
+			</div>
 			<div class="createbotton" id="indexedDBBtn" title="indexedDB">
 
 				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
@@ -1652,14 +1527,6 @@ SOFTWARE.
 			</div>
 
 
-			<div class="otherbotton" id="addStorageBtn" title="新增"></div>
-			<div class="otherbotton" id="clearAllBtn" title="删除 (Delete)">
-				<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-					stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-					<polyline points="3 6 5 6 21 6"></polyline>
-					<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-				</svg>
-			</div>
 			<div class="otherbotton" id="themeToggle" title="主题 (Theme)">
 				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
 					stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1679,14 +1546,16 @@ SOFTWARE.
 		<!-- 左侧列表 -->
 		<div class="storage-type-list">
 			<div class="storage-summary" id="storageSummary">
-				<div class="summary-item">
-					<span><span class="summary-label">存储: </span><span class="summary-value"
-							id="storageTypeLabel">-</span></span>
-					<span><span class="summary-value" id="usedSpace">-</span>/<span class="summary-value"
-							id="totalSpace">-</span></span>
-				</div>
-				<div class="usage-bar">
-					<div class="usage-progress" id="usageProgress" style="width: 0%"></div>
+				<div class="summary-info">
+					<div class="summary-item">
+						<span><span class="summary-label">存储: </span><span class="summary-value"
+								id="storageTypeLabel">-</span></span>
+						<span><span class="summary-value" id="usedSpace">-</span>/<span class="summary-value"
+								id="totalSpace">-</span></span>
+					</div>
+					<div class="usage-bar">
+						<div class="usage-progress" id="usageProgress" style="width: 0%"></div>
+					</div>
 				</div>
 				<div class="search-input-wrapper">
 					<svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
@@ -1697,6 +1566,35 @@ SOFTWARE.
 					</svg>
 					<input type="text" class="search-input" id="storageSearchInput" placeholder="搜索...">
 				</div>
+				<div class="summary-actions">
+					<div class="otherbotton" id="addStorageBtn" title="新增"></div>
+					<div class="otherbotton" id="clearAllBtn" title="删除 (Delete)">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+							stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<polyline points="3 6 5 6 21 6"></polyline>
+							<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+						</svg>
+					</div>
+					<div class="otherbotton" id="exportBtn" title="导出 (Export)">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+							stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+							<polyline points="7 10 12 15 17 10"></polyline>
+							<line x1="12" y1="15" x2="12" y2="3"></line>
+						</svg>
+					</div>
+					<div class="otherbotton" id="importBtn" title="导入 (Import)">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+							stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+							<polyline points="17 8 12 3 7 8"></polyline>
+							<line x1="12" y1="3" x2="12" y2="15"></line>
+						</svg>
+					</div>
+					<div class="otherbotton" id="helpStorageBtn" title="当前存储类型说明">
+						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+					</div>
+				</div>
 			</div>
 			<div class="storage-items-list" id="storageItemsList">
 				<div class="placeholder2" id="storageListPlaceholder">在边栏选择存储类型以查看内容</div>
@@ -1706,6 +1604,9 @@ SOFTWARE.
 		<!-- 右侧详情 -->
 		<div class="editor">
 			<div class="editor-header" id="editorHeader" style="display: none;">
+				<button class="action-btn mobile-back-btn" id="mobileBackBtn" title="返回 (Back)">
+					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" transform="rotate(180, 0, 0)"><polyline points="8 3 17 12 8 21"/></svg>
+				</button>
 				<div class="storage-detail-title" id="storageItemTitle">-</div>
 				<div class="editor-actions">
 					<button class="action-btn" id="saveEditorBtn" title="保存 (Ctrl+S)">
@@ -1729,6 +1630,7 @@ SOFTWARE.
 			</div>
 		</div>
 	</div>
+	<input type="file" id="importFileInput" accept=".json,application/json" style="display:none">
 	<script>
 
 		/**
@@ -1751,6 +1653,28 @@ SOFTWARE.
 			let currentAlertResolve = null;
 			let currentConfirmResolve = null;
 			let keydownHandler = null;
+
+			// 弹窗打开时压入一条历史记录，使用户可通过浏览器返回键 / 移动端侧滑手势关闭弹窗
+			let pushedHistoryForModal = false;
+
+			function pushModalHistory() {
+				try {
+					history.pushState({ __momotanModal: true }, '');
+					pushedHistoryForModal = true;
+				} catch (e) {
+					pushedHistoryForModal = false;
+				}
+			}
+
+			function popModalHistory() {
+				if (!pushedHistoryForModal) return;
+				pushedHistoryForModal = false;
+				// 标记本次 back 由弹窗正常关闭主动触发（而非用户按返回键），
+				// 其他 popstate 监听（如移动端编辑器）应跳过，避免弹窗关闭连带退出编辑器
+				window.__momotanSelfPop = true;
+				setTimeout(function () { window.__momotanSelfPop = false; }, 500);
+				try { history.back(); } catch (e) { }
+			}
 
 			const ESCAPE_KEY = 'Escape';
 			const ENTER_KEY = 'Enter';
@@ -1868,6 +1792,7 @@ SOFTWARE.
 				if (customAlert) customAlert.classList.remove('active');
 				currentAlertResolve = null;
 				unbindKeyboard();
+				popModalHistory();
 			}
 
 			function closeConfirm() {
@@ -1875,6 +1800,7 @@ SOFTWARE.
 				if (customConfirmModal) customConfirmModal.classList.remove('active');
 				currentConfirmResolve = null;
 				unbindKeyboard();
+				popModalHistory();
 			}
 
 			function showAlert(message) {
@@ -1888,6 +1814,7 @@ SOFTWARE.
 
 					alertMessage.textContent = message;
 					customAlert.classList.add('active');
+					pushModalHistory();
 					alertConfirm.focus();
 
 					alertConfirm.onclick = () => {
@@ -1911,6 +1838,7 @@ SOFTWARE.
 
 					confirmMessage.textContent = message;
 					customConfirmModal.classList.add('active');
+					pushModalHistory();
 					confirmOkBtn.focus();
 
 					confirmOkBtn.onclick = () => {
@@ -1926,6 +1854,22 @@ SOFTWARE.
 					bindKeyboard('confirm', resolve);
 				});
 			}
+
+			// 浏览器返回（含移动端侧滑手势）时，若弹窗处于打开状态则关闭弹窗：
+			// 历史记录条目已被这次返回消费，故此处仅复位标记，不再调用 history.back()
+			window.addEventListener('popstate', function (e) {
+				if (currentAlertResolve) {
+					e.__momotanHandled = true; // 标记本次返回已被弹窗处理，供其他 popstate 监听（如移动端编辑器）避让
+					pushedHistoryForModal = false;
+					currentAlertResolve();
+					closeAlert();
+				} else if (currentConfirmResolve) {
+					e.__momotanHandled = true;
+					pushedHistoryForModal = false;
+					currentConfirmResolve(false);
+					closeConfirm();
+				}
+			});
 
 			// 背景点击关闭
 			document.addEventListener('click', function (e) {
@@ -1984,6 +1928,19 @@ SOFTWARE.
 					const path4 = document.createElementNS(svgNS, "path");
 					path4.setAttribute("d", "M12 10H8");
 					svg.appendChild(path4);
+
+					break;
+				case "sessionStorageBtn":
+					// 沙漏图标（填充式）：16 网格放大到 24 网格。
+					// 填充属性只加在 <g> 上而不动 svg 根元素，否则角标圆圈/数字继承的描边会丢失，样式与其他按钮不一致
+					const gHourglass = document.createElementNS(svgNS, "g");
+					gHourglass.setAttribute("transform", "scale(1.5)");
+					gHourglass.setAttribute("fill", "currentColor");
+					gHourglass.setAttribute("stroke", "none");
+					const pathHourglass = document.createElementNS(svgNS, "path");
+					pathHourglass.setAttribute("d", "M2.75 1h10.5a.75.75 0 0 1 0 1.5h-.75v1.25a4.75 4.75 0 0 1-1.9 3.8l-.333.25a.25.25 0 0 0 0 .4l.333.25a4.75 4.75 0 0 1 1.9 3.8v1.25h.75a.75.75 0 0 1 0 1.5H2.75a.75.75 0 0 1 0-1.5h.75v-1.25a4.75 4.75 0 0 1 1.9-3.8l.333-.25a.25.25 0 0 0 0-.4L5.4 7.55a4.75 4.75 0 0 1-1.9-3.8V2.5h-.75a.75.75 0 0 1 0-1.5ZM11 2.5H5v1.25c0 1.023.482 1.986 1.3 2.6l.333.25c.934.7.934 2.1 0 2.8l-.333.25a3.251 3.251 0 0 0-1.3 2.6v1.25h6v-1.25a3.251 3.251 0 0 0-1.3-2.6l-.333-.25a1.748 1.748 0 0 1 0-2.8l.333-.25a3.251 3.251 0 0 0 1.3-2.6Z");
+					gHourglass.appendChild(pathHourglass);
+					svg.appendChild(gHourglass);
 
 					break;
 				case "indexedDBBtn":
@@ -2052,12 +2009,16 @@ SOFTWARE.
 		function refreshLeftItems() {
 			try {
 				// 颜色搞对
-				if (document.body.classList.contains('dark-theme')) document.documentElement.style.setProperty('--now-bg-color', '#303030');
+				if (document.documentElement.classList.contains('dark-theme')) document.documentElement.style.setProperty('--now-bg-color', '#303030');
 				else document.documentElement.style.setProperty('--now-bg-color', 'white');
 
 				// LocalStorage
 				if (localStorage.length) createBtnSvg("localStorageBtn", localStorage.length);
 				else createBtnSvg("localStorageBtn", 0);
+
+				// SessionStorage
+				if (sessionStorage.length) createBtnSvg("sessionStorageBtn", sessionStorage.length);
+				else createBtnSvg("sessionStorageBtn", 0);
 
 				// IndexDB
 				if (window.indexedDB && window.indexedDB.databases) {
@@ -2079,6 +2040,7 @@ SOFTWARE.
 
 		function styleShowStorage(where) {
 			document.getElementById("localStorageBtn").classList.remove("styleShowStorage");
+			document.getElementById("sessionStorageBtn").classList.remove("styleShowStorage");
 			document.getElementById("indexedDBBtn").classList.remove("styleShowStorage");
 			document.getElementById("cacheStorageBtn").classList.remove("styleShowStorage");
 			const objId = where + "Btn";
@@ -2101,6 +2063,7 @@ SOFTWARE.
 			setupEventListeners: function () {
 				// 存储类型按钮
 				document.getElementById('localStorageBtn').addEventListener('click', () => { this.showStorage('localStorage'); styleShowStorage('localStorage') });
+				document.getElementById('sessionStorageBtn').addEventListener('click', () => { this.showStorage('sessionStorage'); styleShowStorage('sessionStorage') });
 				document.getElementById('indexedDBBtn').addEventListener('click', () => { this.showStorage('indexedDB'); styleShowStorage('indexedDB') });
 				document.getElementById('cacheStorageBtn').addEventListener('click', () => { this.showStorage('cacheStorage'); styleShowStorage('cacheStorage') });
 
@@ -2116,8 +2079,8 @@ SOFTWARE.
 				if (addStorageBtn) {
 					addStorageBtn.innerHTML = this.newIconSvg;
 					addStorageBtn.addEventListener('click', () => {
-						if (this.currentStorageType === 'localStorage') {
-							this.createNewItem('localStorage');
+						if (this.currentStorageType === 'localStorage' || this.currentStorageType === 'sessionStorage') {
+							this.createNewItem(this.currentStorageType);
 						} else if (this.currentStorageType === 'indexedDB') {
 							this.createNewItem('indexedDB');
 						}
@@ -2125,12 +2088,38 @@ SOFTWARE.
 				}
 				this.updateAddButtonState();
 
+				// 导出按钮
+				document.getElementById('exportBtn').addEventListener('click', () => {
+					const exportBtn = document.getElementById('exportBtn');
+					if (exportBtn && exportBtn.classList.contains('disabled')) return;
+					this.exportCurrentStorage();
+				});
+
+				// 导入按钮
+				document.getElementById('importBtn').addEventListener('click', () => {
+					const importBtn = document.getElementById('importBtn');
+					if (importBtn && importBtn.classList.contains('disabled')) return;
+					document.getElementById('importFileInput').click();
+				});
+				document.getElementById('importFileInput').addEventListener('change', (e) => {
+					const file = e.target.files && e.target.files[0];
+					e.target.value = '';
+					if (file) this.importStorageFile(file);
+				});
+
+				// 存储类型说明按钮
+				document.getElementById('helpStorageBtn').addEventListener('click', () => {
+					const helpStorageBtn = document.getElementById('helpStorageBtn');
+					if (helpStorageBtn && helpStorageBtn.classList.contains('disabled')) return;
+					this.showStorageHelp();
+				});
+
 				// 主题切换
 				document.getElementById('themeToggle').addEventListener('click', this.toggleTheme);
 
 				// 关于按钮
 				document.getElementById('about').addEventListener('click', () => {
-					alert('Momotan Storage Explorer\n网站本地存储管理工具\nCopyright©2026, Aphasia\nv2.0.3 release 2026/07/24\n\n基于 MIT 协议开源 / Licensed under the MIT License.\n开源地址 / Open source address: https://github.com/kvetc/Momotan-Storage-Explorer\n\n操作说明：\nEnter/Space: 确认 / Confirm\nESC: 取消 / Cancel\nCtrl+S: 保存 / Save\nDelete: 删除 / Delete');
+					alert('Momotan Storage Explorer\n网站本地存储管理工具\nCopyright©2026, Aphasia\nv3.0.0 release 2026/10/23\n\n基于 MIT 协议开源 / Licensed under the MIT License.\n开源地址 / Open source address: https://github.com/kvetc/Momotan-Storage-Explorer\n\n操作说明：\nEnter/Space: 确认 / Confirm\nESC: 取消 / Cancel\nCtrl+S: 保存 / Save\nDelete: 删除 / Delete');
 				});
 
 				// 搜索栏
@@ -2149,6 +2138,22 @@ SOFTWARE.
 					if (this.currentSelection) {
 						this.confirmDelete(this.currentSelection.type, this.currentSelection.key);
 					}
+				});
+
+				// 移动端：返回按钮回到主页面
+				document.getElementById('mobileBackBtn').addEventListener('click', () => {
+					this.closeMobileEditor();
+				});
+
+				// 移动端：浏览器返回 / 侧滑返回时关闭全屏编辑器
+				//（若弹窗开着，弹窗的历史条目更新近且已标记处理，此处避让）
+				window.addEventListener('popstate', (e) => {
+					if (e.__momotanHandled) return;
+					// 由弹窗正常关闭主动触发的 back 不是用户返回，跳过
+					if (window.__momotanSelfPop) { window.__momotanSelfPop = false; return; }
+					if (!document.body.classList.contains('editor-open')) return;
+					this._editorHistoryPushed = false; // 历史条目已被本次返回消费
+					this.closeMobileEditor();
 				});
 
 				// 全局快捷键
@@ -2224,20 +2229,20 @@ SOFTWARE.
 				}
 			},
 
-			// 初始化主题
+			// 初始化主题（主题类挂在 <html> 上，head 内联脚本已在首次渲染前设置，此处仅兜底同步）
 			initTheme: function () {
 				const savedTheme = localStorage.getItem('storageTheme');
 				if (savedTheme === 'dark') {
-					document.body.classList.add('dark-theme');
+					document.documentElement.classList.add('dark-theme');
 				} else {
-					document.body.classList.remove('dark-theme');
+					document.documentElement.classList.remove('dark-theme');
 				}
 			},
 
 			// 切换主题
 			toggleTheme: function () {
-				document.body.classList.toggle('dark-theme');
-				if (document.body.classList.contains('dark-theme')) {
+				document.documentElement.classList.toggle('dark-theme');
+				if (document.documentElement.classList.contains('dark-theme')) {
 					localStorage.setItem('storageTheme', 'dark');
 					document.documentElement.style.setProperty('--now-bg-color', '#303030');
 				} else {
@@ -2252,7 +2257,8 @@ SOFTWARE.
 				this.currentStorageType = storageType;
 				document.getElementById('storageTypeLabel').textContent =
 					storageType === 'localStorage' ? 'localStorage' :
-						storageType === 'indexedDB' ? 'IndexedDB' : 'CacheStorage';
+						storageType === 'sessionStorage' ? 'sessionStorage' :
+							storageType === 'indexedDB' ? 'IndexedDB' : 'CacheStorage';
 
 				// 清除选择状态
 				await this.clearSelection();
@@ -2273,13 +2279,15 @@ SOFTWARE.
 				this.updateAddButtonState();
 			},
 
-			// 更新左侧按钮状态（新增/删除全部）
+			// 更新左侧按钮状态（新增/删除全部/导出/导入）
 			updateAddButtonState: function () {
 				const addStorageBtn = document.getElementById('addStorageBtn');
 				if (addStorageBtn) {
 					addStorageBtn.classList.remove('disabled');
 					if (this.currentStorageType === 'localStorage') {
 						addStorageBtn.title = '新增 localStorage';
+					} else if (this.currentStorageType === 'sessionStorage') {
+						addStorageBtn.title = '新增 sessionStorage';
 					} else if (this.currentStorageType === 'indexedDB') {
 						addStorageBtn.title = '新建 IndexedDB';
 					} else {
@@ -2299,6 +2307,56 @@ SOFTWARE.
 						clearAllBtn.classList.add('disabled');
 					}
 				}
+
+				// 导出/导入：需已选择存储类型；CacheStorage 只读，不支持
+				const exportBtn = document.getElementById('exportBtn');
+				const importBtn = document.getElementById('importBtn');
+				const canTransfer = !!this.currentStorageType && this.currentStorageType !== 'cacheStorage';
+				if (exportBtn) {
+					exportBtn.classList.toggle('disabled', !canTransfer);
+					exportBtn.title = canTransfer ? '导出当前存储为 JSON 文件' :
+						(this.currentStorageType === 'cacheStorage' ? 'CacheStorage 不支持导出' : '请选择存储类型');
+				}
+				if (importBtn) {
+					importBtn.classList.toggle('disabled', !canTransfer);
+					importBtn.title = canTransfer ? '从 JSON 文件导入' :
+						(this.currentStorageType === 'cacheStorage' ? 'CacheStorage 不支持导入' : '请选择存储类型');
+				}
+
+				const helpStorageBtn = document.getElementById('helpStorageBtn');
+				if (helpStorageBtn) {
+					const labelMap = { localStorage: 'localStorage', sessionStorage: 'sessionStorage', indexedDB: 'IndexedDB', cacheStorage: 'CacheStorage' };
+					// 与其他按钮一致：未选择存储类型时禁用
+					helpStorageBtn.classList.toggle('disabled', !this.currentStorageType);
+					helpStorageBtn.title = this.currentStorageType ? `关于 ${labelMap[this.currentStorageType]} 的说明` : '请选择存储类型后查看说明';
+				}
+			},
+
+			// 弹窗介绍当前打开的存储类型的作用、特性与删除后果
+			showStorageHelp: function () {
+				const helpText = {
+					localStorage:
+						'localStorage\n' +
+						'\n作用：以键值对形式持久保存少量文本数据，常用于网站设置、偏好、登录令牌等。\n' +
+						'\n特性：容量通常为 5-10MB；仅支持字符串；同步读写；同源共享；长期保留，除非被主动清除。\n' +
+						'\n删除后果：可能导致网站设置丢失、登录状态失效、部分功能异常。',
+					sessionStorage:
+						'sessionStorage\n' +
+						'\n作用：以键值对形式保存当前会话的临时数据，常用于表单草稿、页面状态等。\n' +
+						'\n特性：容量通常为 5-10MB；仅支持字符串；仅在当前标签页有效，不同标签页互不影响；关闭标签页即自动清空。\n' +
+						'\n删除后果：可能导致当前会话中的网站功能异常，通常刷新或重开标签页后可恢复。',
+					indexedDB:
+						'IndexedDB\n' +
+						'\n作用：存储大量结构化数据，常用于离线数据、大文件、复杂缓存对象等。\n' +
+						'\n特性：容量大（通常数百 MB 以上）；支持对象与二进制数据；支持索引查询与事务；异步读写；长期保留。\n' +
+						'\n删除后果：可能导致依赖它的网站出现异常，本地数据丢失且难以恢复。',
+					cacheStorage:
+						'CacheStorage\n' +
+						'\n作用：由 Service Worker 管理的网络资源缓存（页面、脚本、图片等），用于离线访问与加速加载。\n' +
+						'\n特性：容量较大；以“请求-响应”形式存储；本工具中仅可查看与删除，不可编辑。\n' +
+						'\n删除后果：缓存资源被清空，网站下次加载可能变慢；若网站的 Service Worker 逻辑不完善，可能出现短时异常。'
+				};
+				alert(helpText[this.currentStorageType] || '请先在左侧边栏选择一种存储类型。');
 			},
 
 			// 当前编辑器状态
@@ -2348,6 +2406,57 @@ SOFTWARE.
 				document.getElementById('editorPlaceholder').style.display = 'block';
 				document.getElementById('editorContent').style.display = 'none';
 				document.getElementById('editorContent').innerHTML = '';
+
+				// 移动端：退出编辑器全屏模式，恢复列表滚动位置并消化对应历史记录
+				if (document.body.classList.contains('editor-open')) {
+					document.body.classList.remove('editor-open');
+					const storageItemsList = document.getElementById('storageItemsList');
+					if (storageItemsList && typeof this._savedListScrollTop === 'number') {
+						storageItemsList.scrollTop = this._savedListScrollTop;
+					}
+					this.popEditorHistory();
+				}
+			},
+
+			// 移动端编辑器状态
+			_editorHistoryPushed: false,
+			_savedListScrollTop: 0,
+
+			// 是否处于移动端布局（≤700px）
+			isMobileLayout: function () {
+				return window.matchMedia('(max-width: 700px)').matches;
+			},
+
+			// 移动端：打开编辑器（独占全屏，保存列表滚动位置，压入历史记录）
+			openMobileEditor: function () {
+				if (!this.isMobileLayout()) return;
+				if (document.body.classList.contains('editor-open')) return; // 已打开，不重复压历史
+				const storageItemsList = document.getElementById('storageItemsList');
+				this._savedListScrollTop = storageItemsList ? storageItemsList.scrollTop : 0;
+				document.body.classList.add('editor-open');
+				this.pushEditorHistory();
+			},
+
+			// 移动端：关闭编辑器回到主页面（clearSelection 内含未保存检查与编辑器卸载）
+			closeMobileEditor: async function () {
+				if (!document.body.classList.contains('editor-open')) return;
+				await this.clearSelection();
+			},
+
+			// 压入编辑器历史记录，用于适配浏览器返回 / 移动端侧滑返回
+			pushEditorHistory: function () {
+				try {
+					history.pushState({ __momotanEditor: true }, '');
+					this._editorHistoryPushed = true;
+				} catch (e) {
+					this._editorHistoryPushed = false;
+				}
+			},
+
+			popEditorHistory: function () {
+				if (!this._editorHistoryPushed) return;
+				this._editorHistoryPushed = false;
+				try { history.back(); } catch (e) { }
 			},
 
 			// 加载存储项
@@ -2355,9 +2464,14 @@ SOFTWARE.
 				const storageItemsList = document.getElementById('storageItemsList');
 				storageItemsList.innerHTML = '';
 
+				// localStorage / sessionStorage 使用紧凑行高（65px），IndexedDB / CacheStorage 保持默认行高
+				storageItemsList.classList.toggle('compact-items',
+					storageType === 'localStorage' || storageType === 'sessionStorage');
+
 				switch (storageType) {
 					case 'localStorage':
-						this.loadLocalStorageItems();
+					case 'sessionStorage':
+						this.loadWebStorageItems(storageType);
 						break;
 					case 'indexedDB':
 						this.loadIndexedDBItems();
@@ -2381,18 +2495,63 @@ SOFTWARE.
 
 			// 判断是否点击了操作按钮
 			isActionButton: function (target) {
-				return target.closest && target.closest('.storage-item-actions, .inline-action-btn, .delete-item-btn');
+				return target.closest && target.closest('.storage-item-actions, .inline-action-btn');
 			},
 
-			// 加载localStorage
-			loadLocalStorageItems: function () {
+			// 内部元数据键（记录各存储项的修改时间），列表与导出中跳过
+			MTIME_KEY: '__momotan_storage_mtimes__',
+
+			// 获取 Web Storage 对象（localStorage / sessionStorage）
+			getWebStorage: function (storageType) {
+				return storageType === 'sessionStorage' ? sessionStorage : localStorage;
+			},
+
+			// 读取修改时间记录表（始终保存在 localStorage 中）
+			getMtimeMap: function () {
+				try {
+					return JSON.parse(localStorage.getItem(this.MTIME_KEY) || '{}') || {};
+				} catch (e) {
+					return {};
+				}
+			},
+
+			// 记录某存储项的修改时间
+			setMtime: function (storageType, key) {
+				try {
+					const map = this.getMtimeMap();
+					map[storageType + ':' + key] = Date.now();
+					localStorage.setItem(this.MTIME_KEY, JSON.stringify(map));
+				} catch (e) { }
+			},
+
+			// 移除某存储项的修改时间
+			removeMtime: function (storageType, key) {
+				try {
+					const map = this.getMtimeMap();
+					delete map[storageType + ':' + key];
+					localStorage.setItem(this.MTIME_KEY, JSON.stringify(map));
+				} catch (e) { }
+			},
+
+			// 查询某存储项的修改时间（无记录返回 null）
+			getMtime: function (storageType, key) {
+				const ts = this.getMtimeMap()[storageType + ':' + key];
+				return typeof ts === 'number' ? ts : null;
+			},
+
+			// 加载 localStorage / sessionStorage
+			loadWebStorageItems: function (storageType) {
+				const store = this.getWebStorage(storageType);
 				const storageItemsList = document.getElementById('storageItemsList');
 				storageItemsList.innerHTML = '';
 
-				// 遍历所有localStorage
-				for (let i = 0; i < localStorage.length; i++) {
-					const key = localStorage.key(i);
-					const value = localStorage.getItem(key);
+				// 遍历所有存储项
+				let renderedCount = 0;
+				for (let i = 0; i < store.length; i++) {
+					const key = store.key(i);
+					if (key === this.MTIME_KEY) continue; // 内部元数据不展示
+					const value = store.getItem(key);
+					renderedCount++;
 
 					// 计算存储大小（按 UTF-16 码元计量，与浏览器口径一致）
 					const size = this.localStorageEntrySize(key, value);
@@ -2401,7 +2560,7 @@ SOFTWARE.
 					const storageItem = document.createElement('div');
 					storageItem.className = 'storage-item';
 					storageItem.dataset.key = key;
-					storageItem.dataset.type = 'localStorage';
+					storageItem.dataset.type = storageType;
 
 					storageItem.innerHTML = `
                         <div class="storage-title">${this.escapeHtml(key)}</div>
@@ -2415,27 +2574,27 @@ SOFTWARE.
 					// 点击事件（选中/编辑）
 					storageItem.addEventListener('click', (e) => {
 						if (!this.isActionButton(e.target)) {
-							this.selectStorageItem('localStorage', key, value);
+							this.selectStorageItem(storageType, key, value);
 						}
 					});
 
 					// 编辑按钮
 					storageItem.querySelector('[data-action="edit"]').addEventListener('click', (e) => {
 						e.stopPropagation();
-						this.selectStorageItem('localStorage', key, value);
+						this.selectStorageItem(storageType, key, value);
 					});
 
 					// 删除按钮
 					storageItem.querySelector('[data-action="delete"]').addEventListener('click', (e) => {
 						e.stopPropagation();
-						this.confirmDelete('localStorage', key);
+						this.confirmDelete(storageType, key);
 					});
 
 					storageItemsList.appendChild(storageItem);
 				}
 
-				if (localStorage.length === 0) {
-					storageItemsList.innerHTML = '<div class="placeholder2">localStorage为空</div>';
+				if (renderedCount === 0) {
+					storageItemsList.innerHTML = `<div class="placeholder2">${storageType}为空</div>`;
 				}
 
 				// 应用当前搜索过滤
@@ -2620,11 +2779,16 @@ SOFTWARE.
 
 				this.clearDirty();
 
+				// 移动端：打开编辑器时独占全屏并压入历史记录
+				this.openMobileEditor();
+
 				try {
 					switch (storageType) {
 						case 'localStorage':
-							const itemValue = value !== undefined ? value : localStorage.getItem(key);
-							this.renderLocalStorageEditor(key, itemValue, false);
+						case 'sessionStorage':
+							// 进入编辑器时实时读取，避免使用列表渲染时的过期快照
+							const itemValue = this.getWebStorage(storageType).getItem(key);
+							this.renderWebStorageEditor(storageType, key, itemValue, false);
 							break;
 
 						case 'indexedDB':
@@ -2656,9 +2820,9 @@ SOFTWARE.
 				this.clearDirty();
 
 				let tempKey = '';
-				if (storageType === 'localStorage') {
-					tempKey = 'new-localstorage';
-					this.renderLocalStorageEditor(tempKey, '', true);
+				if (storageType === 'localStorage' || storageType === 'sessionStorage') {
+					tempKey = 'new-' + storageType.toLowerCase();
+					this.renderWebStorageEditor(storageType, tempKey, '', true);
 				} else if (storageType === 'indexedDB') {
 					tempKey = 'new-indexeddb';
 					this.renderIndexedDBEditor(tempKey, { name: tempKey, version: 1, objectStores: [] }, true);
@@ -2668,13 +2832,19 @@ SOFTWARE.
 				document.getElementById('editorHeader').style.display = 'flex';
 				document.getElementById('editorPlaceholder').style.display = 'none';
 				document.getElementById('editorContent').style.display = 'block';
+
+				// 移动端：打开编辑器时独占全屏并压入历史记录
+				this.openMobileEditor();
 			},
 
-			// 渲染 localStorage 编辑器
-			renderLocalStorageEditor: function (key, value, isNew) {
-				this.currentSelection = { type: 'localStorage', key: key, originalKey: isNew ? null : key, isNew: isNew };
+			// 渲染 localStorage / sessionStorage 编辑器
+			renderWebStorageEditor: function (storageType, key, value, isNew) {
+				this.currentSelection = { type: storageType, key: key, originalKey: isNew ? null : key, isNew: isNew };
 				// value 可能为 null（选择期间键被外部删除），按 '' 处理
 				const size = this.localStorageEntrySize(key, value);
+				const mtime = isNew ? null : this.getMtime(storageType, key);
+				const mtimeText = isNew ? '（尚未保存）' :
+					(mtime ? new Date(mtime).toLocaleString('zh-CN') : '未知（未经本工具修改或无记录）');
 
 				const html = `
 					<div class="detail-section">
@@ -2691,6 +2861,10 @@ SOFTWARE.
 							<tr>
 								<th>大小 / Size</th>
 								<td>${this.formatBytes(size)}</td>
+							</tr>
+							<tr>
+								<th>上次修改 / Modified</th>
+								<td>${this.escapeHtml(mtimeText)}</td>
 							</tr>
 						</table>
 					</div>
@@ -3197,7 +3371,8 @@ SOFTWARE.
 										const result = de.target.result || [];
 										storeTotalRecords = result.length;
 										storeTotalBytes = result.reduce((sum, value) => sum + this.calculateRecordSize(value), 0);
-										result.slice(0, 200).forEach((value, index) => {
+										// 与游标路径口径一致：最多加载前 1000 条进入编辑器
+									result.slice(0, 1000).forEach((value, index) => {
 											let key;
 											if (objectStore.keyPath && value !== null && typeof value === 'object') {
 												// 内联键：从 value 中按 keyPath 提取
@@ -3301,13 +3476,279 @@ SOFTWARE.
 
 
 
+			// 生成并下载 JSON 文件
+			downloadJson: function (data, filename) {
+				const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+				const url = URL.createObjectURL(blob);
+				const a = document.createElement('a');
+				a.href = url;
+				a.download = filename;
+				document.body.appendChild(a);
+				a.click();
+				document.body.removeChild(a);
+				URL.revokeObjectURL(url);
+			},
+
+			// 导出文件名：momotan-<类型>-<时间戳>.json
+			exportFileName: function (storageType) {
+				const now = new Date();
+				const pad = (n) => String(n).padStart(2, '0');
+				const stamp = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+				return `momotan-${storageType}-${stamp}.json`;
+			},
+
+			// 序列化 IndexedDB 键为 JSON 可表示的形式；无法表示（如二进制键）时返回 null
+			serializeIdbKey: function (key) {
+				if (typeof key === 'number' || typeof key === 'string') {
+					return { t: 'plain', v: key };
+				}
+				if (key instanceof Date) {
+					return { t: 'date', v: key.toISOString() };
+				}
+				if (Array.isArray(key)) {
+					const items = key.map(k => this.serializeIdbKey(k));
+					if (items.some(i => i === null)) return null;
+					return { t: 'array', v: items };
+				}
+				return null;
+			},
+
+			// 反序列化 IndexedDB 键；无法还原时返回 undefined
+			deserializeIdbKey: function (s) {
+				if (!s || typeof s !== 'object') return undefined;
+				if (s.t === 'plain') return s.v;
+				if (s.t === 'date') {
+					const d = new Date(s.v);
+					return Number.isNaN(d.getTime()) ? undefined : d;
+				}
+				if (s.t === 'array' && Array.isArray(s.v)) {
+					const items = s.v.map(i => this.deserializeIdbKey(i));
+					if (items.length === 0 || items.some(i => i === undefined)) return undefined;
+					return items;
+				}
+				return undefined;
+			},
+
+			// 导出当前存储类型为 JSON 文件
+			exportCurrentStorage: async function () {
+				try {
+					const type = this.currentStorageType;
+					if (type === 'localStorage' || type === 'sessionStorage') {
+						const store = this.getWebStorage(type);
+						const items = {};
+						for (let i = 0; i < store.length; i++) {
+							const key = store.key(i);
+							if (key === this.MTIME_KEY) continue; // 内部元数据不导出
+							items[key] = store.getItem(key);
+						}
+						this.downloadJson({
+							tool: 'Momotan Storage Explorer',
+							version: 1,
+							type: type,
+							exportedAt: new Date().toISOString(),
+							items: items
+						}, this.exportFileName(type));
+						alert(`已导出 ${Object.keys(items).length} 条 ${type} 记录`);
+					} else if (type === 'indexedDB') {
+						const result = await this.exportIndexedDBAll();
+						this.downloadJson(result.data, this.exportFileName(type));
+						let msg = `已导出 ${result.data.databases.length} 个 IndexedDB 数据库`;
+						if (result.skippedBinary > 0) msg += `\n${result.skippedBinary} 条包含二进制数据的记录被跳过（JSON 无法表示二进制内容）`;
+						if (result.skippedKeys > 0) msg += `\n${result.skippedKeys} 条记录的键或值无法序列化，已跳过`;
+						alert(msg);
+					}
+				} catch (error) {
+					console.error('导出失败:', error);
+					alert(`导出失败: ${error.message}`);
+				}
+			},
+
+			// 导出全部 IndexedDB 数据库（结构 + 全量记录，不受编辑器加载上限影响）
+			exportIndexedDBAll: async function () {
+				const databases = await indexedDB.databases();
+				const out = [];
+				let skippedBinary = 0;
+				let skippedKeys = 0;
+				for (const dbInfo of databases) {
+					const dbData = { name: dbInfo.name, stores: [] };
+					const db = await new Promise((resolve, reject) => {
+						const req = indexedDB.open(dbInfo.name);
+						req.onsuccess = () => resolve(req.result);
+						req.onerror = () => reject(req.error || new Error(`打开数据库 ${dbInfo.name} 失败`));
+					});
+					for (const storeName of Array.from(db.objectStoreNames)) {
+						const storeData = await new Promise((resolve, reject) => {
+							const tx = db.transaction(storeName, 'readonly');
+							const objectStore = tx.objectStore(storeName);
+							const meta = {
+								name: storeName,
+								keyPath: objectStore.keyPath || null,
+								autoIncrement: !!objectStore.autoIncrement,
+								indexes: Array.from(objectStore.indexNames),
+								records: []
+							};
+							let keys = [];
+							let values = [];
+							objectStore.getAllKeys().onsuccess = (e) => { keys = e.target.result || []; };
+							objectStore.getAll().onsuccess = (e) => { values = e.target.result || []; };
+							tx.oncomplete = () => {
+								values.forEach((value, index) => {
+									// 含二进制内容的值无法 JSON 化，跳过并计数
+									if (this.getRecordBinaryInfo(value)) { skippedBinary++; return; }
+									try { JSON.stringify(value); } catch (e) { skippedKeys++; return; }
+									const sKey = this.serializeIdbKey(keys[index]);
+									if (sKey === null) { skippedKeys++; return; }
+									meta.records.push({ key: sKey, value: value });
+								});
+								resolve(meta);
+							};
+							tx.onerror = () => reject(tx.error || new Error(`读取对象存储 ${storeName} 失败`));
+							tx.onabort = () => reject(tx.error || new Error(`读取对象存储 ${storeName} 被中止`));
+						});
+						dbData.stores.push(storeData);
+					}
+					db.close();
+					out.push(dbData);
+				}
+				return {
+					data: {
+						tool: 'Momotan Storage Explorer',
+						version: 1,
+						type: 'indexedDB',
+						exportedAt: new Date().toISOString(),
+						databases: out
+					},
+					skippedBinary: skippedBinary,
+					skippedKeys: skippedKeys
+				};
+			},
+
+			// 从 JSON 文件导入
+			importStorageFile: async function (file) {
+				try {
+					const text = await file.text();
+					const data = JSON.parse(text);
+					const type = this.currentStorageType;
+					if (!data || data.type !== type) {
+						alert(`导入失败：文件类型（${data && data.type ? data.type : '未知'}）与当前存储类型（${type}）不匹配`);
+						return;
+					}
+					if (type === 'localStorage' || type === 'sessionStorage') {
+						await this.importWebStorage(type, data);
+					} else if (type === 'indexedDB') {
+						await this.importIndexedDBData(data);
+					}
+					this.loadStorageItems(type);
+					this.updateStorageSpaceInfo(type);
+					refreshLeftItems();
+				} catch (error) {
+					console.error('导入失败:', error);
+					alert(`导入失败: ${error.message}`);
+				}
+			},
+
+			// 导入 localStorage / sessionStorage（合并写入，同名键覆盖）
+			importWebStorage: async function (storageType, data) {
+				const items = data.items;
+				if (!items || typeof items !== 'object') throw new Error('文件格式不正确：缺少 items 字段');
+				const count = Object.keys(items).length;
+				if (!await confirm(`即将导入 ${count} 条记录到 ${storageType}，同名键将被覆盖。是否继续？`)) return;
+				const store = this.getWebStorage(storageType);
+				let imported = 0;
+				for (const key of Object.keys(items)) {
+					if (key === this.MTIME_KEY) continue; // 内部元数据不导入
+					store.setItem(key, String(items[key]));
+					this.setMtime(storageType, key);
+					imported++;
+				}
+				alert(`已导入 ${imported} 条记录`);
+			},
+
+			// 导入 IndexedDB（同名数据库经确认后删除重建）
+			importIndexedDBData: async function (data) {
+				const databases = Array.isArray(data.databases) ? data.databases : [];
+				if (databases.length === 0) throw new Error('文件格式不正确：databases 为空');
+				const existingNames = (await indexedDB.databases()).map(d => d.name);
+				const overwriteNames = databases.filter(d => d && existingNames.includes(d.name)).map(d => d.name);
+				if (overwriteNames.length > 0) {
+					if (!await confirm(`以下数据库已存在，导入将删除并重建：\n${overwriteNames.join('\n')}\n\n是否继续？`)) return;
+				}
+				let importedRecords = 0;
+				let skippedRecords = 0;
+				for (const dbData of databases) {
+					if (!dbData || typeof dbData.name !== 'string' || !dbData.name) continue;
+					// 删除同名旧库
+					if (existingNames.includes(dbData.name)) {
+						await new Promise((resolve, reject) => {
+							const delReq = indexedDB.deleteDatabase(dbData.name);
+							delReq.onsuccess = () => resolve();
+							delReq.onerror = () => reject(delReq.error || new Error(`删除数据库 ${dbData.name} 失败`));
+							delReq.onblocked = () => reject(new Error(`数据库 ${dbData.name} 被占用，请关闭其他标签页后重试`));
+						});
+					}
+					// 创建结构（对象存储 + 索引）
+					await new Promise((resolve, reject) => {
+						const openReq = indexedDB.open(dbData.name, 1);
+						openReq.onupgradeneeded = (event) => {
+							const db = event.target.result;
+							(dbData.stores || []).forEach(storeData => {
+								if (!storeData || !storeData.name || db.objectStoreNames.contains(storeData.name)) return;
+								const options = {};
+								if (storeData.keyPath) options.keyPath = storeData.keyPath;
+								if (storeData.autoIncrement) options.autoIncrement = true;
+								const objectStore = db.createObjectStore(storeData.name, options);
+								(storeData.indexes || []).forEach(idx => objectStore.createIndex(idx, idx));
+							});
+						};
+						openReq.onsuccess = (event) => { event.target.result.close(); resolve(); };
+						openReq.onerror = () => reject(openReq.error || new Error(`创建数据库 ${dbData.name} 失败`));
+						openReq.onblocked = () => reject(new Error(`数据库 ${dbData.name} 被阻塞，请关闭其他标签页`));
+					});
+					// 写入记录
+					for (const storeData of (dbData.stores || [])) {
+						const records = Array.isArray(storeData.records) ? storeData.records : [];
+						if (records.length === 0) continue;
+						await new Promise((resolve) => {
+							const openReq = indexedDB.open(dbData.name);
+							openReq.onsuccess = (event) => {
+								const db = event.target.result;
+								const tx = db.transaction(storeData.name, 'readwrite');
+								const objectStore = tx.objectStore(storeData.name);
+								records.forEach(rec => {
+									try {
+										if (storeData.keyPath) {
+											// 键含于值中，不能显式传键
+											objectStore.put(rec.value);
+											importedRecords++;
+										} else {
+											const key = this.deserializeIdbKey(rec.key);
+											if (key === undefined || !this.isValidIdbKey(key)) { skippedRecords++; return; }
+											objectStore.put(rec.value, key);
+											importedRecords++;
+										}
+									} catch (e) { skippedRecords++; }
+								});
+								tx.oncomplete = () => { db.close(); resolve(); };
+								// 单条失败导致事务中止时保留已写入部分，继续后续存储
+								tx.onerror = () => { db.close(); resolve(); };
+								tx.onabort = () => { db.close(); resolve(); };
+							};
+							openReq.onerror = () => resolve();
+						});
+					}
+				}
+				let msg = `导入完成：共写入 ${importedRecords} 条记录`;
+				if (skippedRecords > 0) msg += `\n${skippedRecords} 条记录因键无效或数据不合法被跳过`;
+				alert(msg);
+			},
+
 			// 保存当前项
 			saveCurrentItem: async function () {
 				if (!this.currentSelection) return;
 
 				try {
-					if (this.currentSelection.type === 'localStorage') {
-						await this.saveLocalStorage();
+					if (this.currentSelection.type === 'localStorage' || this.currentSelection.type === 'sessionStorage') {
+						await this.saveWebStorage();
 					} else if (this.currentSelection.type === 'indexedDB') {
 						await this.saveIndexedDB();
 					} else {
@@ -3317,6 +3758,7 @@ SOFTWARE.
 					this.clearDirty();
 					this.loadStorageItems(this.currentStorageType);
 					this.updateStorageSpaceInfo(this.currentStorageType);
+					refreshLeftItems();
 					alert('保存成功');
 				} catch (error) {
 					console.error('保存失败:', error);
@@ -3324,8 +3766,10 @@ SOFTWARE.
 				}
 			},
 
-			// 保存 localStorage
-			saveLocalStorage: function () {
+			// 保存 localStorage / sessionStorage
+			saveWebStorage: function () {
+				const storageType = this.currentSelection.type;
+				const store = this.getWebStorage(storageType);
 				const newKey = document.getElementById('localKeyInput').value.trim();
 				const newValue = document.getElementById('localValueInput').value;
 
@@ -3335,9 +3779,11 @@ SOFTWARE.
 
 				const originalKey = this.currentSelection.originalKey;
 				if (originalKey && originalKey !== newKey) {
-					localStorage.removeItem(originalKey);
+					store.removeItem(originalKey);
+					this.removeMtime(storageType, originalKey);
 				}
-				localStorage.setItem(newKey, newValue);
+				store.setItem(newKey, newValue);
+				this.setMtime(storageType, newKey);
 
 				this.currentSelection.key = newKey;
 				this.currentSelection.originalKey = newKey;
@@ -3513,7 +3959,7 @@ SOFTWARE.
 				);
 
 				if (hasStructuralChanges) {
-					// 结构变更会删除旧对象存储并按内存记录重写，而内存中仅加载了前 200 条。
+					// 结构变更会删除旧对象存储并按内存记录重写，而内存中仅加载了前 1000 条。
 					// 先在旧存储被删除前读取其全部记录并与编辑结果合并，避免未加载的记录丢失。
 					for (const store of stores) {
 						const willRewrite = !store.isNew && store.originalName &&
@@ -3622,7 +4068,7 @@ SOFTWARE.
 				return false;
 			},
 
-			// 读取对象存储的全部记录（不受编辑器 200 条加载上限影响）
+			// 读取对象存储的全部记录（不受编辑器 1000 条加载上限影响）
 			readAllStoreRecords: function (dbName, storeName) {
 				return new Promise((resolve, reject) => {
 					const request = indexedDB.open(dbName);
@@ -3660,7 +4106,7 @@ SOFTWARE.
 			},
 
 			// 结构变更重写前，用原存储的全量记录与编辑器中的改动合并：
-			// 未加载进编辑器（超出 200 条上限）的记录原样保留，
+			// 未加载进编辑器（超出 1000 条上限）的记录原样保留，
 			// 已加载但被删除的记录丢弃，编辑过/新增的记录以编辑器内容为准。
 			mergeFullStoreRecords: async function (dbName, store, dbInfo) {
 				const originalStore = (dbInfo.objectStores || []).find(s => s.name === store.originalName);
@@ -3726,13 +4172,14 @@ SOFTWARE.
 
 					const effectiveKey = getRecordKey(record);
 
-					if (!keyPath && !autoIncrement && (effectiveKey === undefined || effectiveKey === '')) {
+					// 空字符串是合法的 IndexedDB 键，仅 undefined（无法确定键）才拒绝
+					if (!keyPath && !autoIncrement && effectiveKey === undefined) {
 						throw new Error('记录键不能为空');
 					}
 					if (keyPath && !autoIncrement && effectiveKey === undefined) {
 						throw new Error(`记录值缺少 Key Path "${keyPath}" 对应的字段`);
 					}
-					if (effectiveKey !== undefined && effectiveKey !== '' && !this.isValidIdbKey(effectiveKey)) {
+					if (effectiveKey !== undefined && !this.isValidIdbKey(effectiveKey)) {
 						throw new Error(`记录键无效（键必须是数字、字符串、日期、二进制数据或数组）: ${JSON.stringify(effectiveKey)}`);
 					}
 
@@ -3741,12 +4188,12 @@ SOFTWARE.
 
 				// 校验：新增或被修改的键不得与其他记录的目标键冲突
 				entries.forEach((entry, index) => {
-					if (entry.effectiveKey === undefined || entry.effectiveKey === '') return;
+					if (entry.effectiveKey === undefined) return;
 					const keyIntroduced = entry.record.isNew ||
 						(entry.record.originalKey !== undefined && !this.idbKeysEqual(entry.record.originalKey, entry.effectiveKey));
 					if (!keyIntroduced) return;
 					const duplicated = entries.some((other, otherIndex) => {
-						return otherIndex !== index && other.effectiveKey !== undefined && other.effectiveKey !== '' &&
+						return otherIndex !== index && other.effectiveKey !== undefined &&
 							this.idbKeysEqual(other.effectiveKey, entry.effectiveKey);
 					});
 					if (duplicated) {
@@ -3894,9 +4341,10 @@ SOFTWARE.
 			// 确认删除
 			confirmDelete: async function (storageType, key) {
 				var alertText = "确定删除 " + key + " 吗？\n\n注意：不建议在这里删除任何数据，可能会引发很多未知问题。";
-				if (storageType == 'localStorage') alertText = alertText + "\n删除该存储项后，可能导致部分网站功能异常，本地数据丢失。";
-				if (storageType == 'indexedDB') alertText = alertText + "\n删除该存储项后，可能导致需要大容量储存的网站出现异常，本地数据丢失。";
-				if (storageType == 'cacheStorage') alertText = alertText + "\n删除该缓存后，其中缓存的全部资源将被一并删除。";
+				if (storageType == 'localStorage') alertText = alertText + "\n删除该存储项后，可能导致网站设置丢失、登录状态失效、部分功能异常。";
+				if (storageType == 'sessionStorage') alertText = alertText + "\n删除该存储项后，可能导致当前会话中的网站功能异常，通常刷新或重开标签页后可恢复。";
+				if (storageType == 'indexedDB') alertText = alertText + "\n删除该存储项后，可能导致依赖它的网站出现异常，本地数据丢失且难以恢复。";
+				if (storageType == 'cacheStorage') alertText = alertText + "\n删除该缓存后，可能导致缓存资源被清空，网站下次加载可能变慢；若网站的 Service Worker 逻辑不完善，可能出现短时异常。";
 				if (await confirm(alertText)) {
 					await this.doDeleteStorageItem(storageType, key);
 				}
@@ -3908,7 +4356,9 @@ SOFTWARE.
 				try {
 						switch (storageType) {
 							case 'localStorage':
-								localStorage.removeItem(key);
+							case 'sessionStorage':
+								this.getWebStorage(storageType).removeItem(key);
+								this.removeMtime(storageType, key);
 								break;
 
 							case 'indexedDB':
@@ -3987,13 +4437,15 @@ SOFTWARE.
 					return 0;
 				}
 				var alertText = "确定清除所有 " + this.currentStorageType + " 存储吗？\n\n注意：不建议在这里删除任何数据，可能会引发很多未知问题。";
-				if (this.currentStorageType == 'localStorage') alertText = alertText + "\n删除 LocalStorage 后，可能导致部分网站功能异常，本地数据丢失。";
-				if (this.currentStorageType == 'indexedDB') alertText = alertText + "\n删除 IndexedDB 后，可能导致需要大容量储存的网站出现异常，本地数据丢失。";
-				if (this.currentStorageType == 'cacheStorage') alertText = alertText + "\n删除 CacheStorage 后，可能导致部分网站的本地缓存丢失。";
+				if (this.currentStorageType == 'localStorage') alertText = alertText + "\n删除 LocalStorage 后，可能导致网站设置丢失、登录状态失效、部分功能异常。";
+				if (this.currentStorageType == 'sessionStorage') alertText = alertText + "\n删除 SessionStorage 后，可能导致当前会话中的网站功能异常，通常刷新或重开标签页后可恢复。";
+				if (this.currentStorageType == 'indexedDB') alertText = alertText + "\n删除 IndexedDB 后，可能导致依赖它的网站出现异常，本地数据丢失且难以恢复。";
+				if (this.currentStorageType == 'cacheStorage') alertText = alertText + "\n删除 CacheStorage 后，可能导致缓存资源被清空，网站下次加载可能变慢；若网站的 Service Worker 逻辑不完善，可能出现短时异常。";
 				if (await confirm(alertText)) {
 					switch (this.currentStorageType) {
 						case 'localStorage':
-							localStorage.clear();
+						case 'sessionStorage':
+							this.getWebStorage(this.currentStorageType).clear();
 							break;
 
 						case 'indexedDB':
@@ -4089,18 +4541,21 @@ SOFTWARE.
 				try {
 					switch (storageType) {
 						case 'localStorage':
+						case 'sessionStorage': {
+							const store = this.getWebStorage(storageType);
 							// 已用空间（按 UTF-16 码元计量，与浏览器口径一致）
-							for (let i = 0; i < localStorage.length; i++) {
-								const key = localStorage.key(i);
-								const value = localStorage.getItem(key);
+							for (let i = 0; i < store.length; i++) {
+								const key = store.key(i);
+								const value = store.getItem(key);
 								usedSpace += this.localStorageEntrySize(key, value);
 							}
 							// 总容量无 API 可读，按保守的 5MB 估算
 							totalSpace = 5 * 1024 * 1024;
 							totalEstimated = true;
-							usedTitle = 'localStorage 已用（按键和值的 UTF-16 长度计算）';
-							totalTitle = 'localStorage 配额无 API 可读，浏览器通常为 5-10MB，此为保守估算';
+							usedTitle = storageType + ' 已用（按键和值的 UTF-16 长度计算）';
+							totalTitle = storageType + ' 配额无 API 可读，浏览器通常为 5-10MB，此为保守估算';
 							break;
+						}
 
 						case 'indexedDB': {
 							const indexedDBInfo = await this.calculateIndexedDBSpace();
@@ -4355,6 +4810,157 @@ SOFTWARE.
 		document.addEventListener('DOMContentLoaded', function () {
 			storageManager.init();
 		});
+
+		// 抽屉下滑关闭：窄屏（≤440px）下 .shortcutmodal 变为底部抽屉，
+		// 附加"下滑跟手、松手按速度+距离综合判定关闭、否则回弹原位"的手势（触摸与鼠标均支持），
+		// 关闭动作复用各弹窗已有的背板点击逻辑；松手瞬间正在上滑（反悔）则无条件回弹。
+		// 性能设计：全程只常驻 touchstart/mousedown 两个入口监听；move/end 监听仅在单次手势存续期间挂载、松手即移除，
+		// 弹窗未打开或非抽屉模式时零开销；跟手只写 transform（合成层），不触发重排。
+		(function () {
+			var drawerMQ = window.matchMedia('(max-width: 440px)');
+			var DECIDE_PX = 3;   // 方向裁决阈值：位移超过它才判定手势方向
+			var CLOSE_DIST = 100;   // 纯距离路径：松手时下拉距离超过它才关闭
+			var FLICK_DIST = 20;    // 速度路径：快速下甩的最小位移
+			var FLICK_VY = 0.5;     // 速度路径：松手速度达到它（px/ms，约 500px/s）即视为快速下甩
+			var UP_CANCEL_VY = -0.1; // 松手瞬间速度低于它视为正在上滑（反悔），无条件回弹
+			var VEL_WINDOW = 100;   // 速度采样窗口（ms）：只取松手前最近这段的位移算速度
+			var g = null;        // 当前手势状态，null = 无进行中手势
+			var suppressUntil = 0, suppressX = 0, suppressY = 0; // 拖动松手后吞掉尾随原生 click 的时间窗+坐标
+
+			// 触摸点向上的可滚动祖先（到抽屉容器为止）是否全部停在顶部
+			function scrollsAtTop(target, content) {
+				var el = target;
+				while (el && el !== content) {
+					if (el.scrollTop > 0) return false;
+					el = el.parentElement;
+				}
+				return content.scrollTop <= 0;
+			}
+
+			// 手势核心：与事件源（touch/mouse）无关，事件处理只做坐标提取的薄封装
+			function begin(target, x, y, isTouch) {
+				var modal = target.closest && target.closest('.shortcutmodal.active');
+				if (!modal) return;
+				var content = modal.querySelector('.shortcutmodal-content');
+				if (!content || !content.contains(target)) return;
+				g = {
+					modal: modal, content: content, target: target,
+					startX: x, startY: y,
+					decided: false, dragging: false,
+					samples: [] // 速度采样：扁平数组 [t0,y0, t1,y1, ...]，仅保留最近 VEL_WINDOW 毫秒
+				};
+				if (isTouch) {
+					document.addEventListener('touchmove', onTouchMove, { capture: true, passive: false });
+					document.addEventListener('touchend', onTouchEnd, true);
+					document.addEventListener('touchcancel', onTouchEnd, true);
+				} else {
+					document.addEventListener('mousemove', onMouseMove, true);
+					document.addEventListener('mouseup', onMouseUp, true);
+				}
+			}
+
+			function move(x, y, preventDefault) {
+				if (!g) return;
+				var dx = x - g.startX;
+				var dy = y - g.startY;
+				if (!g.decided) {
+					if (Math.abs(dx) < DECIDE_PX && Math.abs(dy) < DECIDE_PX) return;
+					g.decided = true;
+					// 仅"向下 + 内部滚动全部在顶部"才接管手势；向上/横向/内部可滚动时完全放行
+					if (dy > 0 && scrollsAtTop(g.target, g.content)) {
+						g.dragging = true;
+						g.content.style.transition = 'none'; // 跟手期间停掉 CSS 过渡
+					}
+				}
+				if (!g.dragging) return;
+				preventDefault(); // 触摸：阻止抽屉内部滚动与页面滚动；鼠标：阻止文本选中
+				var now = performance.now();
+				var s = g.samples;
+				s.push(now, y);
+				while (s.length > 4 && now - s[0] > VEL_WINDOW) s.splice(0, 2); // 只留最近一个采样窗口
+				g.content.style.transform = 'translateY(' + (dy > 0 ? dy : 0) + 'px)'; // 1:1 跟手，向上回拉时钳制在原位
+			}
+
+			function end(x, y) {
+				if (!g) return;
+				var dy = y - g.startY;
+				var modal = g.modal, content = g.content, dragging = g.dragging, samples = g.samples;
+				document.removeEventListener('touchmove', onTouchMove, true);
+				document.removeEventListener('touchend', onTouchEnd, true);
+				document.removeEventListener('touchcancel', onTouchEnd, true);
+				document.removeEventListener('mousemove', onMouseMove, true);
+				document.removeEventListener('mouseup', onMouseUp, true);
+				g = null;
+				if (!dragging) return;
+				// 松手速度：按松手时刻修剪采样，取最近 VEL_WINDOW 毫秒的位移/时间；按住不动再松手时采样过期、速度归零，只按距离判
+				var releaseT = performance.now();
+				while (samples.length > 2 && releaseT - samples[0] > VEL_WINDOW) samples.splice(0, 2);
+				var vy = 0;
+				if (samples.length >= 4) {
+					var vdt = samples[samples.length - 2] - samples[0];
+					if (vdt > 0) vy = (samples[samples.length - 1] - samples[1]) / vdt;
+				}
+				// 清除内联样式交还 CSS：未达关闭条件时过渡自动回弹原位；关闭时从当前位移接续播放既有退场动画
+				content.style.transition = '';
+				content.style.transform = '';
+				// 关闭判定：正在上滑（反悔）无条件回弹；否则慢拖超距或快速下甩其一即关闭
+				var shouldClose = vy > UP_CANCEL_VY &&
+					(dy >= CLOSE_DIST || (dy >= FLICK_DIST && vy >= FLICK_VY));
+				if (shouldClose && modal.classList.contains('active')) {
+					modal.click(); // 合成背板点击，触发 e.target === modal 的现有关闭处理器
+					if (modal.classList.contains('active')) modal.classList.remove('active'); // 无背板关闭处理器的弹窗兜底
+				}
+				// 吞掉本次拖动尾随的原生 click：按时间窗+松手坐标判定，400ms 后自动过期，不误伤后续正常点击。
+				// 必须在 modal.click() 之后开启时间窗：合成 click 坐标为 (0,0)，否则左上角松手时会误吞掉关闭点击
+				suppressUntil = performance.now() + 400;
+				suppressX = x;
+				suppressY = y;
+			}
+
+			function onTouchStart(e) {
+				if (g || e.touches.length !== 1 || !drawerMQ.matches ||
+					document.body.classList.contains('no-drawer-mode')) return;
+				var t = e.touches[0];
+				begin(e.target, t.clientX, t.clientY, true);
+			}
+
+			function onTouchMove(e) {
+				var t = e.touches[0];
+				move(t.clientX, t.clientY, function () { e.preventDefault(); });
+			}
+
+			function onTouchEnd(e) {
+				var t = e.changedTouches[0];
+				end(t.clientX, t.clientY);
+			}
+
+			function onMouseDown(e) {
+				if (g || e.button !== 0 || !drawerMQ.matches ||
+					document.body.classList.contains('no-drawer-mode')) return;
+				begin(e.target, e.clientX, e.clientY, false);
+			}
+
+			function onMouseMove(e) {
+				move(e.clientX, e.clientY, function () { e.preventDefault(); });
+			}
+
+			function onMouseUp(e) {
+				end(e.clientX, e.clientY);
+			}
+
+			// 捕获阶段吞掉拖动后的原生 click（不依赖 click 的 target 重定向，部分移动端内核重定向不规范）
+			document.addEventListener('click', function (e) {
+				if (performance.now() <= suppressUntil &&
+					Math.abs(e.clientX - suppressX) < 40 && Math.abs(e.clientY - suppressY) < 40) {
+					suppressUntil = 0;
+					e.stopPropagation();
+					e.preventDefault();
+				}
+			}, true);
+
+			document.addEventListener('touchstart', onTouchStart, { capture: true, passive: true });
+			document.addEventListener('mousedown', onMouseDown, true);
+		})();
 	</script>
 </body>
 </html>
