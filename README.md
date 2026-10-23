@@ -8,7 +8,7 @@ Website local storage management tool / 网站本地存储管理工具
 
 许可证：MIT license
 
-当前版本：v3.1.0 release 2026/10/23
+当前版本：v3.1.1 release 2026/10/23
 
 Example / 示例: https://momotan.cc/storage.html
 
