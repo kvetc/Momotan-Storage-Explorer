@@ -36,6 +36,7 @@ Example / 示例: https://momotan.cc/storage.html
 - `indexedDB.databases()` 在旧版 WebKit/Safari 上不可用（此时无法枚举数据库列表）。
 - 页面含内联 `<script>`/`<style>`，严格 CSP 的站点需要相应放行。
 - 若站点的 Service Worker 缓存了本页面，可能一直看到旧版本。
+- 部分浏览器在**没有任何页面内交互**时连续按返回，浏览器的安全策略会静默跳过压入的历史条目，保存提示弹窗可能被绕过。本工具会在页面离开（`pagehide`）时会自动把未保存的被编辑内容保存为**草稿**，下次打开时提示恢复。若草稿超出 localStorage 配额导致无法写入，下次打开时会提示草稿未能保存。
 
 ## 安全提示
 
