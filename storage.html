@@ -1098,8 +1098,8 @@ SOFTWARE.
 			display: inline-flex;
 			align-items: center;
 			justify-content: center;
-			width: 32px;
-			height: 32px;
+			width: 34px;
+			height: 34px;
 			margin-left: 0px;
 			border: none;
 			border-radius: 0px;
@@ -1331,6 +1331,50 @@ SOFTWARE.
 			color: #777;
 		}
 
+		/* 索引编辑器：单列索引项卡片，名称行 + 可展开的详情区 */
+		.index-items {
+			/* grid + minmax(0,1fr)：轨道最小尺寸为 0，min-content 固有宽度不再向上传播，
+			   避免外层 detail-table 的单元格被内层表格撑宽（滚动容器才能生效） */
+			display: grid;
+			grid-template-columns: minmax(0, 1fr);
+			gap: 8px;
+			margin-bottom: 8px;
+		}
+
+		.index-item {
+			min-width: 0;
+			border: 1px solid var(--border-color);
+			transition: all 0.2s ease;
+		}
+
+		.dark-theme .index-item {
+			border-color: var(--border-color-dark);
+		}
+
+		.index-item-header {
+			display: flex;
+			align-items: center;
+			gap: 2px;
+		}
+
+		.index-item-header .section-title-input {
+			margin: 0;
+			flex: 1;
+			min-width: 0;
+		}
+
+		.index-item-body {
+			padding: 0;
+			/* 详情表过宽时在索引项内部横向滚动，不撑破页面布局 */
+			overflow-x: auto;
+		}
+
+		.index-item-body .detail-table {
+			margin-bottom: 0;
+			/* 内层详情表最小宽度：窄屏/窄卡片下保持可读，超出时在 index-item-body 内横向滚动 */
+			min-width: 300px;
+		}
+
 		/* 记录截断警告 */
 		.records-truncated-warning {
 			color: var(--primary-color);
@@ -1363,6 +1407,9 @@ SOFTWARE.
 		}
 
 		@media (max-width: 900px) {
+			.editor-content {
+				padding: 12px 10px;
+			}
 			.storage-type-list {
 				width: 310px;
 			}
@@ -1377,6 +1424,15 @@ SOFTWARE.
 			}
 			.storage-detail-title {
 				font-size: 16px;
+			}
+			.detail-table th {
+				font-size: 14px;
+				width: 168px;
+				min-width: 168px;
+			}
+			.detail-table th,
+			.detail-table td {
+				padding: 10px 9px;
 			}
 		}
 
@@ -3093,56 +3149,62 @@ SOFTWARE.
 				}
 			},
 
-			// 渲染结构化索引编辑器（名称 + 键路径 + 唯一 + 多值，保留完整元数据，不用逗号字符串）
+			// 渲染结构化索引编辑器：默认单列只显示索引名称，
+			// 点击名称行右侧小箭头展开该索引的键路径/唯一/多值/删除操作（同为单列）
 			renderIndexesEditor: function (indexes) {
-				const rows = indexes.map(idx => this.renderIndexRowHtml(idx)).join('');
-				const table = indexes.length
-					? `<table class="records-table indexes-table">
-						<tr><th>名称</th><th>键路径</th><th>唯一</th><th>多值</th><th class="action-cell"></th></tr>
-						${rows}
-					</table>`
-					: '<div class="empty-records">该对象存储暂无索引</div>';
-				return table;
+				if (!indexes.length) return '<div class="empty-records">该对象存储暂无索引</div>';
+				return `<div class="index-items">${indexes.map(idx => this.renderIndexRowHtml(idx)).join('')}</div>`;
 			},
 
-			// 单行索引编辑行
+			// 单个索引项卡片
 			renderIndexRowHtml: function (idx) {
 				const kpText = idx.keyPath === null || idx.keyPath === undefined ? '' :
 					(Array.isArray(idx.keyPath) ? JSON.stringify(idx.keyPath) : idx.keyPath);
 				return `
-					<tr data-index-row="true">
-						<td><input type="text" class="editable-input" value="${this.escapeAttr(idx.name || '')}" placeholder="索引名" data-field="index-name"></td>
-						<td><input type="text" class="editable-input" value="${this.escapeAttr(kpText)}" placeholder="如 a.b，复合用 [&quot;a&quot;,&quot;b&quot;]" data-field="index-key-path"></td>
-						<td><select class="editable-input editable-select" data-field="index-unique">
-							<option value="false" ${idx.unique ? '' : 'selected'}>否</option>
-							<option value="true" ${idx.unique ? 'selected' : ''}>是</option>
-						</select></td>
-						<td><select class="editable-input editable-select" data-field="index-multi-entry">
-							<option value="false" ${idx.multiEntry ? '' : 'selected'}>否</option>
-							<option value="true" ${idx.multiEntry ? 'selected' : ''}>是</option>
-						</select></td>
-						<td class="action-cell"><button class="inline-action-btn danger" title="删除索引" data-action="delete-index">${this.deleteIconSvg}</button></td>
-					</tr>
+					<div class="index-item" data-index-row="true">
+						<div class="index-item-header">
+							<input type="text" class="section-title-input" value="${this.escapeAttr(idx.name || '')}" placeholder="索引名" data-field="index-name">
+							<button class="inline-action-btn" title="展开/收起详情" data-action="toggle-index">${this.expandIconSvg}</button>
+						</div>
+						<div class="index-item-body" style="display:none;">
+							<table class="detail-table">
+								<tr><th>键路径 / Key Path</th><td><input type="text" class="editable-input" value="${this.escapeAttr(kpText)}" placeholder="如 a.b，复合用 [&quot;a&quot;,&quot;b&quot;]" data-field="index-key-path"></td></tr>
+								<tr><th>唯一 / Unique</th><td><select class="editable-input editable-select" data-field="index-unique">
+									<option value="false" ${idx.unique ? '' : 'selected'}>否</option>
+									<option value="true" ${idx.unique ? 'selected' : ''}>是</option>
+								</select></td></tr>
+								<tr><th>多值 / Multi Entry</th><td><select class="editable-input editable-select" data-field="index-multi-entry">
+									<option value="false" ${idx.multiEntry ? '' : 'selected'}>否</option>
+									<option value="true" ${idx.multiEntry ? 'selected' : ''}>是</option>
+								</select></td></tr>
+								<tr><th>操作</th><td><button class="inline-action-btn danger" title="删除索引" data-action="delete-index">${this.deleteIconSvg}</button></td></tr>
+							</table>
+						</div>
+					</div>
 				`;
 			},
 
-			// 新增索引行
+			// 新增索引项（默认展开，方便直接填写）
 			addIndexRow: function (storeSection) {
 				this.markDirty();
 				const cell = storeSection.querySelector('.indexes-cell');
 				if (!cell) return;
 				const emptyMsg = cell.querySelector('.empty-records');
 				if (emptyMsg) emptyMsg.remove();
-				let table = cell.querySelector('.indexes-table');
-				if (!table) {
-					table = document.createElement('table');
-					table.className = 'records-table indexes-table';
-					table.innerHTML = '<tr><th>名称</th><th>键路径</th><th>唯一</th><th>多值</th><th class="action-cell"></th></tr>';
-					cell.insertBefore(table, cell.querySelector('[data-action="add-index"]'));
+				let items = cell.querySelector('.index-items');
+				if (!items) {
+					items = document.createElement('div');
+					items.className = 'index-items';
+					cell.insertBefore(items, cell.querySelector('[data-action="add-index"]'));
 				}
-				const tbody = document.createElement('tbody');
-				tbody.innerHTML = this.renderIndexRowHtml({ name: '', keyPath: '', unique: false, multiEntry: false });
-				while (tbody.firstChild) table.appendChild(tbody.firstChild);
+				const holder = document.createElement('div');
+				holder.innerHTML = this.renderIndexRowHtml({ name: '', keyPath: '', unique: false, multiEntry: false });
+				const item = holder.firstElementChild;
+				items.appendChild(item);
+				const body = item.querySelector('.index-item-body');
+				if (body) body.style.display = 'block';
+				const toggleBtn = item.querySelector('[data-action="toggle-index"]');
+				if (toggleBtn) toggleBtn.classList.add('active');
 			},
 
 			// 渲染记录表格
@@ -3245,21 +3307,29 @@ SOFTWARE.
 				} else if (action === 'add-index') {
 					e.preventDefault();
 					this.addIndexRow(storeSection);
+				} else if (action === 'toggle-index') {
+					e.preventDefault();
+					const item = btn.closest('.index-item');
+					const body = item && item.querySelector('.index-item-body');
+					if (body) {
+						const isHidden = body.style.display === 'none';
+						body.style.display = isHidden ? 'block' : 'none';
+						btn.classList.toggle('active', isHidden);
+					}
 				} else if (action === 'delete-index') {
 					e.preventDefault();
 					this.markDirty();
-					const indexRow = btn.closest('tr');
-					if (indexRow) indexRow.remove();
+					const cell = btn.closest('.indexes-cell');
+					const item = btn.closest('[data-index-row]');
+					if (item) item.remove();
 					// 索引全部删完时恢复空提示
-					const cell = btn.closest('.indexes-cell') || (storeSection && storeSection.querySelector('.indexes-cell'));
-					const table = cell && cell.querySelector('.indexes-table');
-					if (cell && table && !table.querySelector('tr[data-index-row]')) {
-						table.remove();
-						const addBtn = cell.querySelector('[data-action="add-index"]');
+					if (cell && !cell.querySelector('[data-index-row]')) {
+						const items = cell.querySelector('.index-items');
+						if (items) items.remove();
 						const empty = document.createElement('div');
 						empty.className = 'empty-records';
 						empty.textContent = '该对象存储暂无索引';
-						cell.insertBefore(empty, addBtn);
+						cell.insertBefore(empty, cell.querySelector('[data-action="add-index"]'));
 					}
 				} else if (action === 'delete-record') {
 					e.preventDefault();
@@ -4201,7 +4271,7 @@ SOFTWARE.
 
 					// 收集结构化索引行（名称 + 键路径 + 唯一 + 多值）
 					const indexes = [];
-					const indexRows = section.querySelectorAll('tr[data-index-row]');
+					const indexRows = section.querySelectorAll('[data-index-row]');
 					for (const irow of indexRows) {
 						const nameEl = irow.querySelector('[data-field="index-name"]');
 						const kpEl = irow.querySelector('[data-field="index-key-path"]');
