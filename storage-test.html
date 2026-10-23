@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Momotan Storage Explorer - 纯函数测试</title>
+	<style>
+		body { font-family: 'Segoe UI', Arial, sans-serif; margin: 24px; color: #333; }
+		h1 { font-size: 20px; }
+		.pass { color: #1a7f37; }
+		.fail { color: #d1242f; font-weight: 600; }
+		.case { margin: 2px 0; font-size: 14px; white-space: pre-wrap; word-break: break-all; }
+		#summary { font-size: 16px; margin: 12px 0; padding: 8px 12px; border: 1px solid #ddd; display: inline-block; }
+		.note { color: #888; font-size: 13px; }
+	</style>
+</head>
+
+<body>
+	<h1>Momotan Storage Explorer 纯函数测试</h1>
+	<p class="note">通过隐藏 iframe 加载同目录 storage.html，直接测试其中的 storageManager 纯函数，避免双份实现漂移。需通过 HTTP(S) 访问（file:// 下同源策略会阻止访问 iframe）。<strong>本页仅供开发使用，不要随生产部署。</strong></p>
+	<div id="summary">加载中…</div>
+	<div id="results"></div>
+
+	<script>
+		const resultsEl = document.getElementById('results');
+		const summaryEl = document.getElementById('summary');
+		let passCount = 0, failCount = 0;
+		const pending = [];
+
+		function report(name, ok, detail) {
+			const div = document.createElement('div');
+			div.className = 'case ' + (ok ? 'pass' : 'fail');
+			div.textContent = (ok ? '✓ ' : '✗ ') + name + (ok ? '' : (detail !== undefined ? ' — ' + detail : ''));
+			resultsEl.appendChild(div);
+			ok ? passCount++ : failCount++;
+			summaryEl.textContent = `通过 ${passCount} / ${passCount + failCount}`;
+			summaryEl.style.borderColor = failCount ? '#d1242f' : '#1a7f37';
+		}
+
+		function t(name, fn) {
+			try {
+				const r = fn();
+				if (r && typeof r.then === 'function') {
+					pending.push(r.then(v => report(name, v === true, v))
+						.catch(e => report(name, false, e && e.message)));
+				} else if (r === true) {
+					report(name, true);
+				} else {
+					report(name, false, r);
+				}
+			} catch (e) {
+				report(name, false, e && e.message);
+			}
+		}
+
+		function throws(fn) {
+			try { fn(); return false; } catch (e) { return true; }
+		}
+
+		function eq(a, b) { return JSON.stringify(a) === JSON.stringify(b); }
+
+		function loadTarget() {
+			return new Promise((resolve, reject) => {
+				const frame = document.createElement('iframe');
+				frame.style.display = 'none';
+				frame.src = 'storage.html';
+				frame.onload = () => {
+					try {
+						const W = frame.contentWindow;
+						resolve({ W, M: W.eval('storageManager'), doc: frame.contentDocument });
+					} catch (e) {
+						reject(new Error('无法访问 iframe 内的 storageManager（请通过 HTTP 访问本页）: ' + e.message));
+					}
+				};
+				frame.onerror = () => reject(new Error('storage.html 加载失败'));
+				document.body.appendChild(frame);
+			});
+		}
+
+		loadTarget().then(({ W, M, doc }) => {
+			// 跨 realm 注意：iframe 内函数用 iframe 自己的内建类（Date/ArrayBuffer 等）做 instanceof，
+			// 传给它们的对象必须用 iframe realm 构造，否则会被误判
+			const mk = (code) => W.eval(code);
+			const idbDelete = (name) => new Promise((res) => {
+				const r = W.indexedDB.deleteDatabase(name);
+				r.onsuccess = res; r.onerror = res; r.onblocked = res;
+			});
+
+			// ---------- 转义 ----------
+			const xssPayloads = [
+				'"><img src=x onerror=alert(1)>',
+				"' onmouseover='alert(1)",
+				'</textarea><script>alert(1)</scr' + 'ipt>',
+				'a&b<c>"d\'e`f`',
+				'\\"><svg onload=alert(1)>'
+			];
+			xssPayloads.forEach((p, i) => {
+				t('escapeAttr 属性注入 #' + (i + 1), () => {
+					const host = doc.createElement('div');
+					host.innerHTML = '<input value="' + M.escapeAttr(p) + '">';
+					if (host.querySelector('img, svg, script')) return '出现了被注入的元素';
+					if (host.firstChild.value !== p) return '值往返不一致: ' + host.firstChild.value;
+					return true;
+				});
+				t('escapeHtml 文本注入 #' + (i + 1), () => {
+					const host = doc.createElement('div');
+					host.innerHTML = '<textarea>' + M.escapeHtml(p) + '</textarea>';
+					if (host.querySelector('script, img, svg')) return '出现了被注入的元素';
+					if (host.firstChild.value !== p) return '值往返不一致';
+					return true;
+				});
+			});
+			t('escapeAttr 覆盖全部特殊字符', () =>
+				M.escapeAttr('&<>"\'`') === '&amp;&lt;&gt;&quot;&#39;`' ? true : M.escapeAttr('&<>"\'`'));
+			t('data-original-key 字符串键往返', () => {
+				const key = 'ab"c';
+				const host = doc.createElement('div');
+				// 裸 <tr> 放在 div 里会被 HTML 解析器丢弃，必须包在 table 中
+				host.innerHTML = '<table><tr data-original-key="' + M.escapeAttr(JSON.stringify(key)) + '"></tr></table>';
+				const tr = host.querySelector('tr');
+				if (!tr) return 'tr 未渲染';
+				const parsed = JSON.parse(tr.dataset.originalKey);
+				return parsed === key ? true : '往返不一致: ' + JSON.stringify(parsed);
+			});
+			t('索引名含引号时编辑器不截断不注入', () => {
+				M.renderIndexedDBEditor('testdb', {
+					name: 'testdb', version: 1, objectStores: [{
+						name: 's',
+						indexes: [{ name: 'x"y', keyPath: 'z', unique: false, multiEntry: false }],
+						data: [], keyPath: null, autoIncrement: false, size: 0, records: 0
+					}]
+				}, false);
+				const input = doc.querySelector('[data-field="index-name"]');
+				if (!input) return '未找到索引名输入框';
+				if (input.value !== 'x"y') return '值被截断: ' + input.value;
+				return true;
+			});
+
+			// ---------- 键序列化 ----------
+			const keyCases = ['abc', '', 42, -1.5];
+			keyCases.forEach(k => {
+				t('serializeIdbKey 往返 ' + JSON.stringify(k), () =>
+					eq(M.deserializeIdbKey(M.serializeIdbKey(k)), k));
+			});
+			t('serializeIdbKey 往返 Date', () => {
+				const d = mk('new Date("2026-01-02T03:04:05.000Z")');
+				const r = M.deserializeIdbKey(M.serializeIdbKey(d));
+				return r instanceof W.Date && r.getTime() === d.getTime();
+			});
+			t('serializeIdbKey 往返数组键', () => {
+				const k = mk('["a", 1, new Date("2026-01-01T00:00:00.000Z")]');
+				const r = M.deserializeIdbKey(M.serializeIdbKey(k));
+				return Array.isArray(r) && r[0] === 'a' && r[1] === 1 && r[2] instanceof W.Date;
+			});
+			t('serializeIdbKey 二进制键返回 null', () =>
+				M.serializeIdbKey(mk('new ArrayBuffer(2)')) === null);
+			t('serializeIdbKey 含二进制的数组键返回 null', () =>
+				M.serializeIdbKey(mk('["a", new ArrayBuffer(2)]')) === null);
+			t('deserializeIdbKey 非法输入返回 undefined', () =>
+				M.deserializeIdbKey(null) === undefined && M.deserializeIdbKey({ t: 'date', v: 'not-a-date' }) === undefined);
+
+			// ---------- 键校验与比较 ----------
+			t('isValidIdbKey 合法键', () =>
+				M.isValidIdbKey(5) && M.isValidIdbKey('') && M.isValidIdbKey('a') &&
+				M.isValidIdbKey(mk('new Date()')) && M.isValidIdbKey(['a', 1]) &&
+				M.isValidIdbKey(mk('new ArrayBuffer(2)')) && M.isValidIdbKey(mk('new Uint8Array(2)')));
+			t('isValidIdbKey 非法键', () =>
+				!M.isValidIdbKey(NaN) && !M.isValidIdbKey(mk('new Date(NaN)')) &&
+				!M.isValidIdbKey({}) && !M.isValidIdbKey(null));
+			t('isValidIdbKey([]) 空数组键合法（与规范/浏览器一致）', () => {
+				// 规范：数组键逐元素递归校验，无最小长度要求；浏览器 cmp([],[]) 不抛错
+				let browserAllows;
+				try { W.indexedDB.cmp(mk('[]'), mk('[]')); browserAllows = true; } catch (e) { browserAllows = false; }
+				if (!browserAllows) return '当前浏览器不允许空数组键，请人工复核';
+				return M.isValidIdbKey([]) === true;
+			});
+			t('serializeIdbKey 往返空数组键', () => {
+				const r = M.deserializeIdbKey(M.serializeIdbKey([]));
+				return Array.isArray(r) && r.length === 0 ? true : JSON.stringify(r);
+			});
+			t('idbKeysEqual 相等', () =>
+				M.idbKeysEqual(1, 1) && M.idbKeysEqual('a', 'a') &&
+				M.idbKeysEqual([1, 'a'], [1, 'a']) &&
+				M.idbKeysEqual(mk('new Date(1000)'), mk('new Date(1000)')));
+			t('idbKeysEqual 不相等（类型化键不被字符串化比较）', () =>
+				!M.idbKeysEqual(1, '1') && !M.idbKeysEqual(mk('new Date(1000)'), '1970-01-01T00:00:01.000Z') &&
+				!M.idbKeysEqual([1], 1));
+
+			// ---------- JSON 解析 ----------
+			t('parseJsonValue 正常 JSON', () => eq(M.parseJsonValue('{"a":1}'), { a: 1 }));
+			t('parseJsonValue 普通文本按字符串', () => M.parseJsonValue('hello world') === 'hello world');
+			t('parseJsonValue t/f/n 开头文本不误判', () =>
+				M.parseJsonValue('test') === 'test' && M.parseJsonValue('foo') === 'foo' &&
+				M.parseJsonValue('note') === 'note' && M.parseJsonValue('3D') === '3D');
+			t('parseJsonValue 关键字字面量仍按 JSON', () =>
+				M.parseJsonValue('true') === true && M.parseJsonValue('false') === false && M.parseJsonValue('null') === null);
+			t('parseJsonValue 坏 JSON 抛错（不静默降级）', () => throws(() => M.parseJsonValue('{bad}')));
+			t('parseJsonValue 带引号字符串', () => M.parseJsonValue('"abc"') === 'abc');
+			t('parseJsonValue 空值', () => M.parseJsonValue('') === '' && M.parseJsonValue(null) === '');
+
+			// ---------- keyPath ----------
+			t('parseKeyPathInput 字符串', () => M.parseKeyPathInput('a.b') === 'a.b');
+			t('parseKeyPathInput 复合数组', () => eq(M.parseKeyPathInput('["a","b"]'), ['a', 'b']));
+			t('parseKeyPathInput 空值', () => M.parseKeyPathInput('  ') === null && M.parseKeyPathInput('') === null);
+			t('parseKeyPathInput 非法数组抛错', () =>
+				throws(() => M.parseKeyPathInput('[1,2]')) && throws(() => M.parseKeyPathInput('["a"')));
+			t('keyPathEqual 类型安全', () =>
+				M.keyPathEqual(null, '') && M.keyPathEqual('a', 'a') &&
+				M.keyPathEqual(['a', 'b'], ['a', 'b']) && !M.keyPathEqual(['a', 'b'], 'a,b'));
+
+			// ---------- JSON 安全值检测 ----------
+			t('isJsonSafeValue 安全值', () =>
+				M.isJsonSafeValue(mk('({a: 1, b: [1, "x", true, null]})')) &&
+				M.isJsonSafeValue('s') && M.isJsonSafeValue(null));
+			t('isJsonSafeValue 危险值', () =>
+				!M.isJsonSafeValue(mk('({d: new Date()})')) &&
+				!M.isJsonSafeValue(mk('new Map()')) &&
+				!M.isJsonSafeValue(mk('new Set()')) &&
+				!M.isJsonSafeValue(mk('(function(){var o={};o.self=o;return o})()')) &&
+				!M.isJsonSafeValue(mk('({x: undefined})')) &&
+				!M.isJsonSafeValue(NaN) &&
+				!M.isJsonSafeValue(mk('({f: new ArrayBuffer(1)})')));
+
+			// ---------- 二进制识别 ----------
+			t('getRecordBinaryInfo', () =>
+				M.getRecordBinaryInfo(mk('new Blob(["x"])')) !== null &&
+				M.getRecordBinaryInfo(mk('({buffer: new ArrayBuffer(4)})')) !== null &&
+				M.getRecordBinaryInfo({ a: 1 }) === null);
+			t('getRecordBinaryInfo TypedArray 视图按偏移切片', () => {
+				const info = M.getRecordBinaryInfo(mk('new Uint8Array(new ArrayBuffer(20), 10, 5)'));
+				return info && info.size === 5 ? true : 'size=' + (info && info.size) + '（应为 5）';
+			});
+
+			// ---------- 大小/格式化 ----------
+			t('localStorageEntrySize', () => M.localStorageEntrySize('ab', 'cd') === 8 && M.localStorageEntrySize('a', null) === 2);
+			t('formatBytes', () =>
+				M.formatBytes(0) === '0 Bytes' && M.formatBytes(1024) === '1 KB' &&
+				M.formatBytes(1536) === '1.5 KB' && M.formatBytes(1048576) === '1 MB');
+
+			// ---------- 写计划 ----------
+			t('buildIndexedDBWritePlan 新增记录', () => {
+				const ops = M.buildIndexedDBWritePlan({
+					keyPath: null, autoIncrement: false, isNew: true,
+					records: [{ key: 'a', value: 1, isNew: true }]
+				}, null);
+				return eq(ops, [{ type: 'add', value: 1, key: 'a' }]) || JSON.stringify(ops);
+			});
+			t('buildIndexedDBWritePlan 未修改行无写操作', () => {
+				const ops = M.buildIndexedDBWritePlan({
+					keyPath: null, autoIncrement: false, originalName: 's', newName: 's',
+					records: [{ originalKey: 'a', key: 'a', value: 1, isNew: false, unmodified: true }]
+				}, { objectStores: [{ name: 's', data: [{ key: 'a', value: 1 }] }] });
+				return ops.length === 0 || JSON.stringify(ops);
+			});
+			t('buildIndexedDBWritePlan 删除已移除的旧记录', () => {
+				const ops = M.buildIndexedDBWritePlan({
+					keyPath: null, autoIncrement: false, originalName: 's', newName: 's',
+					records: [{ originalKey: 'a', key: 'a', value: 1, isNew: false, unmodified: true }]
+				}, { objectStores: [{ name: 's', data: [{ key: 'a', value: 1 }, { key: 'gone', value: 2 }] }] });
+				return eq(ops, [{ type: 'delete', key: 'gone' }]) || JSON.stringify(ops);
+			});
+			t('buildIndexedDBWritePlan 修改值产生 put', () => {
+				const ops = M.buildIndexedDBWritePlan({
+					keyPath: null, autoIncrement: false, originalName: 's', newName: 's',
+					records: [{ originalKey: 'a', key: 'a', value: 2, isNew: false }]
+				}, { objectStores: [{ name: 's', data: [{ key: 'a', value: 1 }] }] });
+				return eq(ops, [{ type: 'put', value: 2, key: 'a' }]) || JSON.stringify(ops);
+			});
+			t('buildIndexedDBWritePlan 改键产生 delete+add', () => {
+				const ops = M.buildIndexedDBWritePlan({
+					keyPath: null, autoIncrement: false, originalName: 's', newName: 's',
+					records: [{ originalKey: 'a', key: 'b', value: 1, isNew: false }]
+				}, { objectStores: [{ name: 's', data: [{ key: 'a', value: 1 }] }] });
+				return eq(ops, [{ type: 'delete', key: 'a' }, { type: 'add', value: 1, key: 'b' }]) || JSON.stringify(ops);
+			});
+			t('buildIndexedDBWritePlan 键互换先全部删除再写入', () => {
+				const ops = M.buildIndexedDBWritePlan({
+					keyPath: null, autoIncrement: false, originalName: 's', newName: 's',
+					records: [
+						{ originalKey: 'a', key: 'b', value: 1, isNew: false },
+						{ originalKey: 'b', key: 'a', value: 2, isNew: false }
+					]
+				}, { objectStores: [{ name: 's', data: [{ key: 'a', value: 1 }, { key: 'b', value: 2 }] }] });
+				return eq(ops, [
+					{ type: 'delete', key: 'a' }, { type: 'delete', key: 'b' },
+					{ type: 'add', value: 1, key: 'b' }, { type: 'add', value: 2, key: 'a' }
+				]) || JSON.stringify(ops);
+			});
+			t('buildIndexedDBWritePlan 链式改键先全部删除再写入', () => {
+				const ops = M.buildIndexedDBWritePlan({
+					keyPath: null, autoIncrement: false, originalName: 's', newName: 's',
+					records: [
+						{ originalKey: 'a', key: 'b', value: 1, isNew: false },
+						{ originalKey: 'b', key: 'c', value: 2, isNew: false }
+					]
+				}, { objectStores: [{ name: 's', data: [{ key: 'a', value: 1 }, { key: 'b', value: 2 }] }] });
+				const deleteCount = ops.filter(o => o.type === 'delete').length;
+				const firstWrite = ops.findIndex(o => o.type !== 'delete');
+				const lastDelete = ops.map((o, i) => o.type === 'delete' ? i : -1).filter(i => i >= 0).pop();
+				return (deleteCount === 2 && firstWrite > lastDelete) ? true : JSON.stringify(ops);
+			});
+			t('buildIndexedDBWritePlan keyPath 改键用 delete+add 而非 put', () => {
+				const ops = M.buildIndexedDBWritePlan({
+					keyPath: 'id', autoIncrement: false, originalName: 's', newName: 's',
+					records: [{ originalKey: 1, key: 2, value: { id: 2 }, isNew: false }]
+				}, { objectStores: [{ name: 's', data: [{ key: 1, value: { id: 1 } }] }] });
+				return eq(ops, [{ type: 'delete', key: 1 }, { type: 'add', value: { id: 2 } }]) || JSON.stringify(ops);
+			});
+			t('buildIndexedDBWritePlan 重复键抛错', () => throws(() =>
+				M.buildIndexedDBWritePlan({
+					keyPath: null, autoIncrement: false, isNew: true,
+					records: [{ key: 'a', value: 1, isNew: true }, { key: 'a', value: 2, isNew: true }]
+				}, null)));
+			t('buildIndexedDBWritePlan keyPath 缺字段抛错', () => throws(() =>
+				M.buildIndexedDBWritePlan({
+					keyPath: 'id', autoIncrement: false, isNew: true,
+					records: [{ value: { name: 'x' }, isNew: true }]
+				}, null)));
+			t('buildIndexedDBWritePlan 复合 keyPath 提取数组键', () => {
+				const ops = M.buildIndexedDBWritePlan({
+					keyPath: ['a', 'b'], autoIncrement: false, isNew: true,
+					records: [{ value: { a: 1, b: 'x' }, isNew: true }]
+				}, null);
+				return eq(ops, [{ type: 'add', value: { a: 1, b: 'x' } }]) || JSON.stringify(ops);
+			});
+			t('buildIndexedDBWritePlan 复合 keyPath 缺段抛错', () => throws(() =>
+				M.buildIndexedDBWritePlan({
+					keyPath: ['a', 'b'], autoIncrement: false, isNew: true,
+					records: [{ value: { a: 1 }, isNew: true }]
+				}, null)));
+			t('buildIndexedDBWritePlan 非法键抛错', () => throws(() =>
+				M.buildIndexedDBWritePlan({
+					keyPath: null, autoIncrement: false, isNew: true,
+					records: [{ key: {}, value: 1, isNew: true }]
+				}, null)));
+			t('buildIndexedDBWritePlan Date 键保持类型', () => {
+				const d = mk('new Date(1000)');
+				const ops = M.buildIndexedDBWritePlan({
+					keyPath: null, autoIncrement: false, originalName: 's', newName: 's',
+					records: [{ originalKey: d, key: d, value: 2, isNew: false }]
+				}, { objectStores: [{ name: 's', data: [{ key: d, value: 1 }] }] });
+				return ops.length === 1 && ops[0].type === 'put' && ops[0].key instanceof W.Date;
+			});
+
+			// ---------- 真实 IndexedDB ----------
+			t('真实IDB：Date 值未修改保存后保持类型与内容', async () => {
+				const dbName = '__momotan_test_date__';
+				await idbDelete(dbName);
+				try {
+					await new Promise((res, rej) => {
+						const r = W.indexedDB.open(dbName, 1);
+						r.onupgradeneeded = (e) => {
+							e.target.result.createObjectStore('s')
+								.add(mk('new Date("2026-01-01T00:00:00.000Z")'), 'k1');
+						};
+						r.onsuccess = (e) => { e.target.result.close(); res(); };
+						r.onerror = () => rej(r.error);
+					});
+					const details = await M.getIndexedDBDetails(dbName);
+					const store = details.objectStores[0];
+					const rec = store.data[0];
+					const storePlan = {
+						keyPath: null, autoIncrement: false, originalName: 's', newName: 's',
+						records: [{ originalKey: rec.key, key: rec.key, value: rec.value, isNew: false, unmodified: true }]
+					};
+					const ops = M.buildIndexedDBWritePlan(storePlan, details);
+					if (ops.length !== 0) return '未修改记录产生了写操作';
+					await M.applyIndexedDBRecordChanges(dbName, [{ store: storePlan, ops }]);
+					const val = await new Promise((res, rej) => {
+						const r = W.indexedDB.open(dbName);
+						r.onsuccess = (e) => {
+							const db = e.target.result;
+							const g = db.transaction('s').objectStore('s').get('k1');
+							g.onsuccess = () => { db.close(); res(g.result); };
+							g.onerror = () => rej(g.error);
+						};
+						r.onerror = () => rej(r.error);
+					});
+					return val instanceof W.Date ? true : 'Date 变成了 ' + Object.prototype.toString.call(val);
+				} finally {
+					await idbDelete(dbName);
+				}
+			});
+			t('真实IDB：升级事务遇 unique 冲突整体回滚，旧库原样', async () => {
+				const dbName = '__momotan_test_rollback__';
+				await idbDelete(dbName);
+				try {
+					await new Promise((res, rej) => {
+						const r = W.indexedDB.open(dbName, 1);
+						r.onupgradeneeded = (e) => {
+							const db = e.target.result;
+							const st = db.createObjectStore('s', { keyPath: 'id' });
+							st.createIndex('email', 'email', { unique: true });
+							st.add({ id: 1, email: 'a@x' });
+						};
+						r.onsuccess = (e) => { e.target.result.close(); res(); };
+						r.onerror = () => rej(r.error);
+					});
+					const idxMeta = [{ name: 'email', keyPath: 'email', unique: true, multiEntry: false }];
+					const stores = [{
+						originalName: 's', newName: 's', isNew: false, wasRecreated: true, indexChanged: false,
+						keyPath: 'id', autoIncrement: false, indexes: idxMeta, records: []
+					}];
+					const plans = [{
+						store: stores[0],
+						ops: [
+							{ type: 'add', value: { id: 1, email: 'a@x' } },
+							{ type: 'add', value: { id: 2, email: 'a@x' } } // unique 冲突，事务必然失败
+						]
+					}];
+					let failed = false;
+					try {
+						await M.applyIndexedDBUpgrade(dbName, 1, ['s'], stores, plans,
+							{ version: 1, objectStores: [{ name: 's', indexes: idxMeta }] });
+					} catch (e) { failed = true; }
+					if (!failed) return '升级没有失败（unique 约束未生效？）';
+					return await new Promise((res, rej) => {
+						const r = W.indexedDB.open(dbName);
+						r.onsuccess = (e) => {
+							const db = e.target.result;
+							if (db.version !== 1) { db.close(); res('版本被改为 ' + db.version + '（未回滚）'); return; }
+							const g = db.transaction('s').objectStore('s').get(1);
+							g.onsuccess = () => {
+								const ok = g.result && g.result.email === 'a@x';
+								db.close();
+								res(ok ? true : '旧数据丢失或损坏');
+							};
+							g.onerror = () => rej(g.error);
+						};
+						r.onerror = () => rej(r.error);
+					});
+				} finally {
+					await idbDelete(dbName);
+				}
+			});
+			t('真实IDB：导入写入遇 unique 冲突时如实失败', async () => {
+				const dbName = '__momotan_test_import__';
+				await idbDelete(dbName);
+				try {
+					await new Promise((res, rej) => {
+						const r = W.indexedDB.open(dbName, 1);
+						r.onupgradeneeded = (e) => {
+							const db = e.target.result;
+							const st = db.createObjectStore('s', { keyPath: 'id' });
+							st.createIndex('email', 'email', { unique: true });
+							st.add({ id: 1, email: 'a@x' });
+						};
+						r.onsuccess = (e) => { e.target.result.close(); res(); };
+						r.onerror = () => rej(r.error);
+					});
+					let failed = false;
+					try {
+						await M.importStoreRecords(dbName, {
+							name: 's', keyPath: 'id',
+							records: [{ value: { id: 2, email: 'a@x' } }]
+						});
+					} catch (e) { failed = true; }
+					return failed ? true : '冲突未报错（假成功）';
+				} finally {
+					await idbDelete(dbName);
+				}
+			});
+			t('真实IDB：导入写入正常时按提交计数', async () => {
+				const dbName = '__momotan_test_import_ok__';
+				await idbDelete(dbName);
+				try {
+					await new Promise((res, rej) => {
+						const r = W.indexedDB.open(dbName, 1);
+						r.onupgradeneeded = (e) => { e.target.result.createObjectStore('s'); };
+						r.onsuccess = (e) => { e.target.result.close(); res(); };
+						r.onerror = () => rej(r.error);
+					});
+					const result = await M.importStoreRecords(dbName, {
+						name: 's', keyPath: null,
+						records: [
+							{ key: { t: 'plain', v: 'a' }, value: 1 },
+							{ key: { t: 'plain', v: 'b' }, value: 2 }
+						]
+					});
+					return (result.queued === 2 && result.skipped === 0) ? true : JSON.stringify(result);
+				} finally {
+					await idbDelete(dbName);
+				}
+			});
+
+			// ---------- 完成 ----------
+			Promise.all(pending).then(() => {
+				summaryEl.textContent += failCount === 0 ? '，全部通过 ✓' : '，存在失败 ✗';
+			});
+		}).catch(err => {
+			summaryEl.textContent = '测试初始化失败：' + err.message;
+			summaryEl.style.borderColor = '#d1242f';
+		});
+	</script>
+</body>
+
+</html>
