@@ -434,6 +434,47 @@
 					await idbDelete(dbName);
 				}
 			});
+			t('真实IDB：多 store 保存单事务原子（一处冲突全部回滚）', async () => {
+				const dbName = '__momotan_test_atomic__';
+				await idbDelete(dbName);
+				try {
+					await new Promise((res, rej) => {
+						const r = W.indexedDB.open(dbName, 1);
+						r.onupgradeneeded = (e) => {
+							const db = e.target.result;
+							db.createObjectStore('s1').add('original', 'k1');
+							const s2 = db.createObjectStore('s2', { keyPath: 'id' });
+							s2.createIndex('email', 'email', { unique: true });
+							s2.add({ id: 1, email: 'a@x' });
+						};
+						r.onsuccess = (e) => { e.target.result.close(); res(); };
+						r.onerror = () => rej(r.error);
+					});
+					const plans = [
+						{ store: { newName: 's1' }, ops: [{ type: 'put', value: 'modified', key: 'k1' }] },
+						{ store: { newName: 's2' }, ops: [{ type: 'add', value: { id: 2, email: 'a@x' } }] } // unique 冲突
+					];
+					let failed = false;
+					try { await M.applyIndexedDBRecordChanges(dbName, plans); } catch (e) { failed = true; }
+					if (!failed) return '冲突未报错';
+					// s1 的写入也必须已随同一事务回滚
+					return await new Promise((res, rej) => {
+						const r = W.indexedDB.open(dbName);
+						r.onsuccess = (e) => {
+							const db = e.target.result;
+							const g = db.transaction('s1').objectStore('s1').get('k1');
+							g.onsuccess = () => {
+								db.close();
+								res(g.result === 'original' ? true : 's1 被部分提交: ' + JSON.stringify(g.result));
+							};
+							g.onerror = () => rej(g.error);
+						};
+						r.onerror = () => rej(r.error);
+					});
+				} finally {
+					await idbDelete(dbName);
+				}
+			});
 			t('真实IDB：导入写入遇 unique 冲突时如实失败', async () => {
 				const dbName = '__momotan_test_import__';
 				await idbDelete(dbName);
