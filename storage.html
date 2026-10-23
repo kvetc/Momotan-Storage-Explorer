@@ -2,7 +2,7 @@
 Momotan Storage Explorer
 网站本地存储管理工具 / Website local storage management tool
 Copyright©2026, Aphasia
-v3.1.0 release 2026/10/23
+v3.1.1 release 2026/10/23
 基于 MIT 协议开源 / Licensed under the MIT License.
 开源地址 / Open source address: https://github.com/kvetc/Momotan-Storage-Explorer
 MIT 协议 / MIT License：
@@ -1434,6 +1434,19 @@ SOFTWARE.
 			.detail-table td {
 				padding: 10px 9px;
 			}
+			.editable-input {
+				width: calc(100% + 18px);
+				margin: -10px -9px;
+				padding: 10px 9px;
+			}
+			.editable-textarea {
+				min-height: 120px;
+				margin: -10px -9px -14px -9px;
+				padding: 10px 9px;
+			}
+			.editable-select {
+				min-height: calc(100% + 18px);
+			}
 		}
 
 		/* 移动端返回按钮：PC 端隐藏。
@@ -2170,7 +2183,7 @@ SOFTWARE.
 
 				// 关于按钮
 				document.getElementById('about').addEventListener('click', () => {
-					alert('Momotan Storage Explorer\n网站本地存储管理工具\nCopyright©2026, Aphasia\nv3.1.0 release 2026/10/23\n\n基于 MIT 协议开源 / Licensed under the MIT License.\n开源地址 / Open source address: https://github.com/kvetc/Momotan-Storage-Explorer\n\n操作说明：\nEnter/Space: 确认 / Confirm\nESC: 取消 / Cancel\nCtrl+S: 保存 / Save\nDelete: 删除 / Delete');
+					alert('Momotan Storage Explorer\n网站本地存储管理工具\nCopyright©2026, Aphasia\nv3.1.1 release 2026/10/23\n\n基于 MIT 协议开源 / Licensed under the MIT License.\n开源地址 / Open source address: https://github.com/kvetc/Momotan-Storage-Explorer\n\n操作说明：\nEnter/Space: 确认 / Confirm\nESC: 取消 / Cancel\nCtrl+S: 保存 / Save\nDelete: 删除 / Delete');
 				});
 
 				// 搜索栏
