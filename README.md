@@ -8,7 +8,7 @@ Website local storage management tool / 网站本地存储管理工具
 
 许可证：MIT license
 
-当前版本：v3.1.1 release 2026/10/23
+当前版本：v3.2.0 release 2026/10/24
 
 Example / 示例: https://momotan.cc/storage.html
 
@@ -28,6 +28,7 @@ Example / 示例: https://momotan.cc/storage.html
 - 只能查看/操作**当前 origin** 的存储。
 - CacheStorage 为只读，且仅在**安全上下文**（HTTPS 或 localhost）下可用。
 - IndexedDB 编辑器每个对象存储最多加载前 **1000 条**记录（超出部分在界面上有提示；结构变更时会先读取全量记录合并，不会丢失）。
+- 导出/结构变更合并会读取全量记录，超大库可能较慢或内存占用高。
 - IndexedDB **导出不含二进制记录**，Date/Map/Set 等 JSON 无法无损表达的值也会被跳过并计数——**导出不是完整备份**。导入覆盖前的**自动备份使用同一导出格式，同样受限**，请勿将其当作完整备份。
 - IndexedDB 编辑器中：Date/数组/二进制类型的**键只读**（保存时保留原始键对象）；含上述复杂类型的**值只读**（保存时保留原值）；复合键路径用 JSON 数组表示（如 `["a","b"]`）。
 - 索引以结构化方式编辑（名称 / 键路径 / 唯一 unique / 多值 multiEntry）；重建对象存储时完整保留索引语义。
