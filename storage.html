@@ -2,7 +2,7 @@
 Momotan Storage Explorer
 网站本地存储管理工具 / Website local storage management tool
 Copyright©2026, Aphasia
-v3.0.0 release 2026/10/23
+v3.1.0 release 2026/10/23
 基于 MIT 协议开源 / Licensed under the MIT License.
 开源地址 / Open source address: https://github.com/kvetc/Momotan-Storage-Explorer
 MIT 协议 / MIT License：
@@ -172,7 +172,7 @@ SOFTWARE.
 		}
 
 		.storage-item {
-			padding: 15px 15px 15px 15px;
+			padding: 15px 32px 15px 15px;
 			height: 130px;
 			border-bottom: 1px solid var(--border-color);
 			border-left: 0px solid var(--primary-color);
@@ -189,7 +189,7 @@ SOFTWARE.
 
 		/* localStorage / sessionStorage 列表使用紧凑行高 */
 		.storage-items-list.compact-items .storage-item {
-			padding: 7px 15px 7px 15px;
+			padding: 7px 32px 7px 15px;
 			height: 65px;
 		}
 
@@ -292,32 +292,6 @@ SOFTWARE.
 			min-height: 0;
 			padding: 0px;
 			overflow-y: auto;
-		}
-
-		.storage-details {
-			background: none;
-			width: 100%;
-			height: 100%;
-			border: none;
-			resize: none;
-			font-size: 16px;
-			line-height: 1.6;
-			color: #444;
-			word-break: normal;
-			/* 中文按字符换行 */
-			overflow-wrap: break-word;
-			/* 英文长单词换行 */
-			white-space: pre-wrap;
-			font-family: inherit;
-			transition: all 0.2s ease;
-		}
-
-		.dark-theme .storage-details {
-			color: #eee;
-		}
-
-		.storage-details:focus {
-			outline: none;
 		}
 
 		.placeholder {
@@ -462,7 +436,7 @@ SOFTWARE.
 			/*border-right: 1px solid var(--border-color);*/
 			background: none;
 			color: #333;
-			font-size: 15px;
+			font-size: 16px;
 			outline: none;
 			transition: all 0.2s ease;
 		}
@@ -721,6 +695,10 @@ SOFTWARE.
 			padding: 23px 25px 25px 25px;
 			width: 90%;
 			max-width: 400px;
+			/* 弹窗最高不超过视口，超出时由消息区域内部滚动 */
+			max-height: 100vh;
+			display: flex;
+			flex-direction: column;
 			transform: translateY(35px) perspective(800px) rotateX(-80deg) scale(0.5);
 			box-shadow: 0 8px 40px rgba(0, 0, 0, 0.2);
 			transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1);
@@ -776,6 +754,16 @@ SOFTWARE.
 			white-space: pre-wrap;
 			word-break: break-word;
 			line-height: 1.5;
+			/* 内容超出弹窗最大高度时，消息区域内部滚动 */
+			flex: 1 1 auto;
+			min-height: 0;
+			overflow-y: auto;
+		}
+
+		/* 标题与按钮区不随消息区压缩 */
+		.shortcutmodal-title,
+		.modal-actions {
+			flex-shrink: 0;
 		}
 
 		@media (max-width: 440px) {
@@ -952,7 +940,7 @@ SOFTWARE.
 			border-radius: 0px;
 			background: transparent;
 			color: #333;
-			font-size: 15px;
+			font-size: 16px;
 			font-family: inherit;
 			outline: none;
 			min-width: 0;
@@ -998,7 +986,7 @@ SOFTWARE.
 			border-radius: 0px;
 			background: transparent;
 			color: #333;
-			font-size: 15px;
+			font-size: 16px;
 			font-family: inherit;
 			outline: none;
 			min-width:0px;
@@ -1029,7 +1017,7 @@ SOFTWARE.
 			border-radius: 0px;
 			background: transparent;
 			color: #333;
-			font-size: 15px;
+			font-size: 16px;
 			font-family: inherit;
 			outline: none;
 			min-width:0px;
@@ -1436,96 +1424,14 @@ SOFTWARE.
 </head>
 
 <body>
-	<!-- 自定义弹窗组件 -->
-	<div id="customAlert" class="shortcutmodal">
-		<div class="shortcutmodal-content custom-modal-content">
-			<h3 class="shortcutmodal-title"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="40"
-					height="40" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-					stroke-linejoin="round">
-					<circle cx="12" cy="12" r="10"></circle>
-					<line x1="12" y1="8" x2="12" y2="12"></line>
-					<line x1="12" y1="16" x2="12.01" y2="16"></line>
-				</svg>
-				<p>提示</p>
-			</h3>
-			<p id="alertMessage"></p>
-			<div class="modal-actions">
-				<button id="alertConfirm" class="md-btn" style="margin-top:25px;">
-					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="40" height="40" fill="none"
-						stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-						<polyline points="20 6 9 17 4 12"></polyline>
-					</svg>
-					<p>确定</p>
-				</button>
-			</div>
-		</div>
-	</div>
-	<div id="customConfirmModal" class="shortcutmodal">
-		<div class="shortcutmodal-content custom-modal-content">
-			<h3 class="shortcutmodal-title"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="40"
-					height="40" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-					stroke-linejoin="round">
-					<circle cx="12" cy="12" r="10"></circle>
-					<line x1="12" y1="8" x2="12" y2="12"></line>
-					<line x1="12" y1="16" x2="12.01" y2="16"></line>
-				</svg>
-				<p>提示</p>
-			</h3>
-			<p id="confirmMessage"></p>
-			<div class="modal-actions">
-				<button id="confirmCancelBtn" class="md-btn" style="margin-top:25px;">
-					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-						stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-						<line x1="5" y1="5" x2="19" y2="19" />
-						<line x1="5" y1="19" x2="19" y2="5" />
-					</svg>
-					<p>取消</p>
-				</button>
-				<button id="confirmOkBtn" class="md-btn md-btn-second" style="margin-top:25px;">
-					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="40" height="40" fill="none"
-						stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-						<polyline points="20 6 9 17 4 12"></polyline>
-					</svg>
-					<p>确定</p>
-				</button>
-			</div>
-		</div>
-	</div>
+	<!-- 自定义弹窗组件的 DOM 由 initCustomDialog 惰性创建（见脚本内 createAlertDOM/createConfirmDOM） -->
 	<div class="container">
-		<!-- 左侧存储类型选择 -->
+		<!-- 左侧存储类型选择（图标由 createBtnSvg 在初始化时统一渲染） -->
 		<div class="leftbar">
-			<div class="createbotton" id="localStorageBtn" title="localStorage">
-
-				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-					stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-					<path
-						d="M4 4v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8.342a2 2 0 0 0-.602-1.43l-4.44-4.342A2 2 0 0 0 13.56 2H6a2 2 0 0 0-2 2Z">
-					</path>
-					<path d="M16 18H8"></path>
-					<path d="M16 14H8"></path>
-					<path d="M12 10H8"></path>
-				</svg>
-			</div>
-			<div class="createbotton" id="sessionStorageBtn" title="sessionStorage">
-				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M2.75 1h10.5a.75.75 0 0 1 0 1.5h-.75v1.25a4.75 4.75 0 0 1-1.9 3.8l-.333.25a.25.25 0 0 0 0 .4l.333.25a4.75 4.75 0 0 1 1.9 3.8v1.25h.75a.75.75 0 0 1 0 1.5H2.75a.75.75 0 0 1 0-1.5h.75v-1.25a4.75 4.75 0 0 1 1.9-3.8l.333-.25a.25.25 0 0 0 0-.4L5.4 7.55a4.75 4.75 0 0 1-1.9-3.8V2.5h-.75a.75.75 0 0 1 0-1.5ZM11 2.5H5v1.25c0 1.023.482 1.986 1.3 2.6l.333.25c.934.7.934 2.1 0 2.8l-.333.25a3.251 3.251 0 0 0-1.3 2.6v1.25h6v-1.25a3.251 3.251 0 0 0-1.3-2.6l-.333-.25a1.748 1.748 0 0 1 0-2.8l.333-.25a3.251 3.251 0 0 0 1.3-2.6Z"/></svg>
-			</div>
-			<div class="createbotton" id="indexedDBBtn" title="indexedDB">
-
-				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-					stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-					<path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path>
-					<path d="M9 9h6"></path>
-					<path d="M9 13h6"></path>
-				</svg>
-			</div>
-			<div class="createbotton" id="cacheStorageBtn" title="cacheStorage">
-				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-					stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-					<rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-					<path d="M3 9h18M9 21V9"></path>
-				</svg>
-			</div>
-
+			<div class="createbotton" id="localStorageBtn" title="localStorage"></div>
+			<div class="createbotton" id="sessionStorageBtn" title="sessionStorage"></div>
+			<div class="createbotton" id="indexedDBBtn" title="indexedDB"></div>
+			<div class="createbotton" id="cacheStorageBtn" title="cacheStorage"></div>
 
 			<div class="otherbotton" id="themeToggle" title="主题 (Theme)">
 				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
@@ -1738,11 +1644,15 @@ SOFTWARE.
 		                <p id="confirmMessage"></p>
 		                <div class="modal-actions">
 		                    <button id="confirmCancelBtn" class="md-btn" style="margin-top:25px;">
-		                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+		                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 		                            <line x1="5" y1="5" x2="19" y2="19"/>
 		                            <line x1="5" y1="19" x2="19" y2="5"/>
 		                        </svg>
 		                        <p>取消</p>
+		                    </button>
+		                    <button id="confirmThirdBtn" class="md-btn md-btn-second" style="margin-top:25px; display:none;">
+								<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="40" height="40" vertical-align="middle"><g fill="none" fill-rule="evenodd"><path d="M24 0v24H0V0zM12.593 23.258l-.011.002l-.071.035l-.02.004l-.014-.004l-.071-.035c-.01-.004-.019-.001-.024.005l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427c-.002-.01-.009-.017-.017-.018m.265-.113l-.013.002l-.185.093l-.01.01l-.003.011l.018.43l.005.012l.008.007l.201.093c.012.004.023 0 .029-.008l.004-.014l-.034-.614c-.003-.012-.01-.02-.02-.022m-.715.002a.023.023 0 0 0-.027.006l-.006.014l-.034.614c0 .012.007.02.017.024l.015-.002l.201-.093l.01-.008l.004-.011l.017-.43l-.003-.012l-.01-.01z"/><path fill="currentColor" d="M3.076 5.617A1 1 0 0 1 4 5h10a7 7 0 1 1 0 14H5a1 1 0 1 1 0-2h9a5 5 0 1 0 0-10H6.414l1.793 1.793a1 1 0 0 1-1.414 1.414l-3.5-3.5a1 1 0 0 1-.217-1.09"/></g></svg>
+		                        <p>放弃</p>
 		                    </button>
 		                    <button id="confirmOkBtn" class="md-btn md-btn-second" style="margin-top:25px;">
 		                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1813,6 +1723,9 @@ SOFTWARE.
 					const alertConfirm = document.getElementById('alertConfirm');
 
 					alertMessage.textContent = message;
+					// 强制回流：弹窗 DOM 为惰性创建，先让浏览器计算初始（非 active）样式，
+					// 否则首次打开时进入过渡动画不生效
+					void customAlert.offsetHeight;
 					customAlert.classList.add('active');
 					pushModalHistory();
 					alertConfirm.focus();
@@ -1835,8 +1748,18 @@ SOFTWARE.
 					const confirmMessage = document.getElementById('confirmMessage');
 					const confirmOkBtn = document.getElementById('confirmOkBtn');
 					const confirmCancelBtn = document.getElementById('confirmCancelBtn');
+					const confirmThirdBtn = document.getElementById('confirmThirdBtn');
 
 					confirmMessage.textContent = message;
+					// 复位三选模式留下的按钮状态（第三按钮、文字、主次样式）
+					if (confirmThirdBtn) confirmThirdBtn.style.display = 'none';
+					confirmOkBtn.querySelector('p').textContent = '确定';
+					confirmCancelBtn.querySelector('p').textContent = '取消';
+					confirmOkBtn.classList.add('md-btn-second');
+					confirmCancelBtn.classList.remove('md-btn-second');
+					// 强制回流：弹窗 DOM 为惰性创建，先让浏览器计算初始（非 active）样式，
+					// 否则首次打开时进入过渡动画不生效
+					void customConfirmModal.offsetHeight;
 					customConfirmModal.classList.add('active');
 					pushModalHistory();
 					confirmOkBtn.focus();
@@ -1852,6 +1775,51 @@ SOFTWARE.
 					};
 
 					bindKeyboard('confirm', resolve);
+				});
+			}
+
+			// 三选确认框：返回 'ok' / 'third' / 'cancel'
+			// options: { okText, thirdText, cancelText }；键盘 Enter=ok，ESC=cancel，第三项仅点击（防误按）
+			function showConfirm3(message, options) {
+				const opts = options || {};
+				return new Promise((resolve) => {
+					ensureDOM();
+
+					const customConfirmModal = document.getElementById('customConfirmModal');
+					const confirmMessage = document.getElementById('confirmMessage');
+					const confirmOkBtn = document.getElementById('confirmOkBtn');
+					const confirmCancelBtn = document.getElementById('confirmCancelBtn');
+					const confirmThirdBtn = document.getElementById('confirmThirdBtn');
+
+					confirmMessage.textContent = message;
+					confirmOkBtn.querySelector('p').textContent = opts.okText || '确定';
+					confirmCancelBtn.querySelector('p').textContent = opts.cancelText || '取消';
+					confirmThirdBtn.querySelector('p').textContent = opts.thirdText || '放弃';
+					confirmThirdBtn.style.display = '';
+					// 三态弹窗专属：确定用实心主按钮，取消/放弃用描边次要按钮（不影响普通二态弹窗）
+					confirmOkBtn.classList.remove('md-btn-second');
+					confirmCancelBtn.classList.add('md-btn-second');
+					// 强制回流：弹窗 DOM 为惰性创建，先让浏览器计算初始（非 active）样式，
+					// 否则首次打开时进入过渡动画不生效
+					void customConfirmModal.offsetHeight;
+					customConfirmModal.classList.add('active');
+					pushModalHistory();
+					confirmOkBtn.focus();
+
+					// 注意：这里不做按钮状态复位。复位发生在下次打开弹窗时
+					// （showConfirm/showConfirm3 入口处），否则“放弃”按钮会在关闭动画期间提前消失
+					const done = (r) => {
+						resolve(r);
+						closeConfirm();
+					};
+
+					confirmOkBtn.onclick = () => done('ok');
+					confirmCancelBtn.onclick = () => done('cancel');
+					confirmThirdBtn.onclick = () => done('third');
+
+					// 复用弹窗的返回键/背景点击处理：均视为 cancel
+					currentConfirmResolve = () => done('cancel');
+					bindKeyboard('confirm', (v) => done(v ? 'ok' : 'cancel'));
 				});
 			}
 
@@ -1893,6 +1861,10 @@ SOFTWARE.
 
 			window.confirm = function (message) {
 				return showConfirm(message);
+			};
+
+			window.confirm3 = function (message, options) {
+				return showConfirm3(message, options);
 			};
 		})();
 
@@ -2026,13 +1998,19 @@ SOFTWARE.
 						if (databases.length) createBtnSvg("indexedDBBtn", databases.length);
 						else createBtnSvg("indexedDBBtn", 0);
 					});
+				} else {
+					createBtnSvg("indexedDBBtn", 0);
 				}
 
 				//CacheStorage
-				caches.keys().then(cacheNames => {
-					if (cacheNames.length) createBtnSvg("cacheStorageBtn", cacheNames.length);
-					else createBtnSvg("cacheStorageBtn", 0);
-				});
+				if ('caches' in window) {
+					caches.keys().then(cacheNames => {
+						if (cacheNames.length) createBtnSvg("cacheStorageBtn", cacheNames.length);
+						else createBtnSvg("cacheStorageBtn", 0);
+					});
+				} else {
+					createBtnSvg("cacheStorageBtn", 0);
+				}
 			} catch (err) {
 				;
 			}
@@ -2061,11 +2039,11 @@ SOFTWARE.
 
 			// 事件监听器
 			setupEventListeners: function () {
-				// 存储类型按钮
-				document.getElementById('localStorageBtn').addEventListener('click', () => { this.showStorage('localStorage'); styleShowStorage('localStorage') });
-				document.getElementById('sessionStorageBtn').addEventListener('click', () => { this.showStorage('sessionStorage'); styleShowStorage('sessionStorage') });
-				document.getElementById('indexedDBBtn').addEventListener('click', () => { this.showStorage('indexedDB'); styleShowStorage('indexedDB') });
-				document.getElementById('cacheStorageBtn').addEventListener('click', () => { this.showStorage('cacheStorage'); styleShowStorage('cacheStorage') });
+				// 存储类型按钮（切换失败时 showStorage 会中止，高亮由 showStorage 内部设置）
+				document.getElementById('localStorageBtn').addEventListener('click', () => { this.showStorage('localStorage'); });
+				document.getElementById('sessionStorageBtn').addEventListener('click', () => { this.showStorage('sessionStorage'); });
+				document.getElementById('indexedDBBtn').addEventListener('click', () => { this.showStorage('indexedDB'); });
+				document.getElementById('cacheStorageBtn').addEventListener('click', () => { this.showStorage('cacheStorage'); });
 
 				// 清除全部按钮
 				document.getElementById('clearAllBtn').addEventListener('click', () => {
@@ -2119,7 +2097,7 @@ SOFTWARE.
 
 				// 关于按钮
 				document.getElementById('about').addEventListener('click', () => {
-					alert('Momotan Storage Explorer\n网站本地存储管理工具\nCopyright©2026, Aphasia\nv3.0.0 release 2026/10/23\n\n基于 MIT 协议开源 / Licensed under the MIT License.\n开源地址 / Open source address: https://github.com/kvetc/Momotan-Storage-Explorer\n\n操作说明：\nEnter/Space: 确认 / Confirm\nESC: 取消 / Cancel\nCtrl+S: 保存 / Save\nDelete: 删除 / Delete');
+					alert('Momotan Storage Explorer\n网站本地存储管理工具\nCopyright©2026, Aphasia\nv3.1.0 release 2026/10/23\n\n基于 MIT 协议开源 / Licensed under the MIT License.\n开源地址 / Open source address: https://github.com/kvetc/Momotan-Storage-Explorer\n\n操作说明：\nEnter/Space: 确认 / Confirm\nESC: 取消 / Cancel\nCtrl+S: 保存 / Save\nDelete: 删除 / Delete');
 				});
 
 				// 搜索栏
@@ -2189,9 +2167,10 @@ SOFTWARE.
 				}
 			},
 
-			// 判断当前焦点是否在输入框内
+			// 判断当前焦点是否在输入控件内
 			isEditingInput: function (target) {
-				return target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable);
+				return target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' ||
+					target.tagName === 'SELECT' || target.isContentEditable);
 			},
 
 			// 搜索过滤存储项
@@ -2253,15 +2232,16 @@ SOFTWARE.
 
 			// 显示指定存储类型的内容
 			showStorage: async function (storageType) {
+				// 清除选择状态；有未保存修改且用户取消时中止整个切换
+				if (await this.clearSelection() === false) return;
+
 				// 更新当前存储类型
 				this.currentStorageType = storageType;
 				document.getElementById('storageTypeLabel').textContent =
 					storageType === 'localStorage' ? 'localStorage' :
 						storageType === 'sessionStorage' ? 'sessionStorage' :
 							storageType === 'indexedDB' ? 'IndexedDB' : 'CacheStorage';
-
-				// 清除选择状态
-				await this.clearSelection();
+				styleShowStorage(storageType);
 
 				// 清空搜索框
 				const searchInput = document.getElementById('storageSearchInput');
@@ -2314,13 +2294,19 @@ SOFTWARE.
 				const canTransfer = !!this.currentStorageType && this.currentStorageType !== 'cacheStorage';
 				if (exportBtn) {
 					exportBtn.classList.toggle('disabled', !canTransfer);
-					exportBtn.title = canTransfer ? '导出当前存储为 JSON 文件' :
-						(this.currentStorageType === 'cacheStorage' ? 'CacheStorage 不支持导出' : '请选择存储类型');
+					exportBtn.title = !canTransfer ?
+						(this.currentStorageType === 'cacheStorage' ? 'CacheStorage 不支持导出' : '请选择存储类型') :
+						(this.currentStorageType === 'indexedDB' ?
+							'导出全部 IndexedDB 数据库为 JSON 文件（不含二进制记录）' :
+							`导出当前 ${this.currentStorageType} 为 JSON 文件`);
 				}
 				if (importBtn) {
 					importBtn.classList.toggle('disabled', !canTransfer);
-					importBtn.title = canTransfer ? '从 JSON 文件导入' :
-						(this.currentStorageType === 'cacheStorage' ? 'CacheStorage 不支持导入' : '请选择存储类型');
+					importBtn.title = !canTransfer ?
+						(this.currentStorageType === 'cacheStorage' ? 'CacheStorage 不支持导入' : '请选择存储类型') :
+						(this.currentStorageType === 'indexedDB' ?
+							'从 JSON 文件导入（覆盖同名数据库前会自动备份）' :
+							'从 JSON 文件导入');
 				}
 
 				const helpStorageBtn = document.getElementById('helpStorageBtn');
@@ -2349,7 +2335,9 @@ SOFTWARE.
 						'IndexedDB\n' +
 						'\n作用：存储大量结构化数据，常用于离线数据、大文件、复杂缓存对象等。\n' +
 						'\n特性：容量大（通常数百 MB 以上）；支持对象与二进制数据；支持索引查询与事务；异步读写；长期保留。\n' +
-						'\n删除后果：可能导致依赖它的网站出现异常，本地数据丢失且难以恢复。',
+						'\n删除后果：可能导致依赖它的网站出现异常，本地数据丢失且难以恢复。\n' +
+						'\n编辑限制：值为 JSON 格式（纯文本字符串需用英文双引号包裹）；Date/数组/二进制类型的键只读；含 Date/Map/Set/二进制/循环引用的值只读并保留原值；复合键路径用 JSON 数组表示（如 ["a","b"]）。\n' +
+						'\n备份提示：导出为 JSON 时不包含二进制与复杂类型记录，不能作为完整备份。',
 					cacheStorage:
 						'CacheStorage\n' +
 						'\n作用：由 Service Worker 管理的网络资源缓存（页面、脚本、图片等），用于离线访问与加速加载。\n' +
@@ -2362,6 +2350,14 @@ SOFTWARE.
 			// 当前编辑器状态
 			currentSelection: null,
 			isDirty: false,
+
+			// 异步竞态令牌：每次加载/选择/统计时自增，异步返回后先比对，过期结果直接丢弃
+			_loadToken: 0,
+			_selectionToken: 0,
+			_spaceToken: 0,
+
+			// IndexedDB 统计缓存（按库名），save/delete/import/clearAll 时失效
+			_idbStatsCache: {},
 
 			// 标记编辑器为未保存状态
 			markDirty: function () {
@@ -2380,20 +2376,38 @@ SOFTWARE.
 			// 检查是否需要保存，返回 true 表示可以继续（已保存或放弃）
 			confirmDiscardChanges: async function () {
 				if (!this.isDirty) return true;
-				const result = await confirm('当前有未保存的更改，是否保存？\n点击“确定”保存，点击“取消”放弃更改。');
-				if (result) {
+				const r = await confirm3('当前有未保存的更改。', { okText: '保存', thirdText: '放弃更改', cancelText: '取消' });
+				if (r === 'ok') {
 					await this.saveCurrentItem();
 					return !this.isDirty;
 				}
-				this.isDirty = false;
-				return true;
+				if (r === 'third') {
+					this.clearDirty();
+					return true;
+				}
+				return false; // 取消当前操作
 			},
 
-			// 清除当前选择
+			// 统一的未保存修改处理：'saved' 已保存 / 'discarded' 已放弃 / 'cancel' 取消当前操作
+			resolveDirty: async function () {
+				if (!this.isDirty) return 'saved';
+				const r = await confirm3('当前有未保存的更改。', { okText: '保存', thirdText: '放弃更改', cancelText: '取消' });
+				if (r === 'ok') {
+					await this.saveCurrentItem();
+					return this.isDirty ? 'cancel' : 'saved';
+				}
+				if (r === 'third') {
+					this.clearDirty();
+					return 'discarded';
+				}
+				return 'cancel';
+			},
+
+			// 清除当前选择；有未保存修改且用户取消时返回 false（不执行清除）
 			clearSelection: async function () {
 				if (this.isDirty) {
 					const canProceed = await this.confirmDiscardChanges();
-					if (!canProceed) return;
+					if (!canProceed) return false;
 				}
 				const selectedItem = document.querySelector('.storage-item.selected');
 				if (selectedItem) {
@@ -2416,6 +2430,7 @@ SOFTWARE.
 					}
 					this.popEditorHistory();
 				}
+				return true;
 			},
 
 			// 移动端编辑器状态
@@ -2461,6 +2476,7 @@ SOFTWARE.
 
 			// 加载存储项
 			loadStorageItems: function (storageType) {
+				const token = ++this._loadToken;
 				const storageItemsList = document.getElementById('storageItemsList');
 				storageItemsList.innerHTML = '';
 
@@ -2474,10 +2490,10 @@ SOFTWARE.
 						this.loadWebStorageItems(storageType);
 						break;
 					case 'indexedDB':
-						this.loadIndexedDBItems();
+						this.loadIndexedDBItems(token);
 						break;
 					case 'cacheStorage':
-						this.loadCacheStorageItems();
+						this.loadCacheStorageItems(token);
 						break;
 				}
 
@@ -2487,7 +2503,6 @@ SOFTWARE.
 			},
 
 			// 操作按钮 SVG
-			editIconSvg: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>`,
 			deleteIconSvg: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>`,
 			addIconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="4" x2="12" y2="20"></line><line x1="4" y1="12" x2="20" y2="12"></line></svg>`,
 			newIconSvg: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8.342a2 2 0 0 0-.602-1.43l-4.44-4.342A2 2 0 0 0 13.56 2H6a2 2 0 0 0-2 2Z"></path><line x1="12" y1="9" x2="12" y2="16"></line><line x1="8.5" y1="12.5" x2="15.5" y2="12.5"></line></svg>`,
@@ -2566,7 +2581,6 @@ SOFTWARE.
                         <div class="storage-title">${this.escapeHtml(key)}</div>
                         <div class="storage-size">${this.formatBytes(size)}</div>
                         <div class="storage-item-actions">
-                            <button class="inline-action-btn" title="编辑" data-action="edit" style="display: none;">${this.editIconSvg}</button>
                             <button class="inline-action-btn danger" title="删除" data-action="delete">${this.deleteIconSvg}</button>
                         </div>
                     `;
@@ -2576,12 +2590,6 @@ SOFTWARE.
 						if (!this.isActionButton(e.target)) {
 							this.selectStorageItem(storageType, key, value);
 						}
-					});
-
-					// 编辑按钮
-					storageItem.querySelector('[data-action="edit"]').addEventListener('click', (e) => {
-						e.stopPropagation();
-						this.selectStorageItem(storageType, key, value);
 					});
 
 					// 删除按钮
@@ -2603,13 +2611,14 @@ SOFTWARE.
 			},
 
 			// 加载IndexedDB
-			loadIndexedDBItems: function () {
+			loadIndexedDBItems: function (loadToken) {
 				const storageItemsList = document.getElementById('storageItemsList');
 				storageItemsList.innerHTML = '<div class="placeholder2">IndexedDB数据库列表加载中...</div>';
 
 				// 获取所有IndexedDB数据库
 				if (window.indexedDB && window.indexedDB.databases) {
 					indexedDB.databases().then(databases => {
+						if (loadToken !== this._loadToken) return; // 已切换到其他类型，丢弃过期结果
 						storageItemsList.innerHTML = '';
 
 						if (databases.length === 0) {
@@ -2623,21 +2632,16 @@ SOFTWARE.
 							storageItem.dataset.type = 'indexedDB';
 
 							this.getDatabaseStats(dbInfo.name).then(stats => {
+								if (loadToken !== this._loadToken) return; // 过期结果不写入列表
 								storageItem.innerHTML = `
 									<div class="storage-title">${this.escapeHtml(dbInfo.name)}</div>
 									<div class="storage-size">${this.formatBytes(stats.size)}</div>
 									<div class="storage-size">${stats.count} 条记录</div>
 									<div class="storage-time">版本: ${dbInfo.version}</div>
 									<div class="storage-item-actions">
-										<button class="inline-action-btn" title="编辑" data-action="edit" style="display: none;">${this.editIconSvg}</button>
 										<button class="inline-action-btn danger" title="删除" data-action="delete">${this.deleteIconSvg}</button>
 									</div>
 								`;
-
-								storageItem.querySelector('[data-action="edit"]').addEventListener('click', (e) => {
-									e.stopPropagation();
-									this.selectStorageItem('indexedDB', dbInfo.name, dbInfo);
-								});
 
 								storageItem.querySelector('[data-action="delete"]').addEventListener('click', (e) => {
 									e.stopPropagation();
@@ -2663,6 +2667,7 @@ SOFTWARE.
 						const searchInput = document.getElementById('storageSearchInput');
 						this.filterStorageItems(searchInput ? searchInput.value : '');
 					}).catch(error => {
+						if (loadToken !== this._loadToken) return;
 						storageItemsList.innerHTML = `<div class="placeholder2">获取数据库列表失败: ${this.escapeHtml(error.message)}</div>`;
 					});
 				} else {
@@ -2671,13 +2676,14 @@ SOFTWARE.
 			},
 
 			// 加载CacheStorage
-			loadCacheStorageItems: function () {
+			loadCacheStorageItems: function (loadToken) {
 				const storageItemsList = document.getElementById('storageItemsList');
 				storageItemsList.innerHTML = '<div class="placeholder2">缓存列表加载中...</div>';
 
 				// 获取所有CacheStorage
 				if ('caches' in window) {
 					caches.keys().then(cacheNames => {
+						if (loadToken !== this._loadToken) return; // 已切换到其他类型，丢弃过期结果
 						storageItemsList.innerHTML = '';
 
 						if (cacheNames.length === 0) {
@@ -2702,6 +2708,7 @@ SOFTWARE.
 						});
 
 						Promise.all(cachePromises).then(caches => {
+							if (loadToken !== this._loadToken) return; // 过期结果不写入列表
 							caches.forEach(cacheInfo => {
 								const storageItem = document.createElement('div');
 								storageItem.className = 'storage-item';
@@ -2712,7 +2719,6 @@ SOFTWARE.
 									<div class="storage-title">${this.escapeHtml(cacheInfo.name)}</div>
 									<div class="storage-size">${this.formatBytes(cacheInfo.size || 0)}</div>
 									<div class="storage-size">${cacheInfo.items} 项资源</div>
-									<div class="storage-time">${cacheInfo.date ? this.formatDate(cacheInfo.date) : '日期未知'}</div>
 									<div class="storage-item-actions">
 										<button class="inline-action-btn danger" title="删除" data-action="delete">${this.deleteIconSvg}</button>
 									</div>
@@ -2738,9 +2744,11 @@ SOFTWARE.
 							const searchInput = document.getElementById('storageSearchInput');
 							this.filterStorageItems(searchInput ? searchInput.value : '');
 						}).catch(error => {
+							if (loadToken !== this._loadToken) return;
 							storageItemsList.innerHTML = `<div class="placeholder2">获取缓存详情失败: ${this.escapeHtml(error.message)}</div>`;
 						});
 					}).catch(error => {
+						if (loadToken !== this._loadToken) return;
 						storageItemsList.innerHTML = `<div class="placeholder2">获取缓存列表失败: ${this.escapeHtml(error.message)}</div>`;
 					});
 				} else {
@@ -2750,11 +2758,14 @@ SOFTWARE.
 
 			// 选择存储项
 			selectStorageItem: async function (storageType, key, value) {
+				// 竞态令牌：快速连续切换时，旧请求返回后不得覆盖新选中的项
+				const token = ++this._selectionToken;
 				// 切换前检查未保存
 				if (this.currentSelection && this.isDirty) {
 					const canProceed = await this.confirmDiscardChanges();
 					if (!canProceed) return;
 				}
+				if (token !== this._selectionToken) return;
 
 				// 清除之前的选择
 				const selectedItems = document.querySelectorAll('.storage-item.selected');
@@ -2793,11 +2804,13 @@ SOFTWARE.
 
 						case 'indexedDB':
 							const dbInfo = await this.getIndexedDBDetails(key);
+							if (token !== this._selectionToken) return; // 过期请求不覆盖新选择
 							this.renderIndexedDBEditor(key, dbInfo, false);
 							break;
 
 						case 'cacheStorage':
 							const cacheInfo = await this.getCacheDetails(key);
+							if (token !== this._selectionToken) return; // 过期请求不覆盖新选择
 							this.renderCacheStorageEditor(key, cacheInfo);
 							break;
 					}
@@ -2821,7 +2834,14 @@ SOFTWARE.
 
 				let tempKey = '';
 				if (storageType === 'localStorage' || storageType === 'sessionStorage') {
+					// 生成不与现有键冲突的临时键名
+					const store = this.getWebStorage(storageType);
 					tempKey = 'new-' + storageType.toLowerCase();
+					let n = 2;
+					while (store.getItem(tempKey) !== null) {
+						tempKey = 'new-' + storageType.toLowerCase() + '-' + n;
+						n++;
+					}
 					this.renderWebStorageEditor(storageType, tempKey, '', true);
 				} else if (storageType === 'indexedDB') {
 					tempKey = 'new-indexeddb';
@@ -2852,7 +2872,7 @@ SOFTWARE.
 						<table class="detail-table">
 							<tr>
 								<th>键名 / Key</th>
-								<td><input type="text" class="editable-input" id="localKeyInput" value="${this.escapeHtml(key)}" placeholder="请输入键名"></td>
+								<td><input type="text" class="editable-input" id="localKeyInput" value="${this.escapeAttr(key)}" placeholder="请输入键名"></td>
 							</tr>
 							<tr>
 								<th>键值 / Value</th>
@@ -2883,6 +2903,17 @@ SOFTWARE.
 				const div = document.createElement('div');
 				div.textContent = String(text);
 				return div.innerHTML;
+			},
+
+			// HTML 属性转义：在文本转义基础上额外转义引号，用于 value="..." / data-*="..." 等属性插值
+			escapeAttr: function (text) {
+				if (text === null || text === undefined) return '';
+				return String(text)
+					.replace(/&/g, '&amp;')
+					.replace(/</g, '&lt;')
+					.replace(/>/g, '&gt;')
+					.replace(/"/g, '&quot;')
+					.replace(/'/g, '&#39;');
 			},
 
 			// 渲染 CacheStorage 编辑器（只读）
@@ -2937,15 +2968,15 @@ SOFTWARE.
 						const recordsHtml = this.renderRecordsTable(store, index);
 						const indexesStr = store.indexes && store.indexes.length ? this.escapeHtml(store.indexes.join(', ')) : '';
 						return `
-							<div class="detail-section object-store-section" data-store-index="${index}" data-original-name="${this.escapeHtml(store.name)}" data-key-path="${store.keyPath ? this.escapeHtml(store.keyPath) : ''}" data-auto-increment="${store.autoIncrement ? 'true' : 'false'}">
+							<div class="detail-section object-store-section" data-store-index="${index}" data-original-name="${this.escapeAttr(store.name)}" data-key-path="${store.keyPath !== null && store.keyPath !== undefined ? this.escapeAttr(JSON.stringify(store.keyPath)) : ''}" data-auto-increment="${store.autoIncrement ? 'true' : 'false'}">
 								<div class="detail-section-title">
-									对象存储: <input type="text" class="section-title-input" value="${this.escapeHtml(store.name)}" data-field="store-name">
+									对象存储: <input type="text" class="section-title-input" value="${this.escapeAttr(store.name)}" data-field="store-name">
 									<button class="inline-action-btn inline-action-btn-p" title="查看/隐藏记录" data-action="toggle-records">${this.expandIconSvg}<p>记录项</p></button>
 									<button class="inline-action-btn danger" title="删除对象存储" data-action="delete-store">${this.deleteIconSvg}</button>
 								</div>
 								<table class="detail-table">
-									<tr><th>原始名称</th><td><input type="text" class="editable-input" value="${this.escapeHtml(store.name)}" data-field="store-original-name"></td></tr>
-									<tr><th>键路径 / Key Path</th><td><input type="text" class="editable-input" value="${store.keyPath ? this.escapeHtml(store.keyPath) : ''}" placeholder="（无）" data-field="store-key-path"></td></tr>
+									<tr><th>原始名称</th><td><input type="text" class="editable-input" value="${this.escapeAttr(store.name)}" data-field="store-original-name"></td></tr>
+									<tr><th>键路径 / Key Path</th><td><input type="text" class="editable-input" value="${store.keyPath !== null && store.keyPath !== undefined ? this.escapeAttr(Array.isArray(store.keyPath) ? JSON.stringify(store.keyPath) : store.keyPath) : ''}" placeholder="（无），复合键用 JSON 数组如 [&quot;a&quot;,&quot;b&quot;]" data-field="store-key-path"></td></tr>
 									<tr><th>自增 / Auto Increment</th><td>
 										<select class="editable-input editable-select" data-field="store-auto-increment">
 											<option value="false" ${store.autoIncrement ? '' : 'selected'}>否</option>
@@ -2967,7 +2998,7 @@ SOFTWARE.
 				}
 
 				const dbNameField = isNew
-					? `<input type="text" class="editable-input" id="dbNameInput" value="${this.escapeHtml(dbName)}" placeholder="请输入数据库名称">`
+					? `<input type="text" class="editable-input" id="dbNameInput" value="${this.escapeAttr(dbName)}" placeholder="请输入数据库名称">`
 					: this.escapeHtml(dbName);
 
 				const html = `
@@ -3006,7 +3037,7 @@ SOFTWARE.
 					return '<div class="empty-records">该对象存储暂无记录</div>';
 				}
 				if (!this._binaryPreviewUrls) this._binaryPreviewUrls = [];
-				const keyEditable = !store.keyPath && !store.autoIncrement;
+				const keyColumnEditable = !store.keyPath && !store.autoIncrement;
 				// 加载被截断时给出明显警告，提示结构变更可能影响未加载的记录
 				const truncatedWarning = (typeof store.records === 'number' && store.records > store.data.length)
 					? `<div class="records-truncated-warning">仅加载前 ${store.data.length} 条记录（共 ${store.records} 条），为避免数据丢失，涉及结构变更时请谨慎操作</div>`
@@ -3021,11 +3052,18 @@ SOFTWARE.
 						</tr>
 						${store.data.map((record, recordIndex) => {
 							const bin = this.getRecordBinaryInfo(record.value);
+							// 只有 string/number 键的 JSON 往返无损，允许文本编辑；
+							// Date/数组/二进制键只读显示，保存时沿用内存中的原始键对象
+							const keyEditableHere = keyColumnEditable && (typeof record.key === 'string' || typeof record.key === 'number');
+							const jsonSafe = bin ? true : this.isJsonSafeValue(record.value);
+							// 二进制键 JSON 化后是 {}，显示为占位文本
+							const keyDisplay = (record.key instanceof ArrayBuffer || ArrayBuffer.isView(record.key))
+								? '[二进制键]' : JSON.stringify(record.key);
 							let valueCellHtml;
-							let binaryAttr = '';
+							let rowAttr = '';
 							if (bin) {
 								// 二进制记录：显示预览与信息，不提供文本编辑，防止 JSON 化后损坏数据
-								binaryAttr = ' data-binary="true"';
+								rowAttr = ' data-binary="true"';
 								const url = URL.createObjectURL(bin.blob);
 								const blobIndex = this._binaryPreviewUrls.push(url) - 1;
 								let previewHtml = '';
@@ -3038,15 +3076,22 @@ SOFTWARE.
 									<div class="binary-value-cell">
 										${previewHtml}
 										<span class="binary-info">[二进制数据] ${this.escapeHtml(bin.mime || '未知类型')} · ${this.formatBytes(bin.size)}（不可直接编辑）</span>
-										<button class="binary-download-btn" data-action="download-binary" data-blob-index="${blobIndex}" data-mime="${this.escapeHtml(bin.mime)}">下载</button>
+										<button class="binary-download-btn" data-action="download-binary" data-blob-index="${blobIndex}" data-mime="${this.escapeAttr(bin.mime)}">下载</button>
+									</div>`;
+							} else if (!jsonSafe) {
+								// Date/Map/Set/嵌套二进制/循环引用等 JSON 无法无损表达的值：只读，保存时保留原值
+								rowAttr = ' data-readonly-value="true"';
+								valueCellHtml = `
+									<div class="binary-value-cell">
+										<span class="binary-info">[复杂类型] 值含 Date/Map/Set/二进制/循环引用等 JSON 无法安全表达的内容（不可直接编辑，保存时保留原值）</span>
 									</div>`;
 							} else {
 								valueCellHtml = `<textarea class="value-cell-textarea" data-field="record-value">${this.escapeHtml(JSON.stringify(record.value, null, 2))}</textarea>`;
 							}
 							return `
-							<tr data-record-index="${recordIndex}" data-original-key="${this.escapeHtml(JSON.stringify(record.key))}"${binaryAttr}>
+							<tr data-record-index="${recordIndex}" data-original-key="${this.escapeAttr(JSON.stringify(record.key))}"${rowAttr}>
 								<td class="key-cell">
-									${keyEditable ? `<input type="text" class="editable-input" value="${this.escapeHtml(JSON.stringify(record.key))}" data-field="record-key">` : `<span>${this.escapeHtml(JSON.stringify(record.key))}</span>`}
+									${keyEditableHere ? `<input type="text" class="editable-input" value="${this.escapeAttr(keyDisplay)}" data-field="record-key">` : `<span>${this.escapeHtml(keyDisplay)}</span>`}
 								</td>
 								<td class="value-cell">
 									${valueCellHtml}
@@ -3143,6 +3188,9 @@ SOFTWARE.
 					this.markDirty();
 				} else if (['record-key', 'record-value'].includes(field)) {
 					this.markDirty();
+					// 行级脏标记：保存时未修改的行直接使用内存中的原始键/值引用，不做 JSON 往返
+					const row = e.target.closest('tr');
+					if (row) row.dataset.modified = '1';
 				}
 			},
 
@@ -3314,7 +3362,7 @@ SOFTWARE.
 
 						// 尝试打开数据库获取对象存储信息
 						const request = indexedDB.open(dbName);
-						request.onerror = () => resolve({ ...dbInfo, objectStores: [] });
+						request.onerror = () => reject(request.error || new Error(`打开数据库 ${dbName} 失败`));
 
 						request.onsuccess = (event) => {
 							const db = event.target.result;
@@ -3361,18 +3409,23 @@ SOFTWARE.
 											return (obj !== null && typeof obj === 'object') ? obj[seg] : undefined;
 										}, value);
 									};
-									const keysRequest = objectStore.getAllKeys();
-									const dataRequest = objectStore.getAll();
+									// 限制读取上限，避免大库一次性全部读入内存
+									const countRequest = objectStore.count();
+									const keysRequest = objectStore.getAllKeys(null, 1000);
+									const dataRequest = objectStore.getAll(null, 1000);
 									let allKeys = [];
+									countRequest.onsuccess = (ce) => {
+										storeTotalRecords = ce.target.result || 0;
+									};
 									keysRequest.onsuccess = (ke) => {
 										allKeys = ke.target.result || [];
 									};
 									dataRequest.onsuccess = (de) => {
 										const result = de.target.result || [];
-										storeTotalRecords = result.length;
+										if (!storeTotalRecords) storeTotalRecords = result.length;
+										// 大小仅为已加载部分的估算（兜底路径，游标路径才是精确全量口径）
 										storeTotalBytes = result.reduce((sum, value) => sum + this.calculateRecordSize(value), 0);
-										// 与游标路径口径一致：最多加载前 1000 条进入编辑器
-									result.slice(0, 1000).forEach((value, index) => {
+										result.forEach((value, index) => {
 											let key;
 											if (objectStore.keyPath && value !== null && typeof value === 'object') {
 												// 内联键：从 value 中按 keyPath 提取
@@ -3444,13 +3497,8 @@ SOFTWARE.
 					};
 				} catch (error) {
 					console.error('获取缓存详情失败:', error);
-					return {
-						name: cacheName,
-						items: 0,
-						resources: [],
-						size: 0,
-						date: new Date()
-					};
+					// 读取失败应如实报错，而不是伪装成“空缓存”
+					throw error;
 				}
 			},
 
@@ -3564,27 +3612,35 @@ SOFTWARE.
 			},
 
 			// 导出全部 IndexedDB 数据库（结构 + 全量记录，不受编辑器加载上限影响）
-			exportIndexedDBAll: async function () {
+			// 格式 v2：包含数据库版本、完整索引元数据（name/keyPath/unique/multiEntry）、数组 keyPath 原貌。
+			// 二进制或 JSON 无法无损表达（Date/Map/Set 等）的记录会被跳过并计数——导出不等于完整备份。
+			// onlyNames：传入名字数组时只导出这些数据库（用于导入覆盖前的自动备份）
+			exportIndexedDBAll: async function (onlyNames) {
 				const databases = await indexedDB.databases();
 				const out = [];
 				let skippedBinary = 0;
 				let skippedKeys = 0;
 				for (const dbInfo of databases) {
-					const dbData = { name: dbInfo.name, stores: [] };
+					if (onlyNames && !onlyNames.includes(dbInfo.name)) continue;
 					const db = await new Promise((resolve, reject) => {
 						const req = indexedDB.open(dbInfo.name);
 						req.onsuccess = () => resolve(req.result);
 						req.onerror = () => reject(req.error || new Error(`打开数据库 ${dbInfo.name} 失败`));
 					});
+					const dbData = { name: dbInfo.name, version: db.version, stores: [] };
 					for (const storeName of Array.from(db.objectStoreNames)) {
 						const storeData = await new Promise((resolve, reject) => {
 							const tx = db.transaction(storeName, 'readonly');
 							const objectStore = tx.objectStore(storeName);
 							const meta = {
 								name: storeName,
-								keyPath: objectStore.keyPath || null,
+								keyPath: objectStore.keyPath === undefined ? null : objectStore.keyPath,
 								autoIncrement: !!objectStore.autoIncrement,
-								indexes: Array.from(objectStore.indexNames),
+								// v2：完整索引元数据
+								indexes: Array.from(objectStore.indexNames).map(idxName => {
+									const idx = objectStore.index(idxName);
+									return { name: idx.name, keyPath: idx.keyPath, unique: !!idx.unique, multiEntry: !!idx.multiEntry };
+								}),
 								records: []
 							};
 							let keys = [];
@@ -3595,7 +3651,8 @@ SOFTWARE.
 								values.forEach((value, index) => {
 									// 含二进制内容的值无法 JSON 化，跳过并计数
 									if (this.getRecordBinaryInfo(value)) { skippedBinary++; return; }
-									try { JSON.stringify(value); } catch (e) { skippedKeys++; return; }
+									// Date/Map/Set/循环引用等 JSON 无法无损表达的值同样跳过，避免静默变质
+									if (!this.isJsonSafeValue(value)) { skippedKeys++; return; }
 									const sKey = this.serializeIdbKey(keys[index]);
 									if (sKey === null) { skippedKeys++; return; }
 									meta.records.push({ key: sKey, value: value });
@@ -3613,7 +3670,7 @@ SOFTWARE.
 				return {
 					data: {
 						tool: 'Momotan Storage Explorer',
-						version: 1,
+						version: 2,
 						type: 'indexedDB',
 						exportedAt: new Date().toISOString(),
 						databases: out
@@ -3664,14 +3721,21 @@ SOFTWARE.
 				alert(`已导入 ${imported} 条记录`);
 			},
 
-			// 导入 IndexedDB（同名数据库经确认后删除重建）
+			// 导入 IndexedDB（同名数据库经确认、自动备份后删除重建；兼容 v1/v2 导出格式）
 			importIndexedDBData: async function (data) {
 				const databases = Array.isArray(data.databases) ? data.databases : [];
 				if (databases.length === 0) throw new Error('文件格式不正确：databases 为空');
 				const existingNames = (await indexedDB.databases()).map(d => d.name);
 				const overwriteNames = databases.filter(d => d && existingNames.includes(d.name)).map(d => d.name);
 				if (overwriteNames.length > 0) {
-					if (!await confirm(`以下数据库已存在，导入将删除并重建：\n${overwriteNames.join('\n')}\n\n是否继续？`)) return;
+					if (!await confirm(`以下数据库已存在，导入将删除并重建：\n${overwriteNames.join('\n')}\n\n将先自动下载这些数据库当前内容的备份（JSON，不含二进制记录），然后继续导入。是否继续？`)) return;
+					// 覆盖前自动备份现有库，导入失败时可用备份恢复
+					try {
+						const backup = await this.exportIndexedDBAll(overwriteNames);
+						this.downloadJson(backup.data, this.exportFileName('indexedDB-backup'));
+					} catch (e) {
+						if (!await confirm(`自动备份失败（${e.message}）。仍要继续导入吗？现有数据可能被覆盖且无法恢复。`)) return;
+					}
 				}
 				let importedRecords = 0;
 				let skippedRecords = 0;
@@ -3686,9 +3750,10 @@ SOFTWARE.
 							delReq.onblocked = () => reject(new Error(`数据库 ${dbData.name} 被占用，请关闭其他标签页后重试`));
 						});
 					}
-					// 创建结构（对象存储 + 索引）
+					// 创建结构（对象存储 + 索引），版本号沿用导出值（v2），兼容缺失时取 1
+					const targetVersion = Math.max(1, parseInt(dbData.version, 10) || 1);
 					await new Promise((resolve, reject) => {
-						const openReq = indexedDB.open(dbData.name, 1);
+						const openReq = indexedDB.open(dbData.name, targetVersion);
 						openReq.onupgradeneeded = (event) => {
 							const db = event.target.result;
 							(dbData.stores || []).forEach(storeData => {
@@ -3697,7 +3762,15 @@ SOFTWARE.
 								if (storeData.keyPath) options.keyPath = storeData.keyPath;
 								if (storeData.autoIncrement) options.autoIncrement = true;
 								const objectStore = db.createObjectStore(storeData.name, options);
-								(storeData.indexes || []).forEach(idx => objectStore.createIndex(idx, idx));
+								(storeData.indexes || []).forEach(idx => {
+									if (idx && typeof idx === 'object') {
+										// v2：完整索引元数据
+										objectStore.createIndex(idx.name, idx.keyPath, { unique: !!idx.unique, multiEntry: !!idx.multiEntry });
+									} else {
+										// 兼容 v1：索引名即键路径
+										objectStore.createIndex(idx, idx);
+									}
+								});
 							});
 						};
 						openReq.onsuccess = (event) => { event.target.result.close(); resolve(); };
@@ -3737,8 +3810,11 @@ SOFTWARE.
 						});
 					}
 				}
+				// 导入后统计缓存全部失效
+				this._idbStatsCache = {};
 				let msg = `导入完成：共写入 ${importedRecords} 条记录`;
 				if (skippedRecords > 0) msg += `\n${skippedRecords} 条记录因键无效或数据不合法被跳过`;
+				msg += '\n注意：导出不包含二进制记录，不能作为完整备份';
 				alert(msg);
 			},
 
@@ -3747,16 +3823,29 @@ SOFTWARE.
 				if (!this.currentSelection) return;
 
 				try {
-					if (this.currentSelection.type === 'localStorage' || this.currentSelection.type === 'sessionStorage') {
-						await this.saveWebStorage();
-					} else if (this.currentSelection.type === 'indexedDB') {
+					const sel = this.currentSelection;
+					if (sel.type === 'localStorage' || sel.type === 'sessionStorage') {
+						const saved = await this.saveWebStorage();
+						if (saved === false) return; // 用户在覆盖确认中取消
+					} else if (sel.type === 'indexedDB') {
 						await this.saveIndexedDB();
 					} else {
 						alert('当前类型不支持保存');
 						return;
 					}
 					this.clearDirty();
+					// 保存后重建列表，并保持滚动位置与选中高亮
+					const listEl = document.getElementById('storageItemsList');
+					const scrollTop = listEl ? listEl.scrollTop : 0;
 					this.loadStorageItems(this.currentStorageType);
+					if (listEl) listEl.scrollTop = scrollTop;
+					const selected = Array.from(document.querySelectorAll('.storage-item')).find(item =>
+						(item.dataset.key === sel.key || item.dataset.name === sel.key) && item.dataset.type === sel.type);
+					if (selected) selected.classList.add('selected');
+					// Web Storage 编辑器重渲染，刷新大小/上次修改等显示
+					if (sel.type === 'localStorage' || sel.type === 'sessionStorage') {
+						this.renderWebStorageEditor(sel.type, sel.key, this.getWebStorage(sel.type).getItem(sel.key), false);
+					}
 					this.updateStorageSpaceInfo(this.currentStorageType);
 					refreshLeftItems();
 					alert('保存成功');
@@ -3767,43 +3856,108 @@ SOFTWARE.
 			},
 
 			// 保存 localStorage / sessionStorage
-			saveWebStorage: function () {
+			// 不 trim 键名；允许空字符串键（Web Storage 合法）；
+			// 先写新键成功后再删旧键，配额失败时旧值不丢；
+			// 新增/重命名落到已存在的键时先弹确认。返回 false 表示用户取消。
+			saveWebStorage: async function () {
 				const storageType = this.currentSelection.type;
 				const store = this.getWebStorage(storageType);
-				const newKey = document.getElementById('localKeyInput').value.trim();
+				const newKey = document.getElementById('localKeyInput').value;
 				const newValue = document.getElementById('localValueInput').value;
 
-				if (!newKey) {
-					throw new Error('键名不能为空');
+				const originalKey = this.currentSelection.originalKey;
+				const renamed = originalKey !== null && originalKey !== newKey;
+				const creating = originalKey === null;
+
+				// 覆盖保护：新增或重命名落到已存在的键时先确认
+				if ((creating || renamed) && store.getItem(newKey) !== null) {
+					const ok = await confirm(`键 "${newKey}" 已存在，保存将覆盖其现有值。是否继续？`);
+					if (!ok) return false;
 				}
 
-				const originalKey = this.currentSelection.originalKey;
-				if (originalKey && originalKey !== newKey) {
+				// 先写新键：若此处抛 QuotaExceededError，旧键仍未被动过
+				store.setItem(newKey, newValue);
+				this.setMtime(storageType, newKey);
+				if (renamed) {
 					store.removeItem(originalKey);
 					this.removeMtime(storageType, originalKey);
 				}
-				store.setItem(newKey, newValue);
-				this.setMtime(storageType, newKey);
 
 				this.currentSelection.key = newKey;
 				this.currentSelection.originalKey = newKey;
 				this.currentSelection.isNew = false;
 				document.getElementById('storageItemTitle').textContent = newKey;
+				return true;
 			},
 
-			// 解析 JSON 值，失败则返回原字符串
-			parseJsonValue: function (value) {
-				if (value === undefined || value === null || value === '') return '';
-				const trimmed = value.trim();
+			// 解析 JSON 值。普通文本（不像 JSON 的输入）按字符串保存；
+			// 形如 JSON 但解析失败（如 {bad}）时抛出带位置说明的错误，避免类型被静默改变
+			parseJsonValue: function (value, context) {
+				if (value === undefined || value === null) return '';
+				const trimmed = String(value).trim();
 				if (trimmed === '') return '';
 				try {
 					return JSON.parse(trimmed);
 				} catch (e) {
+					const looksJson = /^[[{"tfn\-0-9]/.test(trimmed);
+					if (looksJson) {
+						throw new Error((context ? context + '：' : '') +
+							'JSON 解析失败（' + e.message + '）。如需保存为字符串，请用英文双引号包裹，如 "文本"');
+					}
 					return value;
 				}
 			},
 
+			// 解析键路径输入：支持字符串（如 a.b）或 JSON 数组（如 ["a","b"]，复合键），空值返回 null
+			parseKeyPathInput: function (text) {
+				const t = (text === undefined || text === null) ? '' : String(text).trim();
+				if (!t) return null;
+				if (t[0] === '[') {
+					let arr;
+					try { arr = JSON.parse(t); } catch (e) {
+						throw new Error('复合键路径格式不正确（' + e.message + '），应为 JSON 字符串数组，如 ["a","b"]');
+					}
+					if (!Array.isArray(arr) || arr.length === 0 || !arr.every(s => typeof s === 'string' && s.length > 0)) {
+						throw new Error('复合键路径必须是非空字符串数组，如 ["a","b"]');
+					}
+					return arr;
+				}
+				return t;
+			},
+
+			// 比较两个 keyPath（字符串或字符串数组），绝不经过 String() 强转
+			keyPathEqual: function (a, b) {
+				const norm = (kp) => (kp === undefined || kp === null || kp === '') ? null : kp;
+				return JSON.stringify(norm(a)) === JSON.stringify(norm(b));
+			},
+
+			// 判断值能否被 JSON 无损表达（不能的保存时必须保留原对象引用，而不是 JSON 化）
+			isJsonSafeValue: function (value, seen) {
+				if (value === null) return true;
+				const t = typeof value;
+				if (t === 'string' || t === 'boolean') return true;
+				if (t === 'number') return Number.isFinite(value);
+				if (t !== 'object') return false; // undefined / function / symbol / bigint
+				if (value instanceof Date || value instanceof RegExp || value instanceof Map || value instanceof Set ||
+					value instanceof Blob || value instanceof ArrayBuffer || ArrayBuffer.isView(value)) return false;
+				seen = seen || [];
+				if (seen.indexOf(value) !== -1) return false; // 循环引用
+				seen.push(value);
+				let safe;
+				if (Array.isArray(value)) {
+					safe = value.every(item => this.isJsonSafeValue(item, seen));
+				} else {
+					const proto = Object.getPrototypeOf(value);
+					safe = (proto === Object.prototype || proto === null) &&
+						Object.keys(value).every(k => this.isJsonSafeValue(value[k], seen));
+				}
+				seen.pop();
+				return safe;
+			},
+
 			// 保存 IndexedDB
+			// 顺序保证：收集 → 名称校验 → 合并全量记录（只读旧库）→ 预生成全部写计划（纯内存校验）→ 执行写入。
+			// 任何校验失败都发生在触碰数据库之前；结构变更与记录写入在同一个 versionchange 事务中完成，失败整体回滚。
 			saveIndexedDB: async function () {
 				const dbNameInput = document.getElementById('dbNameInput');
 				const dbName = dbNameInput ? dbNameInput.value.trim() : this.currentSelection.key;
@@ -3828,7 +3982,8 @@ SOFTWARE.
 					const originalNameInput = section.querySelector('[data-field="store-original-name"]');
 					const displayOriginalName = originalNameInput ? originalNameInput.value.trim() : originalStoreName;
 					const keyPathInput = section.querySelector('[data-field="store-key-path"]');
-					const keyPath = keyPathInput ? keyPathInput.value.trim() : '';
+					// keyPath 可能是字符串或字符串数组（复合键），统一解析为原始类型
+					const keyPath = this.parseKeyPathInput(keyPathInput ? keyPathInput.value : '');
 					const autoIncrementInput = section.querySelector('[data-field="store-auto-increment"]');
 					const autoIncrement = autoIncrementInput ? autoIncrementInput.value === 'true' : false;
 					const indexesInput = section.querySelector('[data-field="store-indexes"]');
@@ -3854,63 +4009,55 @@ SOFTWARE.
 						const keyInput = row.querySelector('[data-field="record-key"]');
 						const valueInput = row.querySelector('[data-field="record-value"]');
 						const isNewRecord = row.dataset.isNew === 'true';
-						const isBinary = row.dataset.binary === 'true';
+						const isModified = row.dataset.modified === '1';
+						const recordIndex = parseInt(row.dataset.recordIndex, 10);
+						const originalRecord = (!isNewRecord && originalStore && originalStore.data && Number.isInteger(recordIndex))
+							? originalStore.data[recordIndex] : null;
 
-						// 原始键直接引用内存中保存的键对象，不做 JSON 往返，
-						// 避免 Date/数组/ArrayBuffer 键在序列化后变质
-						let originalKeyRef;
-						if (!isNewRecord && originalStore && originalStore.data) {
-							const recordIndex = parseInt(row.dataset.recordIndex, 10);
-							if (Number.isInteger(recordIndex) && originalStore.data[recordIndex]) {
-								originalKeyRef = originalStore.data[recordIndex].key;
-							}
+						// 未修改的已有记录：直接引用内存中的原始键与值，不做 JSON 往返，
+						// 避免 Date/Map/Set/嵌套二进制等被静默改坏
+						if (originalRecord && !isModified) {
+							records.push({
+								originalKey: originalRecord.key,
+								key: originalRecord.key,
+								value: originalRecord.value,
+								isNew: false,
+								unmodified: true
+							});
+							continue;
 						}
 
 						let recordKey;
 						if (keyInput) {
-							recordKey = this.parseJsonValue(keyInput.value);
+							recordKey = this.parseJsonValue(keyInput.value, '对象存储 "' + newStoreName + '" 的记录键');
 						} else {
-							recordKey = originalKeyRef;
+							// 只读键（Date/数组/二进制）或键含于值中：沿用原始键对象引用
+							recordKey = originalRecord ? originalRecord.key : undefined;
 						}
 
 						let recordValue;
-						if (isBinary) {
-							// 二进制记录不可文本编辑，保存时回填原始值，防止被 JSON 化损坏
-							recordValue = undefined;
-						} else if (valueInput) {
-							recordValue = this.parseJsonValue(valueInput.value);
+						if (valueInput) {
+							recordValue = this.parseJsonValue(valueInput.value, '对象存储 "' + newStoreName + '" 中键为 ' + JSON.stringify(recordKey) + ' 的记录值');
+						} else if (originalRecord) {
+							// 二进制/复杂类型只读单元格：回填原始值，防止被 JSON 化损坏
+							recordValue = originalRecord.value;
 						}
 
 						records.push({
-							originalKey: originalKeyRef,
+							originalKey: originalRecord ? originalRecord.key : undefined,
 							key: recordKey,
 							value: recordValue,
-							isNew: isNewRecord,
-							binaryIndex: isBinary ? parseInt(row.dataset.recordIndex, 10) : undefined
+							isNew: isNewRecord
 						});
 					}
 
-					// 回填二进制记录的原始值
-					if (originalStore && originalStore.data) {
-						records.forEach(rec => {
-							if (rec.binaryIndex !== undefined && originalStore.data[rec.binaryIndex]) {
-								rec.value = originalStore.data[rec.binaryIndex].value;
-							}
-						});
-					}
-					// 找不到原始值的二进制记录视为放弃，避免写入空值损坏数据
-					for (let i = records.length - 1; i >= 0; i--) {
-						if (records[i].binaryIndex !== undefined && records[i].value === undefined) {
-							records.splice(i, 1);
-						}
-					}
 					let wasRecreated = false;
 					let indexChanged = false;
 					if (originalStore) {
-						const origKeyPath = originalStore.keyPath || '';
 						const origAutoIncrement = !!originalStore.autoIncrement;
 						const origIndexes = originalStore.indexes || [];
-						if (origKeyPath !== keyPath || origAutoIncrement !== autoIncrement) {
+						// keyPath 按类型安全比较（数组与数组比，字符串与字符串比）
+						if (!this.keyPathEqual(originalStore.keyPath, keyPath) || origAutoIncrement !== autoIncrement) {
 							wasRecreated = true;
 						}
 						if (origIndexes.length !== indexes.length || !origIndexes.every(idx => indexes.includes(idx))) {
@@ -3958,20 +4105,30 @@ SOFTWARE.
 					s.isNew || s.wasRecreated || s.indexChanged || s.originalName !== s.newName
 				);
 
-				if (hasStructuralChanges) {
+				if (hasStructuralChanges && !isNew) {
 					// 结构变更会删除旧对象存储并按内存记录重写，而内存中仅加载了前 1000 条。
 					// 先在旧存储被删除前读取其全部记录并与编辑结果合并，避免未加载的记录丢失。
 					for (const store of stores) {
 						const willRewrite = !store.isNew && store.originalName &&
 							(store.wasRecreated || store.originalName !== store.newName);
-						if (!isNew && willRewrite) {
+						if (willRewrite) {
 							await this.mergeFullStoreRecords(dbName, store, dbInfo);
 						}
 					}
-					await this.applyIndexedDBStructuralChanges(dbName, isNew ? 0 : dbInfo.version, deletedStores, stores, dbInfo);
 				}
 
-				await this.applyIndexedDBRecordChanges(dbName, stores, dbInfo);
+				// 全量校验：在任何写操作之前为所有对象存储生成写计划，任一校验失败都不会触碰数据库
+				const plans = stores.map(store => ({ store: store, ops: this.buildIndexedDBWritePlan(store, dbInfo) }));
+
+				if (hasStructuralChanges) {
+					// 结构变更与记录写入在同一个 versionchange 事务中完成，任一步失败整体回滚
+					await this.applyIndexedDBUpgrade(dbName, isNew ? 0 : dbInfo.version, deletedStores, stores, plans, dbInfo);
+				} else {
+					await this.applyIndexedDBRecordChanges(dbName, plans);
+				}
+
+				// 使该库的统计缓存失效
+				delete this._idbStatsCache[dbName];
 
 				// 更新当前选择状态并刷新右侧详情
 				this.currentSelection.key = dbName;
@@ -3982,61 +4139,95 @@ SOFTWARE.
 				this.renderIndexedDBEditor(dbName, this.currentSelection.dbInfo, false);
 			},
 
-			// 应用 IndexedDB 结构变更
-			applyIndexedDBStructuralChanges: function (dbName, currentVersion, deletedStores, stores, dbInfo) {
+			// 在同一个 versionchange 事务中应用结构变更与记录写入：
+			// 删除/重建对象存储、增删索引、写入记录全部在升级事务里完成，
+			// 任一步失败 abort() 后整体回滚，数据库保持旧版本原样。
+			// plans 必须已在调用前通过 buildIndexedDBWritePlan 完成全量校验。
+			applyIndexedDBUpgrade: function (dbName, currentVersion, deletedStores, stores, plans, dbInfo) {
 				return new Promise((resolve, reject) => {
 					const newVersion = currentVersion > 0 ? currentVersion + 1 : 1;
 					const request = indexedDB.open(dbName, newVersion);
+					let syncError = null;  // onupgradeneeded 内同步抛出的错误
+					let asyncError = null; // 事务内请求级异步错误（如约束冲突）
 
-					request.onerror = () => reject(new Error(`打开数据库 ${dbName} 失败`));
+					request.onerror = () => reject(syncError || asyncError || request.error || new Error(`打开数据库 ${dbName} 失败`));
 					request.onblocked = () => reject(new Error(`数据库 ${dbName} 被阻塞，请关闭其他标签页`));
 
 					request.onupgradeneeded = (event) => {
 						const db = event.target.result;
+						const tx = event.target.transaction;
 
-						// 删除对象存储（包含显式删除、重命名、重建）
-						deletedStores.forEach(storeName => {
-							if (db.objectStoreNames.contains(storeName)) {
-								db.deleteObjectStore(storeName);
-							}
-						});
-
-						// 创建/重建对象存储
-						stores.forEach(store => {
-							if (store.isNew || store.wasRecreated || (store.originalName && store.originalName !== store.newName)) {
-								if (db.objectStoreNames.contains(store.newName)) {
-									db.deleteObjectStore(store.newName);
+						try {
+							// 删除对象存储（包含显式删除、重命名、重建）
+							deletedStores.forEach(storeName => {
+								if (db.objectStoreNames.contains(storeName)) {
+									db.deleteObjectStore(storeName);
 								}
-								const options = {};
-								if (store.keyPath) options.keyPath = store.keyPath;
-								if (store.autoIncrement) options.autoIncrement = true;
-								const objectStore = db.createObjectStore(store.newName, options);
-								// 创建索引
-								(store.indexes || []).forEach(indexName => {
-									if (!objectStore.indexNames.contains(indexName)) {
-										objectStore.createIndex(indexName, indexName);
+							});
+
+							// 创建/重建对象存储
+							stores.forEach(store => {
+								if (store.isNew || store.wasRecreated || (store.originalName && store.originalName !== store.newName)) {
+									if (db.objectStoreNames.contains(store.newName)) {
+										db.deleteObjectStore(store.newName);
+									}
+									const options = {};
+									if (store.keyPath) options.keyPath = store.keyPath;
+									if (store.autoIncrement) options.autoIncrement = true;
+									const objectStore = db.createObjectStore(store.newName, options);
+									// 创建索引
+									(store.indexes || []).forEach(indexName => {
+										if (!objectStore.indexNames.contains(indexName)) {
+											objectStore.createIndex(indexName, indexName);
+										}
+									});
+								} else if (store.indexChanged && dbInfo) {
+									// 仅索引变化：在原对象存储上增删索引
+									if (db.objectStoreNames.contains(store.newName)) {
+										const objectStore = tx.objectStore(store.newName);
+										const originalStore = (dbInfo.objectStores || []).find(s => s.name === store.originalName);
+										const origIndexes = originalStore ? (originalStore.indexes || []) : [];
+										const newIndexes = store.indexes || [];
+										origIndexes.forEach(idx => {
+											if (!newIndexes.includes(idx) && objectStore.indexNames.contains(idx)) {
+												objectStore.deleteIndex(idx);
+											}
+										});
+										newIndexes.forEach(idx => {
+											if (!objectStore.indexNames.contains(idx)) {
+												objectStore.createIndex(idx, idx);
+											}
+										});
+									}
+								}
+							});
+
+							// 记录写入（同一升级事务，versionchange 事务覆盖库内全部对象存储）
+							plans.forEach(plan => {
+								if (!plan.ops.length || !db.objectStoreNames.contains(plan.store.newName)) return;
+								const objectStore = tx.objectStore(plan.store.newName);
+								plan.ops.forEach(op => {
+									if (op.type === 'delete') {
+										objectStore.delete(op.key);
+									} else if (op.type === 'add') {
+										if (op.key === undefined) objectStore.add(op.value);
+										else objectStore.add(op.value, op.key);
+									} else if (op.type === 'put') {
+										if (op.key === undefined) objectStore.put(op.value);
+										else objectStore.put(op.value, op.key);
 									}
 								});
-							} else if (store.indexChanged && dbInfo) {
-								// 仅索引变化：在原对象存储上增删索引
-								if (db.objectStoreNames.contains(store.newName)) {
-									const objectStore = event.target.transaction.objectStore(store.newName);
-									const originalStore = (dbInfo.objectStores || []).find(s => s.name === store.originalName);
-									const origIndexes = originalStore ? (originalStore.indexes || []) : [];
-									const newIndexes = store.indexes || [];
-									origIndexes.forEach(idx => {
-										if (!newIndexes.includes(idx) && objectStore.indexNames.contains(idx)) {
-											objectStore.deleteIndex(idx);
-										}
-									});
-									newIndexes.forEach(idx => {
-										if (!objectStore.indexNames.contains(idx)) {
-											objectStore.createIndex(idx, idx);
-										}
-									});
-								}
-							}
-						});
+							});
+
+							// 请求级异步错误（如唯一约束冲突）：记录原因并中止整个升级事务
+							tx.onerror = () => {
+								asyncError = tx.error || new Error('写入记录失败');
+								try { tx.abort(); } catch (e) { }
+							};
+						} catch (e) {
+							syncError = e;
+							try { tx.abort(); } catch (e2) { }
+						}
 					};
 
 					request.onsuccess = (event) => {
@@ -4145,12 +4336,22 @@ SOFTWARE.
 				// 因此把当前所有记录都当作新记录写入
 				const forceAsNew = store.isNew || store.wasRecreated || (store.originalName && store.originalName !== store.newName);
 
-				// 点号 keyPath（如 'a.b'）逐段取值
+				// 点号 keyPath（如 'a.b'）逐段取值；数组 keyPath（复合键）逐段取数组键
 				const extractKey = (value) => {
 					if (value === null || typeof value !== 'object') return undefined;
-					return String(keyPath).split('.').reduce((obj, seg) => {
+					const extractOne = (kp) => String(kp).split('.').reduce((obj, seg) => {
 						return (obj !== null && typeof obj === 'object') ? obj[seg] : undefined;
 					}, value);
+					if (Array.isArray(keyPath)) {
+						const parts = keyPath.map(kp => extractOne(kp));
+						return parts.some(p => p === undefined) ? undefined : parts;
+					}
+					return extractOne(keyPath);
+				};
+
+				// 错误信息中的键描述（二进制/循环引用键无法 JSON 化时兜底）
+				const describeKey = (key) => {
+					try { return JSON.stringify(key); } catch (e) { return String(key); }
 				};
 
 				// 计算实际使用的 key
@@ -4177,10 +4378,10 @@ SOFTWARE.
 						throw new Error('记录键不能为空');
 					}
 					if (keyPath && !autoIncrement && effectiveKey === undefined) {
-						throw new Error(`记录值缺少 Key Path "${keyPath}" 对应的字段`);
+						throw new Error(`记录值缺少 Key Path ${JSON.stringify(keyPath)} 对应的字段`);
 					}
 					if (effectiveKey !== undefined && !this.isValidIdbKey(effectiveKey)) {
-						throw new Error(`记录键无效（键必须是数字、字符串、日期、二进制数据或数组）: ${JSON.stringify(effectiveKey)}`);
+						throw new Error(`记录键无效（键必须是数字、字符串、日期、二进制数据或数组）: ${describeKey(effectiveKey)}`);
 					}
 
 					return { record, isNewRecord, effectiveKey };
@@ -4197,7 +4398,7 @@ SOFTWARE.
 							this.idbKeysEqual(other.effectiveKey, entry.effectiveKey);
 					});
 					if (duplicated) {
-						throw new Error(`记录键重复: ${JSON.stringify(entry.effectiveKey)}`);
+						throw new Error(`记录键重复: ${describeKey(entry.effectiveKey)}`);
 					}
 				});
 
@@ -4221,6 +4422,8 @@ SOFTWARE.
 				}
 
 				entries.forEach(({ record, isNewRecord, effectiveKey }) => {
+					// 未修改且未被重建的行不产生任何写操作，原始值原样保留在库中
+					if (record.unmodified && !forceAsNew) return;
 					const keyChanged = record.originalKey !== undefined && !this.idbKeysEqual(record.originalKey, effectiveKey);
 
 					if (keyPath) {
@@ -4268,8 +4471,9 @@ SOFTWARE.
 				return ops;
 			},
 
-			// 应用 IndexedDB 记录变更
-			applyIndexedDBRecordChanges: function (dbName, stores, dbInfo) {
+			// 应用 IndexedDB 记录变更（无结构变更时）。
+			// plans 必须已在调用前通过 buildIndexedDBWritePlan 完成全量校验。
+			applyIndexedDBRecordChanges: function (dbName, plans) {
 				return new Promise((resolve, reject) => {
 					const request = indexedDB.open(dbName);
 					request.onerror = () => reject(new Error(`打开数据库 ${dbName} 失败`));
@@ -4278,21 +4482,16 @@ SOFTWARE.
 					request.onsuccess = (event) => {
 						const db = event.target.result;
 
-						// 第一阶段：在内存中为所有对象存储生成写计划并完成全部校验，
-						// 任何一个校验失败都不开启写事务，确保不会产生任何写操作
-						let plans;
-						try {
-							plans = stores
-								.filter(store => db.objectStoreNames.contains(store.newName))
-								.map(store => ({ store: store, ops: this.buildIndexedDBWritePlan(store, dbInfo) }));
-						} catch (e) {
+						const activePlans = plans.filter(plan =>
+							plan.ops.length > 0 && db.objectStoreNames.contains(plan.store.newName));
+						if (activePlans.length === 0) {
 							db.close();
-							reject(e);
+							resolve();
 							return;
 						}
 
-						// 第二阶段：校验全部通过后，才逐存储开启读写事务并执行写计划
-						const storePromises = plans.map(plan => {
+						// 逐存储开启读写事务并执行预生成的写计划
+						const storePromises = activePlans.map(plan => {
 							return new Promise((res, rej) => {
 								const transaction = db.transaction(plan.store.newName, 'readwrite');
 								transaction.onerror = (e) => rej(e.target.error);
@@ -4340,10 +4539,22 @@ SOFTWARE.
 
 			// 确认删除
 			confirmDelete: async function (storageType, key) {
+				const isCurrent = !!(this.currentSelection &&
+					this.currentSelection.type === storageType && this.currentSelection.key === key);
+				// 未保存修改处理：删除正在编辑的项时修改必然随删除丢失；删除其他项时走统一三态处理
+				if (this.isDirty) {
+					if (isCurrent) {
+						if (!await confirm('正在编辑的“' + key + '”有未保存的更改，删除后这些更改将丢失。是否继续删除？')) return;
+						this.clearDirty();
+					} else {
+						const r = await this.resolveDirty();
+						if (r === 'cancel') return;
+					}
+				}
 				var alertText = "确定删除 " + key + " 吗？\n\n注意：不建议在这里删除任何数据，可能会引发很多未知问题。";
 				if (storageType == 'localStorage') alertText = alertText + "\n删除该存储项后，可能导致网站设置丢失、登录状态失效、部分功能异常。";
 				if (storageType == 'sessionStorage') alertText = alertText + "\n删除该存储项后，可能导致当前会话中的网站功能异常，通常刷新或重开标签页后可恢复。";
-				if (storageType == 'indexedDB') alertText = alertText + "\n删除该存储项后，可能导致依赖它的网站出现异常，本地数据丢失且难以恢复。";
+				if (storageType == 'indexedDB') alertText = alertText + "\n该操作会永久删除整个数据库（全部对象存储、索引与数据），无法恢复。建议先导出备份。";
 				if (storageType == 'cacheStorage') alertText = alertText + "\n删除该缓存后，可能导致缓存资源被清空，网站下次加载可能变慢；若网站的 Service Worker 逻辑不完善，可能出现短时异常。";
 				if (await confirm(alertText)) {
 					await this.doDeleteStorageItem(storageType, key);
@@ -4362,49 +4573,14 @@ SOFTWARE.
 								break;
 
 							case 'indexedDB':
-								// 打开选定的数据库并清空所有对象存储，等待清空真正完成后再继续
-								await new Promise((resolve) => {
-									const openRequest = indexedDB.open(key);
-									openRequest.onsuccess = (event) => {
-										const db = event.target.result;
-										// 获取所有对象存储名称
-										const storeNames = Array.from(db.objectStoreNames);
-										if (storeNames.length === 0) {
-											db.close();
-											resolve();
-											return;
-										}
-										let completed = 0;
-										const done = () => {
-											completed++;
-											if (completed === storeNames.length) {
-												db.close(); // 操作完成后关闭数据库
-												resolve();
-											}
-										};
-
-										// 遍历每个对象存储并清空数据
-										storeNames.forEach(storeName => {
-											const transaction = db.transaction(storeName, 'readwrite');
-											const objectStore = transaction.objectStore(storeName);
-											const clearRequest = objectStore.clear();
-
-											clearRequest.onsuccess = () => {
-												console.log(`对象存储 ${storeName} 数据已清空`);
-											};
-											clearRequest.onerror = (e) => {
-												console.error(`清空 ${storeName} 失败:`, e.target.error);
-											};
-											transaction.oncomplete = done;
-											transaction.onerror = done;
-											transaction.onabort = done;
-										});
-									};
-									openRequest.onerror = (e) => {
-										console.error(`打开数据库 ${key} 失败:`, e.target.error);
-										resolve();
-									};
+								// 真正删除整个数据库（含全部对象存储、索引与数据）
+								await new Promise((resolve, reject) => {
+									const delReq = indexedDB.deleteDatabase(key);
+									delReq.onsuccess = () => resolve();
+									delReq.onerror = () => reject(delReq.error || new Error(`删除数据库 ${key} 失败`));
+									delReq.onblocked = () => reject(new Error(`数据库 ${key} 被占用，请关闭其他标签页后重试`));
 								});
+								delete this._idbStatsCache[key];
 								break;
 
 							case 'cacheStorage':
@@ -4421,8 +4597,13 @@ SOFTWARE.
 						// 刷新用量摘要
 						this.updateStorageSpaceInfo(this.currentStorageType);
 
-						// 清除编辑器
-						await this.clearSelection();
+						// 只有删除的是当前选中项时才清空编辑器；
+						// 先清脏标记，绝不再触发“是否保存”（否则会把刚删掉的键写回）
+						if (this.currentSelection &&
+							this.currentSelection.type === storageType && this.currentSelection.key === key) {
+							this.clearDirty();
+							await this.clearSelection();
+						}
 					} catch (error) {
 						console.error('删除失败:', error);
 						alert(`删除失败: ${error.message}`);
@@ -4436,10 +4617,15 @@ SOFTWARE.
 					alert("请打开任一存储选项卡后再进行操作。");
 					return 0;
 				}
+				// 清空全部会使当前编辑器内容必然失效：先明确丢弃，避免删除后被“是否保存”写回
+				if (this.isDirty) {
+					if (!await confirm('当前编辑器中有未保存的更改，清空全部存储将丢弃这些更改。是否继续？')) return;
+					this.clearDirty();
+				}
 				var alertText = "确定清除所有 " + this.currentStorageType + " 存储吗？\n\n注意：不建议在这里删除任何数据，可能会引发很多未知问题。";
 				if (this.currentStorageType == 'localStorage') alertText = alertText + "\n删除 LocalStorage 后，可能导致网站设置丢失、登录状态失效、部分功能异常。";
 				if (this.currentStorageType == 'sessionStorage') alertText = alertText + "\n删除 SessionStorage 后，可能导致当前会话中的网站功能异常，通常刷新或重开标签页后可恢复。";
-				if (this.currentStorageType == 'indexedDB') alertText = alertText + "\n删除 IndexedDB 后，可能导致依赖它的网站出现异常，本地数据丢失且难以恢复。";
+				if (this.currentStorageType == 'indexedDB') alertText = alertText + "\n将清空所有 IndexedDB 数据库中的数据（数据库与对象存储结构保留），可能导致依赖它的网站出现异常，本地数据丢失且难以恢复。";
 				if (this.currentStorageType == 'cacheStorage') alertText = alertText + "\n删除 CacheStorage 后，可能导致缓存资源被清空，网站下次加载可能变慢；若网站的 Service Worker 逻辑不完善，可能出现短时异常。";
 				if (await confirm(alertText)) {
 					switch (this.currentStorageType) {
@@ -4503,6 +4689,7 @@ SOFTWARE.
 								console.error('浏览器不支持IndexedDB枚举');
 							}
 							console.log('已删除所有IndexedDB数据，但结构保留');
+							this._idbStatsCache = {};
 							alert(`已删除所有 IndexedDB 数据，但结构保留`);
 							break;
 
@@ -4523,7 +4710,8 @@ SOFTWARE.
 					// 刷新用量摘要
 					this.updateStorageSpaceInfo(this.currentStorageType);
 
-					// 清除编辑器
+					// 清除编辑器（脏标记已在入口处理，不会再触发“是否保存”）
+					this.clearDirty();
 					await this.clearSelection();
 				}
 				refreshLeftItems();
@@ -4531,6 +4719,8 @@ SOFTWARE.
 
 			// 更新存储空间信息
 			updateStorageSpaceInfo: async function (storageType) {
+				// 竞态令牌：快速切换类型时，过期统计结果不得覆盖新类型的显示
+				const token = ++this._spaceToken;
 				let usedSpace = 0;
 				let totalSpace = 0;
 				let usedEstimated = false;
@@ -4585,6 +4775,8 @@ SOFTWARE.
 					totalSpace = 0;
 				}
 
+				if (token !== this._spaceToken) return; // 过期结果不写入 UI
+
 				// 更新UI（估算值加"约"前缀，并在 title 中说明口径）
 				const usedSpaceEl = document.getElementById('usedSpace');
 				const totalSpaceEl = document.getElementById('totalSpace');
@@ -4604,15 +4796,22 @@ SOFTWARE.
 				return ((key ? key.length : 0) + (value ? value.length : 0)) * 2;
 			},
 
-			// 计算单个 IndexedDB 数据库的统计信息（记录数 + 字节大小，游标流式累计）
-			getDatabaseStats: function (dbName) {
+			// 计算单个 IndexedDB 数据库的统计信息（记录数 + 字节大小，游标流式累计）。
+			// 结果按库名缓存（列表/摘要/详情共用，避免重复全量扫描），
+			// 本工具内的写操作（保存/删除/导入/清空）会主动失效对应缓存。
+			getDatabaseStats: function (dbName, forceRefresh) {
+				if (!forceRefresh && this._idbStatsCache[dbName]) {
+					return Promise.resolve(this._idbStatsCache[dbName]);
+				}
 				return new Promise((resolve) => {
 					const request = indexedDB.open(dbName);
 					request.onsuccess = (event) => {
 						const db = event.target.result;
 						if (db.objectStoreNames.length === 0) {
 							db.close();
-							resolve({ count: 0, size: 0 });
+							const empty = { count: 0, size: 0 };
+							this._idbStatsCache[dbName] = empty;
+							resolve(empty);
 							return;
 						}
 						let count = 0;
@@ -4639,20 +4838,17 @@ SOFTWARE.
 								}
 							};
 
-							transaction.oncomplete = () => {
+							const finish = () => {
 								completed++;
 								if (completed === db.objectStoreNames.length) {
 									db.close();
-									resolve({ count, size });
+									const stats = { count, size };
+									this._idbStatsCache[dbName] = stats;
+									resolve(stats);
 								}
 							};
-							transaction.onerror = () => {
-								completed++;
-								if (completed === db.objectStoreNames.length) {
-									db.close();
-									resolve({ count, size });
-								}
-							};
+							transaction.oncomplete = finish;
+							transaction.onerror = finish;
 						});
 					};
 					request.onerror = () => resolve({ count: 0, size: 0 });
@@ -4782,27 +4978,6 @@ SOFTWARE.
 				}
 
 				return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
-			},
-
-			// 辅助-格式化日期
-			formatDate: function (date) {
-				const now = new Date();
-				const diff = Math.floor((now - date) / (1000 * 60)); // 分钟差
-
-				if (diff < 1) return '刚刚';
-				if (diff < 60) return `${diff}分钟前`;
-
-				const diffHours = Math.floor(diff / 60);
-				if (diffHours < 24) return `${diffHours}小时前`;
-
-				const diffDays = Math.floor(diffHours / 24);
-				if (diffDays < 7) return `${diffDays}天前`;
-
-				return date.toLocaleDateString('zh-CN', {
-					year: 'numeric',
-					month: 'short',
-					day: 'numeric'
-				});
 			}
 		};
 
