@@ -1055,7 +1055,11 @@ SOFTWARE.
 			border-color: var(--primary-color);
 		}
 
-		.editable-input:focus-visible, .editable-select:focus-visible, .editable-textarea:focus-visible, .section-title-input:focus-visible, .value-cell-textarea:focus-visible {
+		.editable-input:focus-visible,
+		.editable-select:focus-visible,
+		.editable-textarea:focus-visible,
+		.section-title-input:focus-visible,
+		.value-cell-textarea:focus-visible {
 			border: 1px solid var(--primary-color);
 		}
 
@@ -2177,6 +2181,8 @@ SOFTWARE.
 				this.initTheme();
 				// 初始化图标
 				refreshLeftItems();
+				// 检查上次离开时的未保存草稿
+				this.checkPendingDraft();
 			},
 
 			// 事件监听器
@@ -2303,6 +2309,22 @@ SOFTWARE.
 					if (this.isDirty) {
 						e.preventDefault();
 						e.returnValue = '';
+					}
+				});
+
+				// 页面离开时暂存未保存草稿：移动端在无页面交互时连续返回，
+				// 浏览器的历史干预会静默跳过脚本压入的条目、beforeunload 提示也被激活门控拦截，
+				// 保存提示和原生提示都可能不出现——草稿快照是这种路径下的最终兜底
+				window.addEventListener('pagehide', () => {
+					if (!this.isDirty || !this.currentSelection) return;
+					try {
+						const snapshot = this.collectDraftSnapshot();
+						if (snapshot) localStorage.setItem(this.DRAFT_KEY, JSON.stringify(snapshot));
+					} catch (e) {
+						// 草稿超出 localStorage 配额：清掉可能残留的旧草稿腾出空间，
+						// 写入溢出标记，下次打开时如实告知用户草稿未能保存
+						try { localStorage.removeItem(this.DRAFT_KEY); } catch (e2) { }
+						try { localStorage.setItem(this.DRAFT_OVERFLOW_KEY, String(Date.now())); } catch (e2) { }
 					}
 				});
 
@@ -2556,6 +2578,197 @@ SOFTWARE.
 				return 'cancel';
 			},
 
+			// 采集当前编辑器的草稿快照（pagehide 兜底用）
+			collectDraftSnapshot: function () {
+				const sel = this.currentSelection;
+				if (!sel) return null;
+				const base = { v: 1, ts: Date.now(), type: sel.type, key: sel.key, isNew: !!sel.isNew };
+				if (sel.type === 'localStorage' || sel.type === 'sessionStorage') {
+					const keyInput = document.getElementById('localKeyInput');
+					const valueInput = document.getElementById('localValueInput');
+					if (!keyInput || !valueInput) return null;
+					base.keyInput = keyInput.value;
+					base.valueInput = valueInput.value;
+					return base;
+				}
+				if (sel.type === 'indexedDB') {
+					const dbNameInput = document.getElementById('dbNameInput');
+					base.dbName = dbNameInput ? dbNameInput.value : sel.key;
+					base.sections = [];
+					document.querySelectorAll('.object-store-section').forEach(section => {
+						const sec = {
+							deleted: section.dataset.deleted === 'true',
+							isNew: section.dataset.isNew === 'true',
+							storeName: (section.querySelector('[data-field="store-name"]') || {}).value || '',
+							keyPath: (section.querySelector('[data-field="store-key-path"]') || {}).value || '',
+							autoIncrement: (section.querySelector('[data-field="store-auto-increment"]') || {}).value || 'false',
+							indexes: [],
+							records: []
+						};
+						section.querySelectorAll('[data-index-row]').forEach(irow => {
+							sec.indexes.push({
+								name: (irow.querySelector('[data-field="index-name"]') || {}).value || '',
+								keyPath: (irow.querySelector('[data-field="index-key-path"]') || {}).value || '',
+								unique: (irow.querySelector('[data-field="index-unique"]') || {}).value || 'false',
+								multiEntry: (irow.querySelector('[data-field="index-multi-entry"]') || {}).value || 'false'
+							});
+						});
+						section.querySelectorAll('.records-table tr[data-record-index]').forEach(row => {
+							const isNew = row.dataset.isNew === 'true';
+							const modified = row.dataset.modified === '1';
+							const deleted = row.dataset.deleted === 'true';
+							// 只保存被修改/新增/删除的行：未修改的行恢复时由数据库重新渲染，无需占用草稿空间
+							if (!isNew && !modified && !deleted) return;
+							const keyInput = row.querySelector('[data-field="record-key"]');
+							const valueInput = row.querySelector('[data-field="record-value"]');
+							sec.records.push({
+								recordIndex: row.dataset.recordIndex,
+								isNew: isNew,
+								modified: modified,
+								deleted: deleted,
+								hasKeyInput: !!keyInput,
+								key: keyInput ? keyInput.value : null,
+								hasValueInput: !!valueInput,
+								value: valueInput ? valueInput.value : null
+							});
+						});
+						base.sections.push(sec);
+					});
+					return base;
+				}
+				return null; // CacheStorage 只读，无草稿
+			},
+
+			// 把草稿快照恢复到编辑器（返回是否成功）
+			restoreDraft: async function (draft) {
+				if (draft.type === 'localStorage' || draft.type === 'sessionStorage') {
+					if (draft.isNew) {
+						await this.createNewItem(draft.type);
+					} else {
+						await this.selectStorageItem(draft.type, draft.key, null);
+					}
+					const keyInput = document.getElementById('localKeyInput');
+					const valueInput = document.getElementById('localValueInput');
+					if (!this.currentSelection || !keyInput || !valueInput) return false;
+					keyInput.value = draft.keyInput;
+					valueInput.value = draft.valueInput;
+				} else if (draft.type === 'indexedDB') {
+					if (draft.isNew) {
+						await this.createNewItem('indexedDB');
+					} else {
+						await this.selectStorageItem('indexedDB', draft.key, null);
+					}
+					if (!this.currentSelection || this.currentSelection.type !== 'indexedDB') return false;
+					const dbNameInput = document.getElementById('dbNameInput');
+					if (dbNameInput && draft.dbName !== undefined) dbNameInput.value = draft.dbName;
+					(draft.sections || []).forEach((secDraft, i) => {
+						let section = document.querySelectorAll('.object-store-section')[i];
+						if (!section) {
+							// 草稿里用户新增的 store：重新补建
+							this.addObjectStore();
+							section = document.querySelectorAll('.object-store-section')[i];
+						}
+						if (!section) return;
+						const setVal = (field, v) => {
+							const el = section.querySelector(`[data-field="${field}"]`);
+							if (el && v !== null && v !== undefined) el.value = v;
+						};
+						setVal('store-name', secDraft.storeName);
+						setVal('store-original-name', secDraft.storeName);
+						setVal('store-key-path', secDraft.keyPath);
+						setVal('store-auto-increment', secDraft.autoIncrement);
+						if (secDraft.deleted) { section.dataset.deleted = 'true'; section.style.display = 'none'; }
+						// 索引行
+						(secDraft.indexes || []).forEach((idxDraft, j) => {
+							let irow = section.querySelectorAll('[data-index-row]')[j];
+							if (!irow) {
+								this.addIndexRow(section);
+								irow = section.querySelectorAll('[data-index-row]')[j];
+							}
+							if (!irow) return;
+							const setI = (field, v) => { const el = irow.querySelector(`[data-field="${field}"]`); if (el) el.value = v; };
+							setI('index-name', idxDraft.name);
+							setI('index-key-path', idxDraft.keyPath);
+							setI('index-unique', idxDraft.unique);
+							setI('index-multi-entry', idxDraft.multiEntry);
+						});
+						// 记录行：新增的行先补建，再回填键/值并恢复修改/删除标记
+						(secDraft.records || []).forEach(recDraft => {
+							let row = section.querySelector(`tr[data-record-index="${recDraft.recordIndex}"]`);
+							if (!row && recDraft.isNew) {
+								this.addRecord(section);
+								const rows = section.querySelectorAll('.records-table tr[data-record-index]');
+								row = rows[rows.length - 1];
+							}
+							if (!row) return;
+							if (recDraft.hasKeyInput) {
+								const ki = row.querySelector('[data-field="record-key"]');
+								if (ki && recDraft.key !== null) ki.value = recDraft.key;
+							}
+							if (recDraft.hasValueInput) {
+								const vi = row.querySelector('[data-field="record-value"]');
+								if (vi && recDraft.value !== null) vi.value = recDraft.value;
+							}
+							if (recDraft.modified) row.dataset.modified = '1';
+							if (recDraft.deleted) { row.dataset.deleted = 'true'; row.style.display = 'none'; }
+						});
+					});
+				} else {
+					return false;
+				}
+				this.markDirty();
+				return true;
+			},
+
+			// 启动时检查上次离开时的未保存草稿（恢复 / 丢弃 / 稍后决定）
+			checkPendingDraft: async function () {
+				// 上次草稿因超出 localStorage 配额未能保存：如实告知后清除标记
+				try {
+					const overflowTs = localStorage.getItem(this.DRAFT_OVERFLOW_KEY);
+					if (overflowTs !== null) {
+						localStorage.removeItem(this.DRAFT_OVERFLOW_KEY);
+						const t = new Date(parseInt(overflowTs, 10) || Date.now()).toLocaleString('zh-CN');
+						alert(`上次离开页面时（${t}）有未保存的编辑内容，但其大小超出了浏览器本地存储空间，草稿未能保存。`);
+						return;
+					}
+				} catch (e) { }
+				let raw;
+				try { raw = localStorage.getItem(this.DRAFT_KEY); } catch (e) { return; }
+				if (!raw) return;
+				let draft;
+				try { draft = JSON.parse(raw); } catch (e) { draft = null; }
+				if (!draft || draft.v !== 1 || !draft.type) {
+					try { localStorage.removeItem(this.DRAFT_KEY); } catch (e) { }
+					return;
+				}
+				const typeLabel = { localStorage: 'localStorage', sessionStorage: 'sessionStorage', indexedDB: 'IndexedDB' }[draft.type] || draft.type;
+				const time = draft.ts ? new Date(draft.ts).toLocaleString('zh-CN') : '未知时间';
+				const r = await confirm3(
+					`检测到上次离开页面时有未保存的编辑草稿：\n\n类型：${typeLabel}\n项目：${draft.key || draft.dbName || '(新增)'}\n时间：${time}\n\n是否恢复继续编辑？`,
+					{ okText: '恢复', thirdText: '丢弃', cancelText: '稍后决定' }
+				);
+				if (r === 'ok') {
+					const ok = await this.restoreDraft(draft);
+					try { localStorage.removeItem(this.DRAFT_KEY); } catch (e) { }
+					alert(ok ? '草稿已恢复，请检查后保存' : '草稿恢复失败（对应的数据可能已不存在），草稿已丢弃');
+				} else if (r === 'third') {
+					try { localStorage.removeItem(this.DRAFT_KEY); } catch (e) { }
+				}
+				// 'cancel'（稍后决定）：保留草稿，下次打开再提示
+			},
+
+			// 保存成功后清掉与当前项对应的草稿
+			clearDraftIfMatches: function (sel) {
+				try {
+					const raw = localStorage.getItem(this.DRAFT_KEY);
+					if (!raw) return;
+					const d = JSON.parse(raw);
+					if (d && d.type === sel.type && (d.key === sel.key || d.isNew)) {
+						localStorage.removeItem(this.DRAFT_KEY);
+					}
+				} catch (e) { }
+			},
+
 			// 清除当前选择；有未保存修改且用户取消时返回 false（不执行清除）
 			clearSelection: async function () {
 				if (this.isDirty) {
@@ -2685,12 +2898,19 @@ SOFTWARE.
 			// 工具自身的主题设置键（带前缀，避免出现在列表/导出/统计中）
 			THEME_KEY: '__momotan_theme__',
 
+			// 未保存草稿键（pagehide 时快照当前编辑内容，下次打开提示恢复）
+			DRAFT_KEY: '__momotan_draft__',
+
+			// 草稿写入超出 localStorage 配额时的标记键（下次打开时如实告知用户）
+			DRAFT_OVERFLOW_KEY: '__momotan_draft_overflow__',
+
 			// 判断是否为工具内部键（不展示、不导出、不计入用量、清空全部时保留）。
 			// 工具只在 localStorage 里存主题与修改时间；sessionStorage 不做内部键过滤，
 			// 避免站点在同名 key 上的数据被误隐藏/误保留
 			isInternalKey: function (key, storageType) {
 				if (storageType && storageType !== 'localStorage') return false;
-				return key === this.MTIME_KEY || key === this.THEME_KEY;
+				return key === this.MTIME_KEY || key === this.THEME_KEY ||
+					key === this.DRAFT_KEY || key === this.DRAFT_OVERFLOW_KEY;
 			},
 
 			// 获取 Web Storage 对象（localStorage / sessionStorage）
@@ -4217,6 +4437,7 @@ SOFTWARE.
 						return;
 					}
 					this.clearDirty();
+					this.clearDraftIfMatches(sel);
 					// 保存后重建列表（等待异步类型渲染完成），再恢复滚动位置与选中高亮
 					const listEl = document.getElementById('storageItemsList');
 					const scrollTop = listEl ? listEl.scrollTop : 0;
