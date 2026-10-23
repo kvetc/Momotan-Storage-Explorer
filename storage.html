@@ -478,7 +478,8 @@ SOFTWARE.
 			border-bottom: 1px solid var(--border-color-dark);
 		}
 
-		.summary-actions .otherbotton, .dark-theme .summary-actions .otherbotton {
+		.summary-actions .otherbotton,
+		.dark-theme .summary-actions .otherbotton {
 			flex: 1;
 			width: auto;
 			height: 65px;
@@ -486,11 +487,11 @@ SOFTWARE.
 			/*border-bottom: none;*/
 		}
 
-		.summary-actions .otherbotton + .otherbotton {
+		.summary-actions .otherbotton+.otherbotton {
 			border-left: 1px solid var(--border-color);
 		}
 
-		.dark-theme .summary-actions .otherbotton + .otherbotton {
+		.dark-theme .summary-actions .otherbotton+.otherbotton {
 			border-left: 1px solid var(--border-color-dark);
 		}
 
@@ -819,7 +820,7 @@ SOFTWARE.
 				height: 3px;
 				width: 50px;
 				border-radius: 3px;
-				background: rgba(170,170,170,0.3)
+				background: rgba(170, 170, 170, 0.3)
 			}
 
 			.shortcutmodal.active .shortcutmodal-content,
@@ -974,12 +975,12 @@ SOFTWARE.
 			word-break: break-word;
 			transition: all 0.2s ease, height 0s;
 		}
-		
+
 		@supports (field-sizing: content) {
-    		.editable-textarea {
-        		height: auto;
-        		field-sizing: content;
-    		}
+			.editable-textarea {
+				height: auto;
+				field-sizing: content;
+			}
 		}
 
 		.section-title-input {
@@ -992,7 +993,7 @@ SOFTWARE.
 			font-size: 16px;
 			font-family: inherit;
 			outline: none;
-			min-width:0px;
+			min-width: 0px;
 			flex-shrink: 1;
 			flex: 1;
 			transition: all 0.2s ease;
@@ -1007,6 +1008,7 @@ SOFTWARE.
 			background-color: var(--light-bg);
 			border-color: var(--primary-color);
 		}
+
 		.dark-theme .section-title-input:hover {
 			background-color: var(--dark-bg);
 			border-color: var(--primary-color);
@@ -1023,7 +1025,7 @@ SOFTWARE.
 			font-size: 16px;
 			font-family: inherit;
 			outline: none;
-			min-width:0px;
+			min-width: 0px;
 			flex-shrink: 1;
 			flex: 1;
 			min-height: 120px;
@@ -1042,6 +1044,7 @@ SOFTWARE.
 		.value-cell-textarea:hover {
 			border-color: var(--primary-color);
 		}
+
 		.dark-theme .value-cell-textarea:hover {
 			border-color: var(--primary-color);
 		}
@@ -1118,6 +1121,7 @@ SOFTWARE.
 			padding: 0px 8px;
 			width: auto;
 		}
+
 		.inline-action-btn-p p {
 			font-size: 13px;
 		}
@@ -1126,6 +1130,7 @@ SOFTWARE.
 			background-color: #f5f5f5;
 			color: #454545;
 		}
+
 		.inline-action-btn.active {
 			background-color: #f2f2f2;
 			color: var(--primary-color);
@@ -1139,6 +1144,7 @@ SOFTWARE.
 			background-color: #353535;
 			color: #eee;
 		}
+
 		.dark-theme .inline-action-btn.active {
 			background-color: #3a3a3a;
 			color: var(--primary-color);
@@ -1268,6 +1274,7 @@ SOFTWARE.
 			border: 1px solid var(--border-color);
 			width: 70%;
 		}
+
 		.dark-theme .records-table .value-cell {
 			border: 1px solid var(--border-color-dark);
 		}
@@ -1410,40 +1417,50 @@ SOFTWARE.
 			.editor-content {
 				padding: 12px 10px;
 			}
+
 			.storage-type-list {
 				width: 310px;
 			}
+
 			.summary-item {
 				font-size: 15px;
 			}
+
 			.summary-label {
 				font-size: 15px;
 			}
+
 			.summary-value {
 				font-size: 15px;
 			}
+
 			.storage-detail-title {
 				font-size: 16px;
 			}
+
 			.detail-table th {
 				font-size: 14px;
 				width: 168px;
 				min-width: 168px;
 			}
+
 			.detail-table th,
 			.detail-table td {
 				padding: 10px 9px;
 			}
+
 			.editable-input {
 				width: calc(100% + 18px);
 				margin: -10px -9px;
 				padding: 10px 9px;
 			}
+
 			.editable-textarea {
 				min-height: 120px;
 				margin: -10px -9px -14px -9px;
 				padding: 10px 9px;
 			}
+
 			.editable-select {
 				min-height: calc(100% + 18px);
 			}
@@ -1458,7 +1475,9 @@ SOFTWARE.
 		/* 移动端（≤700px）：布局与 PC 完全一致；默认只显示左侧栏与列表，
 		   打开编辑器时隐藏左侧栏与列表，编辑器独占全屏（由 body.editor-open 控制） */
 		@media (max-width: 700px) {
-			.storage-type-list, .dark-theme .storage-type-list {
+
+			.storage-type-list,
+			.dark-theme .storage-type-list {
 				border-right: none;
 			}
 
@@ -1467,7 +1486,7 @@ SOFTWARE.
 			}
 
 			.storage-item-actions {
-        		opacity: 1;
+				opacity: 1;
 			}
 
 			.editor {
@@ -1498,7 +1517,6 @@ SOFTWARE.
 				min-width: 0;
 			}
 		}
-
 	</style>
 </head>
 
@@ -1557,7 +1575,8 @@ SOFTWARE.
 						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
 							stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 							<polyline points="3 6 5 6 21 6"></polyline>
-							<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+							<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+							</path>
 						</svg>
 					</div>
 					<div class="otherbotton" id="exportBtn" title="导出 (Export)">
@@ -1577,7 +1596,12 @@ SOFTWARE.
 						</svg>
 					</div>
 					<div class="otherbotton" id="helpStorageBtn" title="当前存储类型说明">
-						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+							stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<circle cx="12" cy="12" r="10"></circle>
+							<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+							<line x1="12" y1="17" x2="12.01" y2="17"></line>
+						</svg>
 					</div>
 				</div>
 			</div>
@@ -1590,21 +1614,28 @@ SOFTWARE.
 		<div class="editor">
 			<div class="editor-header" id="editorHeader" style="display: none;">
 				<button class="action-btn mobile-back-btn" id="mobileBackBtn" title="返回 (Back)">
-					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" transform="rotate(180, 0, 0)"><polyline points="8 3 17 12 8 21"/></svg>
+					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+						stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+						transform="rotate(180, 0, 0)">
+						<polyline points="8 3 17 12 8 21" />
+					</svg>
 				</button>
 				<div class="storage-detail-title" id="storageItemTitle">-</div>
 				<div class="editor-actions">
 					<button class="action-btn" id="saveEditorBtn" title="保存 (Ctrl+S)">
-						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+							stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 							<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
 							<polyline points="17 21 17 13 7 13 7 21"></polyline>
 							<polyline points="7 3 7 8 15 8"></polyline>
 						</svg>
 					</button>
 					<button class="action-btn danger" id="deleteEditorBtn" title="删除 (Delete)">
-						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+							stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 							<polyline points="3 6 5 6 21 6"></polyline>
-							<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+							<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
+							</path>
 						</svg>
 					</button>
 				</div>
@@ -3240,44 +3271,44 @@ SOFTWARE.
 							<th class="action-cell">操作</th>
 						</tr>
 						${store.data.map((record, recordIndex) => {
-							const bin = this.getRecordBinaryInfo(record.value);
-							// 只有 string/number 键的 JSON 往返无损，允许文本编辑；
-							// Date/数组/二进制键只读显示，保存时沿用内存中的原始键对象
-							const keyEditableHere = keyColumnEditable && (typeof record.key === 'string' || typeof record.key === 'number');
-							const jsonSafe = bin ? true : this.isJsonSafeValue(record.value);
-							// 二进制键 JSON 化后是 {}，显示为占位文本
-							const keyDisplay = (record.key instanceof ArrayBuffer || ArrayBuffer.isView(record.key))
-								? '[二进制键]' : JSON.stringify(record.key);
-							let valueCellHtml;
-							let rowAttr = '';
-							if (bin) {
-								// 二进制记录：显示预览与信息，不提供文本编辑，防止 JSON 化后损坏数据
-								rowAttr = ' data-binary="true"';
-								const url = URL.createObjectURL(bin.blob);
-								const blobIndex = this._binaryPreviewUrls.push(url) - 1;
-								let previewHtml = '';
-								if (bin.mime.startsWith('image/')) {
-									previewHtml = `<img class="binary-preview" src="${url}" alt="">`;
-								} else if (bin.mime.startsWith('video/')) {
-									previewHtml = `<video class="binary-preview" src="${url}" controls muted playsinline></video>`;
-								}
-								valueCellHtml = `
+					const bin = this.getRecordBinaryInfo(record.value);
+					// 只有 string/number 键的 JSON 往返无损，允许文本编辑；
+					// Date/数组/二进制键只读显示，保存时沿用内存中的原始键对象
+					const keyEditableHere = keyColumnEditable && (typeof record.key === 'string' || typeof record.key === 'number');
+					const jsonSafe = bin ? true : this.isJsonSafeValue(record.value);
+					// 二进制键 JSON 化后是 {}，显示为占位文本
+					const keyDisplay = (record.key instanceof ArrayBuffer || ArrayBuffer.isView(record.key))
+						? '[二进制键]' : JSON.stringify(record.key);
+					let valueCellHtml;
+					let rowAttr = '';
+					if (bin) {
+						// 二进制记录：显示预览与信息，不提供文本编辑，防止 JSON 化后损坏数据
+						rowAttr = ' data-binary="true"';
+						const url = URL.createObjectURL(bin.blob);
+						const blobIndex = this._binaryPreviewUrls.push(url) - 1;
+						let previewHtml = '';
+						if (bin.mime.startsWith('image/')) {
+							previewHtml = `<img class="binary-preview" src="${url}" alt="">`;
+						} else if (bin.mime.startsWith('video/')) {
+							previewHtml = `<video class="binary-preview" src="${url}" controls muted playsinline></video>`;
+						}
+						valueCellHtml = `
 									<div class="binary-value-cell">
 										${previewHtml}
 										<span class="binary-info">[二进制数据] ${this.escapeHtml(bin.mime || '未知类型')} · ${this.formatBytes(bin.size)}（不可直接编辑）</span>
 										<button class="binary-download-btn" data-action="download-binary" data-blob-index="${blobIndex}" data-mime="${this.escapeAttr(bin.mime)}">下载</button>
 									</div>`;
-							} else if (!jsonSafe) {
-								// Date/Map/Set/嵌套二进制/循环引用等 JSON 无法无损表达的值：只读，保存时保留原值
-								rowAttr = ' data-readonly-value="true"';
-								valueCellHtml = `
+					} else if (!jsonSafe) {
+						// Date/Map/Set/嵌套二进制/循环引用等 JSON 无法无损表达的值：只读，保存时保留原值
+						rowAttr = ' data-readonly-value="true"';
+						valueCellHtml = `
 									<div class="binary-value-cell">
 										<span class="binary-info">[复杂类型] 值含 Date/Map/Set/二进制/循环引用等 JSON 无法安全表达的内容（不可直接编辑，保存时保留原值）</span>
 									</div>`;
-							} else {
-								valueCellHtml = `<textarea class="value-cell-textarea" data-field="record-value">${this.escapeHtml(JSON.stringify(record.value, null, 2))}</textarea>`;
-							}
-							return `
+					} else {
+						valueCellHtml = `<textarea class="value-cell-textarea" data-field="record-value">${this.escapeHtml(JSON.stringify(record.value, null, 2))}</textarea>`;
+					}
+					return `
 							<tr data-record-index="${recordIndex}" data-original-key="${this.escapeAttr(JSON.stringify(record.key))}"${rowAttr}>
 								<td class="key-cell">
 									${keyEditableHere ? `<input type="text" class="editable-input" value="${this.escapeAttr(keyDisplay)}" data-field="record-key">` : `<span>${this.escapeHtml(keyDisplay)}</span>`}
@@ -3290,7 +3321,7 @@ SOFTWARE.
 								</td>
 							</tr>
 						`;
-						}).join('')}
+				}).join('')}
 					</table>
 				`;
 			},
@@ -4896,55 +4927,55 @@ SOFTWARE.
 			doDeleteStorageItem: async function (storageType, key) {
 
 				try {
-						switch (storageType) {
-							case 'localStorage':
-							case 'sessionStorage':
-								this.getWebStorage(storageType).removeItem(key);
-								this.removeMtime(storageType, key);
-								break;
+					switch (storageType) {
+						case 'localStorage':
+						case 'sessionStorage':
+							this.getWebStorage(storageType).removeItem(key);
+							this.removeMtime(storageType, key);
+							break;
 
-							case 'indexedDB':
-								// 真正删除整个数据库（含全部对象存储、索引与数据）
-								await new Promise((resolve, reject) => {
-									const delReq = indexedDB.deleteDatabase(key);
-									delReq.onsuccess = () => resolve();
-									delReq.onerror = () => reject(delReq.error || new Error(`删除数据库 ${key} 失败`));
-									// 请求无法中途取消，阻塞时不谎报失败：提示后继续等待，其他标签页关闭后自动继续
-									delReq.onblocked = () => { alert(`数据库 ${key} 正被其他标签页占用，操作将在其关闭后自动继续`); };
-								});
-								delete this._idbStatsCache[key];
-								break;
+						case 'indexedDB':
+							// 真正删除整个数据库（含全部对象存储、索引与数据）
+							await new Promise((resolve, reject) => {
+								const delReq = indexedDB.deleteDatabase(key);
+								delReq.onsuccess = () => resolve();
+								delReq.onerror = () => reject(delReq.error || new Error(`删除数据库 ${key} 失败`));
+								// 请求无法中途取消，阻塞时不谎报失败：提示后继续等待，其他标签页关闭后自动继续
+								delReq.onblocked = () => { alert(`数据库 ${key} 正被其他标签页占用，操作将在其关闭后自动继续`); };
+							});
+							delete this._idbStatsCache[key];
+							break;
 
-							case 'cacheStorage':
-								// 仅删除缓存本身及其资源，不影响 Service Worker 注册
-								if ('caches' in window) {
-									await caches.delete(key);
-								}
-								break;
-						}
-
-						// 只有删除的是当前选中项时才需要清空编辑器
-						const wasSelected = !!(this.currentSelection &&
-							this.currentSelection.type === storageType && this.currentSelection.key === key);
-
-						// 重新加载存储项（等待渲染完成后恢复未删除项的选中高亮）
-						const listEl = document.getElementById('storageItemsList');
-						const scrollTop = listEl ? listEl.scrollTop : 0;
-						await this.loadStorageItems(this.currentStorageType);
-						if (!wasSelected) this.restoreListSelection(scrollTop);
-
-						// 刷新用量摘要
-						this.updateStorageSpaceInfo(this.currentStorageType);
-
-						// 删除的是当前选中项：先清脏标记，绝不再触发“是否保存”（否则会把刚删掉的键写回）
-						if (wasSelected) {
-							this.clearDirty();
-							await this.clearSelection();
-						}
-					} catch (error) {
-						console.error('删除失败:', error);
-						alert(`删除失败: ${error.message}`);
+						case 'cacheStorage':
+							// 仅删除缓存本身及其资源，不影响 Service Worker 注册
+							if ('caches' in window) {
+								await caches.delete(key);
+							}
+							break;
 					}
+
+					// 只有删除的是当前选中项时才需要清空编辑器
+					const wasSelected = !!(this.currentSelection &&
+						this.currentSelection.type === storageType && this.currentSelection.key === key);
+
+					// 重新加载存储项（等待渲染完成后恢复未删除项的选中高亮）
+					const listEl = document.getElementById('storageItemsList');
+					const scrollTop = listEl ? listEl.scrollTop : 0;
+					await this.loadStorageItems(this.currentStorageType);
+					if (!wasSelected) this.restoreListSelection(scrollTop);
+
+					// 刷新用量摘要
+					this.updateStorageSpaceInfo(this.currentStorageType);
+
+					// 删除的是当前选中项：先清脏标记，绝不再触发“是否保存”（否则会把刚删掉的键写回）
+					if (wasSelected) {
+						this.clearDirty();
+						await this.clearSelection();
+					}
+				} catch (error) {
+					console.error('删除失败:', error);
+					alert(`删除失败: ${error.message}`);
+				}
 				refreshLeftItems();
 			},
 
@@ -5496,4 +5527,5 @@ SOFTWARE.
 		})();
 	</script>
 </body>
+
 </html>
