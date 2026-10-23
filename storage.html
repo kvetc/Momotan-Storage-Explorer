@@ -2,7 +2,7 @@
 Momotan Storage Explorer
 网站本地存储管理工具 / Website local storage management tool
 Copyright©2026, Aphasia
-v3.1.1 release 2026/10/23
+v3.2.0 release 2026/10/24
 基于 MIT 协议开源 / Licensed under the MIT License.
 开源地址 / Open source address: https://github.com/kvetc/Momotan-Storage-Explorer
 MIT 协议 / MIT License：
@@ -40,10 +40,7 @@ SOFTWARE.
 		// 提前应用主题：在首次渲染前给 <html> 加上 dark-theme，避免先闪浅色界面
 		(function () {
 			try {
-				// 优先读新键名；兼容旧键名 storageTheme（后续由 initTheme 迁移）
-				var t = localStorage.getItem('__momotan_theme__');
-				if (t === null) t = localStorage.getItem('storageTheme');
-				if (t === 'dark') {
+				if (localStorage.getItem('__momotan_theme__') === 'dark') {
 					document.documentElement.classList.add('dark-theme');
 				}
 			} catch (e) { }
@@ -128,6 +125,8 @@ SOFTWARE.
 			height: 100%;
 			display: flex;
 			flex-direction: column;
+			overflow-y: auto;
+			overflow-x: hidden;
 			transition: all 0.2s ease;
 		}
 
@@ -435,13 +434,16 @@ SOFTWARE.
 			height: 100%;
 			min-width: 0px;
 			padding: 0 12px 0 40px;
-			border: none;
-			/*border-right: 1px solid var(--border-color);*/
+			border: 1px solid transparent;
 			background: none;
 			color: #333;
 			font-size: 16px;
 			outline: none;
 			transition: all 0.2s ease;
+		}
+
+		.search-input:focus-visible {
+			border: 1px solid var(--primary-color);
 		}
 
 		.search-input::placeholder {
@@ -450,7 +452,6 @@ SOFTWARE.
 
 
 		.dark-theme .search-input {
-			border-color: var(--border-color-dark);
 			color: #eee;
 		}
 
@@ -511,6 +512,8 @@ SOFTWARE.
 			border-bottom: 1px solid var(--border-color);
 			-webkit-tap-highlight-color: transparent;
 			text-decoration: none;
+			flex-shrink: 0;
+			cursor: pointer;
 			transition: all 0.2s ease;
 		}
 
@@ -546,6 +549,8 @@ SOFTWARE.
 			border-bottom: 1px solid var(--border-color);
 			-webkit-tap-highlight-color: transparent;
 			text-decoration: none;
+			flex-shrink: 0;
+			cursor: pointer;
 			transition: all 0.2s ease;
 		}
 
@@ -965,6 +970,7 @@ SOFTWARE.
 			-webkit-appearance: none;
 			-moz-appearance: none;
 			appearance: none;
+			cursor: pointer;
 		}
 
 		.editable-textarea {
@@ -1047,6 +1053,10 @@ SOFTWARE.
 
 		.dark-theme .value-cell-textarea:hover {
 			border-color: var(--primary-color);
+		}
+
+		.editable-input:focus-visible, .editable-select:focus-visible, .editable-textarea:focus-visible, .section-title-input:focus-visible, .value-cell-textarea:focus-visible {
+			border: 1px solid var(--primary-color);
 		}
 
 		/* 二进制记录预览 */
@@ -1714,7 +1724,7 @@ SOFTWARE.
 				div.id = 'customAlert';
 				div.className = 'shortcutmodal';
 				div.innerHTML = `
-		            <div class="shortcutmodal-content custom-modal-content">
+		            <div class="shortcutmodal-content custom-modal-content" role="dialog" aria-modal="true" aria-label="提示">
 		                <h3 class="shortcutmodal-title">
 		                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 		                        <circle cx="12" cy="12" r="10"></circle>
@@ -1742,7 +1752,7 @@ SOFTWARE.
 				div.id = 'customConfirmModal';
 				div.className = 'shortcutmodal';
 				div.innerHTML = `
-		            <div class="shortcutmodal-content custom-modal-content">
+		            <div class="shortcutmodal-content custom-modal-content" role="dialog" aria-modal="true" aria-label="确认">
 		                <h3 class="shortcutmodal-title">
 		                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 		                        <circle cx="12" cy="12" r="10"></circle>
@@ -1779,6 +1789,21 @@ SOFTWARE.
 			function bindKeyboard(type, resolve) {
 				unbindKeyboard();
 				keydownHandler = (e) => {
+					// 焦点陷阱：Tab / Shift+Tab 在当前打开的弹窗按钮间循环，不落到弹窗之外
+					if (e.key === 'Tab') {
+						const modal = document.querySelector('.shortcutmodal.active');
+						if (!modal) return;
+						const focusables = Array.from(modal.querySelectorAll('button'))
+							.filter(b => b.style.display !== 'none' && !b.disabled);
+						if (!focusables.length) return;
+						e.preventDefault();
+						const idx = focusables.indexOf(document.activeElement);
+						const next = e.shiftKey
+							? (idx <= 0 ? focusables[focusables.length - 1] : focusables[idx - 1])
+							: (idx === focusables.length - 1 ? focusables[0] : focusables[idx + 1]);
+						next.focus();
+						return;
+					}
 					if (type === 'alert') {
 						if (e.key === ESCAPE_KEY || e.key === ENTER_KEY || e.key === SPACE_KEY) {
 							e.preventDefault();
@@ -2094,20 +2119,20 @@ SOFTWARE.
 				if (document.documentElement.classList.contains('dark-theme')) document.documentElement.style.setProperty('--now-bg-color', '#303030');
 				else document.documentElement.style.setProperty('--now-bg-color', 'white');
 
-				// 徽标计数与列表口径一致：排除工具内部键（主题、修改时间元数据）
-				const countVisibleKeys = (store) => {
+				// 徽标计数与列表口径一致：排除工具内部键（主题、修改时间元数据，仅 localStorage）
+				const countVisibleKeys = (store, storageType) => {
 					let n = 0;
 					for (let i = 0; i < store.length; i++) {
-						if (!storageManager.isInternalKey(store.key(i))) n++;
+						if (!storageManager.isInternalKey(store.key(i), storageType)) n++;
 					}
 					return n;
 				};
 
 				// LocalStorage
-				createBtnSvg("localStorageBtn", countVisibleKeys(localStorage));
+				createBtnSvg("localStorageBtn", countVisibleKeys(localStorage, 'localStorage'));
 
 				// SessionStorage
-				createBtnSvg("sessionStorageBtn", countVisibleKeys(sessionStorage));
+				createBtnSvg("sessionStorageBtn", countVisibleKeys(sessionStorage, 'sessionStorage'));
 
 				// IndexDB
 				if (window.indexedDB && window.indexedDB.databases) {
@@ -2209,12 +2234,14 @@ SOFTWARE.
 					this.showStorageHelp();
 				});
 
-				// 主题切换
-				document.getElementById('themeToggle').addEventListener('click', this.toggleTheme);
+				// 主题切换（必须包箭头函数绑定 this：
+				// 直接传 this.toggleTheme 时 this 指向 DOM 元素，THEME_KEY 读取为 undefined，
+				// 会写入名为 "undefined" 的键，主题刷新后丢失）
+				document.getElementById('themeToggle').addEventListener('click', () => this.toggleTheme());
 
 				// 关于按钮
 				document.getElementById('about').addEventListener('click', () => {
-					alert('Momotan Storage Explorer\n网站本地存储管理工具\nCopyright©2026, Aphasia\nv3.1.1 release 2026/10/23\n\n基于 MIT 协议开源 / Licensed under the MIT License.\n开源地址 / Open source address: https://github.com/kvetc/Momotan-Storage-Explorer\n\n操作说明：\nEnter/Space: 确认 / Confirm\nESC: 取消 / Cancel\nCtrl+S: 保存 / Save\nDelete: 删除 / Delete');
+					alert('Momotan Storage Explorer\n网站本地存储管理工具\nCopyright©2026, Aphasia\nv3.2.0 release 2026/10/24\n\n基于 MIT 协议开源 / Licensed under the MIT License.\n开源地址 / Open source address: https://github.com/kvetc/Momotan-Storage-Explorer\n\n操作说明：\nEnter/Space: 确认 / Confirm\nESC: 取消 / Cancel\nCtrl+S: 保存 / Save\nDelete: 删除 / Delete');
 				});
 
 				// 搜索栏
@@ -2248,6 +2275,10 @@ SOFTWARE.
 					if (window.__momotanSelfPop) { window.__momotanSelfPop = false; return; }
 					if (!document.body.classList.contains('editor-open')) return;
 					this._editorHistoryPushed = false; // 历史条目已被本次返回消费
+					// 同步重压一条编辑器历史记录：无论用户随后在“未保存”提示中选择什么，
+					// 栈上始终有一条编辑器条目拦截下一次返回，不会直接退出页面。
+					// 编辑器随后正常关闭（保存/放弃）时，popEditorHistory 会消化这条记录。
+					this.pushEditorHistory();
 					this.closeMobileEditor();
 				});
 
@@ -2327,18 +2358,7 @@ SOFTWARE.
 
 			// 初始化主题（主题类挂在 <html> 上，head 内联脚本已在首次渲染前设置，此处仅兜底同步）
 			initTheme: function () {
-				let savedTheme = localStorage.getItem(this.THEME_KEY);
-				// 旧键名 storageTheme 迁移到新键名
-				if (savedTheme === null) {
-					const legacy = localStorage.getItem('storageTheme');
-					if (legacy !== null) {
-						try {
-							localStorage.setItem(this.THEME_KEY, legacy);
-							localStorage.removeItem('storageTheme');
-						} catch (e) { }
-						savedTheme = legacy;
-					}
-				}
+				const savedTheme = localStorage.getItem(this.THEME_KEY);
 				if (savedTheme === 'dark') {
 					document.documentElement.classList.add('dark-theme');
 				} else {
@@ -2665,8 +2685,11 @@ SOFTWARE.
 			// 工具自身的主题设置键（带前缀，避免出现在列表/导出/统计中）
 			THEME_KEY: '__momotan_theme__',
 
-			// 判断是否为工具内部键（不展示、不导出、不计入用量、清空全部时保留）
-			isInternalKey: function (key) {
+			// 判断是否为工具内部键（不展示、不导出、不计入用量、清空全部时保留）。
+			// 工具只在 localStorage 里存主题与修改时间；sessionStorage 不做内部键过滤，
+			// 避免站点在同名 key 上的数据被误隐藏/误保留
+			isInternalKey: function (key, storageType) {
+				if (storageType && storageType !== 'localStorage') return false;
 				return key === this.MTIME_KEY || key === this.THEME_KEY;
 			},
 
@@ -2702,6 +2725,17 @@ SOFTWARE.
 				} catch (e) { }
 			},
 
+			// 清空某存储类型的全部修改时间记录（"清空全部"后调用，
+			// 避免站点重新写入同名 key 时显示清空前的旧时间）
+			clearMtimesFor: function (storageType) {
+				try {
+					const map = this.getMtimeMap();
+					const prefix = storageType + ':';
+					Object.keys(map).forEach(k => { if (k.startsWith(prefix)) delete map[k]; });
+					localStorage.setItem(this.MTIME_KEY, JSON.stringify(map));
+				} catch (e) { }
+			},
+
 			// 查询某存储项的修改时间（无记录返回 null）
 			getMtime: function (storageType, key) {
 				const ts = this.getMtimeMap()[storageType + ':' + key];
@@ -2718,7 +2752,7 @@ SOFTWARE.
 				let renderedCount = 0;
 				for (let i = 0; i < store.length; i++) {
 					const key = store.key(i);
-					if (this.isInternalKey(key)) continue; // 内部元数据与工具设置不展示
+					if (this.isInternalKey(key, storageType)) continue; // 内部元数据与工具设置不展示
 					const value = store.getItem(key);
 					renderedCount++;
 
@@ -3613,6 +3647,8 @@ SOFTWARE.
 						// 尝试打开数据库获取对象存储信息
 						const request = indexedDB.open(dbName);
 						request.onerror = () => reject(request.error || new Error(`打开数据库 ${dbName} 失败`));
+						// 请求无法中途取消，阻塞时提示后继续等待，避免一直“加载中”且无解释
+						request.onblocked = () => { alert(`数据库 ${dbName} 正被其他标签页占用，读取将在其关闭后自动继续`); };
 
 						request.onsuccess = (event) => {
 							const db = event.target.result;
@@ -3851,7 +3887,7 @@ SOFTWARE.
 						const items = {};
 						for (let i = 0; i < store.length; i++) {
 							const key = store.key(i);
-							if (this.isInternalKey(key)) continue; // 内部元数据与工具设置不导出
+							if (this.isInternalKey(key, type)) continue; // 内部元数据与工具设置不导出
 							items[key] = store.getItem(key);
 						}
 						this.downloadJson({
@@ -3978,7 +4014,7 @@ SOFTWARE.
 				const store = this.getWebStorage(storageType);
 				let imported = 0;
 				for (const key of Object.keys(items)) {
-					if (this.isInternalKey(key)) continue; // 内部元数据与工具设置不导入
+					if (this.isInternalKey(key, storageType)) continue; // 内部元数据与工具设置不导入
 					store.setItem(key, String(items[key]));
 					this.setMtime(storageType, key);
 					imported++;
@@ -4013,14 +4049,40 @@ SOFTWARE.
 					}
 				}
 
+				// 逐条校验记录（在删除任何现有数据库之前）：
+				// 无 keyPath 的存储，键无法还原/非法的记录必然导入失败；
+				// 有 keyPath 的存储，非对象值必然写不进去。直接报错中止，缩小失败窗口
+				for (const dbData of databases) {
+					for (const s of dbData.stores) {
+						if (!Array.isArray(s.records)) continue;
+						if (s.keyPath) {
+							const bad = s.records.some(rec => !rec || rec.value === null || typeof rec.value !== 'object');
+							if (bad) {
+								throw new Error(`对象存储 ${s.name} 含 Key Path，但存在非对象类型的记录值，无法导入`);
+							}
+						} else {
+							let invalidKeys = 0;
+							for (const rec of s.records) {
+								const key = this.deserializeIdbKey(rec && rec.key);
+								if (key === undefined || !this.isValidIdbKey(key)) invalidKeys++;
+							}
+							if (invalidKeys > 0) {
+								throw new Error(`对象存储 ${s.name} 中有 ${invalidKeys} 条记录的键无效，无法导入`);
+							}
+						}
+					}
+				}
+
 				const existingNames = (await indexedDB.databases()).map(d => d.name);
 				const overwriteNames = databases.filter(d => existingNames.includes(d.name)).map(d => d.name);
+				let backupFileName = null;
 				if (overwriteNames.length > 0) {
 					if (!await confirm(`以下数据库已存在，导入将删除并重建：\n${overwriteNames.join('\n')}\n\n将先自动下载这些数据库当前内容的备份（JSON，不含二进制记录），然后继续导入。是否继续？`)) return;
 					// 覆盖前自动备份现有库，导入失败时可用备份恢复
 					try {
 						const backup = await this.exportIndexedDBAll(overwriteNames);
-						this.downloadJson(backup.data, this.exportFileName('indexedDB-backup'));
+						backupFileName = this.exportFileName('indexedDB-backup');
+						this.downloadJson(backup.data, backupFileName);
 					} catch (e) {
 						if (!await confirm(`自动备份失败（${e.message}）。仍要继续导入吗？现有数据可能被覆盖且无法恢复。`)) return;
 					}
@@ -4096,6 +4158,9 @@ SOFTWARE.
 					: `导入部分失败：成功写入 ${importedRecords} 条记录，${failedCount} 个对象存储失败`;
 				if (skippedRecords > 0) msg += `\n${skippedRecords} 条记录因键无效或数据不合法被跳过`;
 				if (storeResults.length > 0) msg += '\n\n' + storeResults.join('\n');
+				if (failedCount > 0 && backupFileName) {
+					msg += `\n\n恢复建议：可重新导入刚下载的备份文件 ${backupFileName} 恢复被覆盖的数据库（注意：备份不含二进制与复杂类型记录，这部分无法恢复）`;
+				}
 				msg += '\n\n注意：导出不包含二进制记录，不能作为完整备份';
 				alert(msg);
 			},
@@ -4107,6 +4172,8 @@ SOFTWARE.
 					const records = Array.isArray(storeData.records) ? storeData.records : [];
 					const openReq = indexedDB.open(dbName);
 					openReq.onerror = () => reject(openReq.error || new Error(`打开数据库 ${dbName} 失败`));
+					// 请求无法中途取消，阻塞时提示后继续等待
+					openReq.onblocked = () => { alert(`数据库 ${dbName} 正被其他标签页占用，导入将在其关闭后自动继续`); };
 					openReq.onsuccess = (event) => {
 						const db = event.target.result;
 						let queued = 0;
@@ -4834,6 +4901,8 @@ SOFTWARE.
 
 			// 应用 IndexedDB 记录变更（无结构变更时）。
 			// plans 必须已在调用前通过 buildIndexedDBWritePlan 完成全量校验。
+			// 所有对象存储的写操作放在同一个事务中：任一条写失败整体回滚，
+			// 跨 store 原子，与结构变更路径（单 versionchange 事务）行为一致。
 			applyIndexedDBRecordChanges: function (dbName, plans) {
 				return new Promise((resolve, reject) => {
 					const request = indexedDB.open(dbName);
@@ -4852,49 +4921,51 @@ SOFTWARE.
 							return;
 						}
 
-						// 逐存储开启读写事务并执行预生成的写计划
-						const storePromises = activePlans.map(plan => {
-							return new Promise((res, rej) => {
-								const transaction = db.transaction(plan.store.newName, 'readwrite');
-								transaction.onerror = (e) => rej(e.target.error);
-								transaction.onabort = () => rej(transaction.error || new Error('事务已中止，可能存在重复键或其他约束错误'));
-								transaction.oncomplete = () => res();
-
-								const objectStore = transaction.objectStore(plan.store.newName);
-
-								try {
-									plan.ops.forEach(op => {
-										if (op.type === 'delete') {
-											objectStore.delete(op.key);
-										} else if (op.type === 'add') {
-											if (op.key === undefined) {
-												objectStore.add(op.value);
-											} else {
-												objectStore.add(op.value, op.key);
-											}
-										} else if (op.type === 'put') {
-											if (op.key === undefined) {
-												objectStore.put(op.value);
-											} else {
-												objectStore.put(op.value, op.key);
-											}
-										}
-									});
-								} catch (e) {
-									// 执行期异常：中止事务回滚全部写入，避免只写了一半
-									try { transaction.abort(); } catch (e2) { }
-									rej(e);
-								}
-							});
-						});
-
-						Promise.all(storePromises).then(() => {
-							db.close();
-							resolve();
-						}).catch(err => {
+						// 一个事务覆盖全部待写对象存储，任一条失败 onerror/onabort → 整体回滚
+						let settled = false;
+						const storeNames = activePlans.map(p => p.store.newName);
+						const transaction = db.transaction(storeNames, 'readwrite');
+						const fail = (err) => {
+							if (settled) return;
+							settled = true;
 							db.close();
 							reject(err);
-						});
+						};
+						transaction.onerror = () => fail(transaction.error || new Error('写入失败'));
+						transaction.onabort = () => fail(transaction.error || new Error('事务已中止，可能存在重复键或其他约束错误'));
+						transaction.oncomplete = () => {
+							if (settled) return;
+							settled = true;
+							db.close();
+							resolve();
+						};
+
+						try {
+							activePlans.forEach(plan => {
+								const objectStore = transaction.objectStore(plan.store.newName);
+								plan.ops.forEach(op => {
+									if (op.type === 'delete') {
+										objectStore.delete(op.key);
+									} else if (op.type === 'add') {
+										if (op.key === undefined) {
+											objectStore.add(op.value);
+										} else {
+											objectStore.add(op.value, op.key);
+										}
+									} else if (op.type === 'put') {
+										if (op.key === undefined) {
+											objectStore.put(op.value);
+										} else {
+											objectStore.put(op.value, op.key);
+										}
+									}
+								});
+							});
+						} catch (e) {
+							// 执行期异常：中止事务回滚全部写入，避免只写了一半
+							try { transaction.abort(); } catch (e2) { }
+							fail(e);
+						}
 					};
 				});
 			},
@@ -5004,9 +5075,11 @@ SOFTWARE.
 							const webStore = this.getWebStorage(this.currentStorageType);
 							for (let i = webStore.length - 1; i >= 0; i--) {
 								const k = webStore.key(i);
-								if (this.isInternalKey(k)) continue;
+								if (this.isInternalKey(k, this.currentStorageType)) continue;
 								webStore.removeItem(k);
 							}
+							// 清掉该存储类型的修改时间记录，避免站点重写同名 key 时显示旧时间
+							this.clearMtimesFor(this.currentStorageType);
 							break;
 
 						case 'indexedDB':
@@ -5023,6 +5096,8 @@ SOFTWARE.
 										};
 										// 打开数据库
 										const request = indexedDB.open(dbInfo.name, dbInfo.version);
+										// 请求无法中途取消，阻塞时提示后继续等待
+										request.onblocked = () => { alert(`数据库 ${dbInfo.name} 正被其他标签页占用，清空将在其关闭后自动继续`); };
 										request.onsuccess = (event) => {
 											const db = event.target.result;
 											const storeNames = Array.from(db.objectStoreNames);
@@ -5124,7 +5199,7 @@ SOFTWARE.
 							// 已用空间（按 UTF-16 码元计量，与浏览器口径一致；不含工具内部键）
 							for (let i = 0; i < store.length; i++) {
 								const key = store.key(i);
-								if (this.isInternalKey(key)) continue;
+								if (this.isInternalKey(key, storageType)) continue;
 								const value = store.getItem(key);
 								usedSpace += this.localStorageEntrySize(key, value);
 							}
@@ -5194,6 +5269,8 @@ SOFTWARE.
 				}
 				return new Promise((resolve) => {
 					const request = indexedDB.open(dbName);
+					// 请求无法中途取消，阻塞时提示后继续等待
+					request.onblocked = () => { alert(`数据库 ${dbName} 正被其他标签页占用，读取将在其关闭后自动继续`); };
 					request.onsuccess = (event) => {
 						const db = event.target.result;
 						if (db.objectStoreNames.length === 0) {
