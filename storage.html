@@ -40,7 +40,10 @@ SOFTWARE.
 		// 提前应用主题：在首次渲染前给 <html> 加上 dark-theme，避免先闪浅色界面
 		(function () {
 			try {
-				if (localStorage.getItem('storageTheme') === 'dark') {
+				// 优先读新键名；兼容旧键名 storageTheme（后续由 initTheme 迁移）
+				var t = localStorage.getItem('__momotan_theme__');
+				if (t === null) t = localStorage.getItem('storageTheme');
+				if (t === 'dark') {
 					document.documentElement.classList.add('dark-theme');
 				}
 			} catch (e) { }
@@ -1352,6 +1355,13 @@ SOFTWARE.
 			opacity: 1;
 		}
 
+		/* 触屏设备（平板/触控笔记本）没有 hover，列表操作按钮常显 */
+		@media (hover: none) {
+			.storage-item-actions {
+				opacity: 1;
+			}
+		}
+
 		@media (max-width: 900px) {
 			.storage-type-list {
 				width: 310px;
@@ -1984,13 +1994,20 @@ SOFTWARE.
 				if (document.documentElement.classList.contains('dark-theme')) document.documentElement.style.setProperty('--now-bg-color', '#303030');
 				else document.documentElement.style.setProperty('--now-bg-color', 'white');
 
+				// 徽标计数与列表口径一致：排除工具内部键（主题、修改时间元数据）
+				const countVisibleKeys = (store) => {
+					let n = 0;
+					for (let i = 0; i < store.length; i++) {
+						if (!storageManager.isInternalKey(store.key(i))) n++;
+					}
+					return n;
+				};
+
 				// LocalStorage
-				if (localStorage.length) createBtnSvg("localStorageBtn", localStorage.length);
-				else createBtnSvg("localStorageBtn", 0);
+				createBtnSvg("localStorageBtn", countVisibleKeys(localStorage));
 
 				// SessionStorage
-				if (sessionStorage.length) createBtnSvg("sessionStorageBtn", sessionStorage.length);
-				else createBtnSvg("sessionStorageBtn", 0);
+				createBtnSvg("sessionStorageBtn", countVisibleKeys(sessionStorage));
 
 				// IndexDB
 				if (window.indexedDB && window.indexedDB.databases) {
@@ -2210,7 +2227,18 @@ SOFTWARE.
 
 			// 初始化主题（主题类挂在 <html> 上，head 内联脚本已在首次渲染前设置，此处仅兜底同步）
 			initTheme: function () {
-				const savedTheme = localStorage.getItem('storageTheme');
+				let savedTheme = localStorage.getItem(this.THEME_KEY);
+				// 旧键名 storageTheme 迁移到新键名
+				if (savedTheme === null) {
+					const legacy = localStorage.getItem('storageTheme');
+					if (legacy !== null) {
+						try {
+							localStorage.setItem(this.THEME_KEY, legacy);
+							localStorage.removeItem('storageTheme');
+						} catch (e) { }
+						savedTheme = legacy;
+					}
+				}
 				if (savedTheme === 'dark') {
 					document.documentElement.classList.add('dark-theme');
 				} else {
@@ -2222,10 +2250,10 @@ SOFTWARE.
 			toggleTheme: function () {
 				document.documentElement.classList.toggle('dark-theme');
 				if (document.documentElement.classList.contains('dark-theme')) {
-					localStorage.setItem('storageTheme', 'dark');
+					localStorage.setItem(this.THEME_KEY, 'dark');
 					document.documentElement.style.setProperty('--now-bg-color', '#303030');
 				} else {
-					localStorage.setItem('storageTheme', 'light');
+					localStorage.setItem(this.THEME_KEY, 'light');
 					document.documentElement.style.setProperty('--now-bg-color', 'white');
 				}
 			},
@@ -2237,6 +2265,10 @@ SOFTWARE.
 
 				// 更新当前存储类型
 				this.currentStorageType = storageType;
+				// 进入 IndexedDB 标签时强制刷新统计缓存，避免其他标签页的修改一直显示旧值
+				if (storageType === 'indexedDB') {
+					this._idbStatsCache = Object.create(null);
+				}
 				document.getElementById('storageTypeLabel').textContent =
 					storageType === 'localStorage' ? 'localStorage' :
 						storageType === 'sessionStorage' ? 'sessionStorage' :
@@ -2356,8 +2388,9 @@ SOFTWARE.
 			_selectionToken: 0,
 			_spaceToken: 0,
 
-			// IndexedDB 统计缓存（按库名），save/delete/import/clearAll 时失效
-			_idbStatsCache: {},
+			// IndexedDB 统计缓存（按库名，无原型对象防止 __proto__ 等特殊库名取到原型成员），
+			// save/delete/import/clearAll 时失效，进入 IndexedDB 标签时整体刷新
+			_idbStatsCache: Object.create(null),
 
 			// 标记编辑器为未保存状态
 			markDirty: function () {
@@ -2474,7 +2507,7 @@ SOFTWARE.
 				try { history.back(); } catch (e) { }
 			},
 
-			// 加载存储项
+			// 加载存储项（返回 Promise：异步类型（IndexedDB/CacheStorage）在列表渲染完成后兑现）
 			loadStorageItems: function (storageType) {
 				const token = ++this._loadToken;
 				const storageItemsList = document.getElementById('storageItemsList');
@@ -2484,22 +2517,35 @@ SOFTWARE.
 				storageItemsList.classList.toggle('compact-items',
 					storageType === 'localStorage' || storageType === 'sessionStorage');
 
+				let loadPromise;
 				switch (storageType) {
 					case 'localStorage':
 					case 'sessionStorage':
-						this.loadWebStorageItems(storageType);
+						loadPromise = this.loadWebStorageItems(storageType);
 						break;
 					case 'indexedDB':
-						this.loadIndexedDBItems(token);
+						loadPromise = this.loadIndexedDBItems(token);
 						break;
 					case 'cacheStorage':
-						this.loadCacheStorageItems(token);
+						loadPromise = this.loadCacheStorageItems(token);
 						break;
 				}
 
 				// 应用当前搜索过滤
 				const searchInput = document.getElementById('storageSearchInput');
 				this.filterStorageItems(searchInput ? searchInput.value : '');
+				return Promise.resolve(loadPromise);
+			},
+
+			// 列表重建后恢复滚动位置与当前选中项的高亮
+			restoreListSelection: function (scrollTop) {
+				const listEl = document.getElementById('storageItemsList');
+				if (listEl && typeof scrollTop === 'number') listEl.scrollTop = scrollTop;
+				if (!this.currentSelection) return;
+				const sel = this.currentSelection;
+				const item = Array.from(document.querySelectorAll('.storage-item')).find(i =>
+					(i.dataset.key === sel.key || i.dataset.name === sel.key) && i.dataset.type === sel.type);
+				if (item) item.classList.add('selected');
 			},
 
 			// 操作按钮 SVG
@@ -2515,6 +2561,14 @@ SOFTWARE.
 
 			// 内部元数据键（记录各存储项的修改时间），列表与导出中跳过
 			MTIME_KEY: '__momotan_storage_mtimes__',
+
+			// 工具自身的主题设置键（带前缀，避免出现在列表/导出/统计中）
+			THEME_KEY: '__momotan_theme__',
+
+			// 判断是否为工具内部键（不展示、不导出、不计入用量、清空全部时保留）
+			isInternalKey: function (key) {
+				return key === this.MTIME_KEY || key === this.THEME_KEY;
+			},
 
 			// 获取 Web Storage 对象（localStorage / sessionStorage）
 			getWebStorage: function (storageType) {
@@ -2564,7 +2618,7 @@ SOFTWARE.
 				let renderedCount = 0;
 				for (let i = 0; i < store.length; i++) {
 					const key = store.key(i);
-					if (key === this.MTIME_KEY) continue; // 内部元数据不展示
+					if (this.isInternalKey(key)) continue; // 内部元数据与工具设置不展示
 					const value = store.getItem(key);
 					renderedCount++;
 
@@ -2608,6 +2662,7 @@ SOFTWARE.
 				// 应用当前搜索过滤
 				const searchInput = document.getElementById('storageSearchInput');
 				this.filterStorageItems(searchInput ? searchInput.value : '');
+				return Promise.resolve();
 			},
 
 			// 加载IndexedDB
@@ -2617,7 +2672,7 @@ SOFTWARE.
 
 				// 获取所有IndexedDB数据库
 				if (window.indexedDB && window.indexedDB.databases) {
-					indexedDB.databases().then(databases => {
+					return indexedDB.databases().then(databases => {
 						if (loadToken !== this._loadToken) return; // 已切换到其他类型，丢弃过期结果
 						storageItemsList.innerHTML = '';
 
@@ -2672,6 +2727,7 @@ SOFTWARE.
 					});
 				} else {
 					storageItemsList.innerHTML = '<div class="placeholder2">您的浏览器不支持IndexedDB数据库枚举</div>';
+					return Promise.resolve();
 				}
 			},
 
@@ -2682,7 +2738,7 @@ SOFTWARE.
 
 				// 获取所有CacheStorage
 				if ('caches' in window) {
-					caches.keys().then(cacheNames => {
+					return caches.keys().then(cacheNames => {
 						if (loadToken !== this._loadToken) return; // 已切换到其他类型，丢弃过期结果
 						storageItemsList.innerHTML = '';
 
@@ -2753,6 +2809,7 @@ SOFTWARE.
 					});
 				} else {
 					storageItemsList.innerHTML = '<div class="placeholder2">您的浏览器不支持CacheStorage</div>';
+					return Promise.resolve();
 				}
 			},
 
@@ -2766,6 +2823,10 @@ SOFTWARE.
 					if (!canProceed) return;
 				}
 				if (token !== this._selectionToken) return;
+
+				// 加载期间先置空：加载失败时 currentSelection 不会残留指向上一项，
+				// 避免用户在错误页面上点保存而误保存旧项（保存按钮对此情况为空操作）
+				this.currentSelection = null;
 
 				// 清除之前的选择
 				const selectedItems = document.querySelectorAll('.storage-item.selected');
@@ -2815,6 +2876,7 @@ SOFTWARE.
 							break;
 					}
 				} catch (error) {
+					if (token !== this._selectionToken) return; // 过期请求的失败信息也不覆盖新选择
 					document.getElementById('editorContent').innerHTML = `<div class="placeholder">获取详细信息失败: ${this.escapeHtml(error.message)}</div>`;
 				}
 			},
@@ -2966,7 +3028,7 @@ SOFTWARE.
 				if (dbInfo.objectStores && dbInfo.objectStores.length > 0) {
 					objectStoresHtml = dbInfo.objectStores.map((store, index) => {
 						const recordsHtml = this.renderRecordsTable(store, index);
-						const indexesStr = store.indexes && store.indexes.length ? this.escapeHtml(store.indexes.join(', ')) : '';
+						const indexesHtml = this.renderIndexesEditor(store.indexes || []);
 						return `
 							<div class="detail-section object-store-section" data-store-index="${index}" data-original-name="${this.escapeAttr(store.name)}" data-key-path="${store.keyPath !== null && store.keyPath !== undefined ? this.escapeAttr(JSON.stringify(store.keyPath)) : ''}" data-auto-increment="${store.autoIncrement ? 'true' : 'false'}">
 								<div class="detail-section-title">
@@ -2983,7 +3045,7 @@ SOFTWARE.
 											<option value="true" ${store.autoIncrement ? 'selected' : ''}>是</option>
 										</select>
 									</td></tr>
-									<tr><th>索引 / Indexes</th><td><input type="text" class="editable-input" value="${indexesStr}" placeholder="多个索引用逗号分隔" data-field="store-indexes"></td></tr>
+									<tr><th>索引 / Indexes</th><td class="indexes-cell">${indexesHtml}<button class="add-btn" data-action="add-index">${this.addIconSvg} 新增索引</button></td></tr>
 									<tr><th>记录数</th><td data-field="record-count">${store.data ? store.data.length : 0}</td></tr>
 								</table>
 								<div class="records-container" style="display:none; margin-top:12px;">
@@ -3029,6 +3091,58 @@ SOFTWARE.
 						document.getElementById('storageItemTitle').textContent = '（新增）' + dbNameInput.value;
 					});
 				}
+			},
+
+			// 渲染结构化索引编辑器（名称 + 键路径 + 唯一 + 多值，保留完整元数据，不用逗号字符串）
+			renderIndexesEditor: function (indexes) {
+				const rows = indexes.map(idx => this.renderIndexRowHtml(idx)).join('');
+				const table = indexes.length
+					? `<table class="records-table indexes-table">
+						<tr><th>名称</th><th>键路径</th><th>唯一</th><th>多值</th><th class="action-cell"></th></tr>
+						${rows}
+					</table>`
+					: '<div class="empty-records">该对象存储暂无索引</div>';
+				return table;
+			},
+
+			// 单行索引编辑行
+			renderIndexRowHtml: function (idx) {
+				const kpText = idx.keyPath === null || idx.keyPath === undefined ? '' :
+					(Array.isArray(idx.keyPath) ? JSON.stringify(idx.keyPath) : idx.keyPath);
+				return `
+					<tr data-index-row="true">
+						<td><input type="text" class="editable-input" value="${this.escapeAttr(idx.name || '')}" placeholder="索引名" data-field="index-name"></td>
+						<td><input type="text" class="editable-input" value="${this.escapeAttr(kpText)}" placeholder="如 a.b，复合用 [&quot;a&quot;,&quot;b&quot;]" data-field="index-key-path"></td>
+						<td><select class="editable-input editable-select" data-field="index-unique">
+							<option value="false" ${idx.unique ? '' : 'selected'}>否</option>
+							<option value="true" ${idx.unique ? 'selected' : ''}>是</option>
+						</select></td>
+						<td><select class="editable-input editable-select" data-field="index-multi-entry">
+							<option value="false" ${idx.multiEntry ? '' : 'selected'}>否</option>
+							<option value="true" ${idx.multiEntry ? 'selected' : ''}>是</option>
+						</select></td>
+						<td class="action-cell"><button class="inline-action-btn danger" title="删除索引" data-action="delete-index">${this.deleteIconSvg}</button></td>
+					</tr>
+				`;
+			},
+
+			// 新增索引行
+			addIndexRow: function (storeSection) {
+				this.markDirty();
+				const cell = storeSection.querySelector('.indexes-cell');
+				if (!cell) return;
+				const emptyMsg = cell.querySelector('.empty-records');
+				if (emptyMsg) emptyMsg.remove();
+				let table = cell.querySelector('.indexes-table');
+				if (!table) {
+					table = document.createElement('table');
+					table.className = 'records-table indexes-table';
+					table.innerHTML = '<tr><th>名称</th><th>键路径</th><th>唯一</th><th>多值</th><th class="action-cell"></th></tr>';
+					cell.insertBefore(table, cell.querySelector('[data-action="add-index"]'));
+				}
+				const tbody = document.createElement('tbody');
+				tbody.innerHTML = this.renderIndexRowHtml({ name: '', keyPath: '', unique: false, multiEntry: false });
+				while (tbody.firstChild) table.appendChild(tbody.firstChild);
 			},
 
 			// 渲染记录表格
@@ -3128,6 +3242,25 @@ SOFTWARE.
 				} else if (action === 'add-record') {
 					e.preventDefault();
 					this.addRecord(storeSection);
+				} else if (action === 'add-index') {
+					e.preventDefault();
+					this.addIndexRow(storeSection);
+				} else if (action === 'delete-index') {
+					e.preventDefault();
+					this.markDirty();
+					const indexRow = btn.closest('tr');
+					if (indexRow) indexRow.remove();
+					// 索引全部删完时恢复空提示
+					const cell = btn.closest('.indexes-cell') || (storeSection && storeSection.querySelector('.indexes-cell'));
+					const table = cell && cell.querySelector('.indexes-table');
+					if (cell && table && !table.querySelector('tr[data-index-row]')) {
+						table.remove();
+						const addBtn = cell.querySelector('[data-action="add-index"]');
+						const empty = document.createElement('div');
+						empty.className = 'empty-records';
+						empty.textContent = '该对象存储暂无索引';
+						cell.insertBefore(empty, addBtn);
+					}
 				} else if (action === 'delete-record') {
 					e.preventDefault();
 					this.deleteRecordRow(btn);
@@ -3184,7 +3317,7 @@ SOFTWARE.
 					this.markDirty();
 					const section = e.target.closest('.object-store-section');
 					if (section) section.dataset.autoIncrement = e.target.value;
-				} else if (field === 'store-indexes') {
+				} else if (['index-name', 'index-key-path', 'index-unique', 'index-multi-entry'].includes(field)) {
 					this.markDirty();
 				} else if (['record-key', 'record-value'].includes(field)) {
 					this.markDirty();
@@ -3219,7 +3352,7 @@ SOFTWARE.
 								<option value="true">是</option>
 							</select>
 						</td></tr>
-						<tr><th>索引 / Indexes</th><td><input type="text" class="editable-input" value="" placeholder="多个索引用逗号分隔" data-field="store-indexes"></td></tr>
+						<tr><th>索引 / Indexes</th><td class="indexes-cell"><div class="empty-records">该对象存储暂无索引</div><button class="add-btn" data-action="add-index">${this.addIconSvg} 新增索引</button></td></tr>
 						<tr><th>记录数</th><td data-field="record-count">0</td></tr>
 					</table>
 					<div class="records-container" style="display:block; margin-top:12px;">
@@ -3322,12 +3455,15 @@ SOFTWARE.
 					if (value instanceof ArrayBuffer) {
 						buffer = value;
 					} else if (ArrayBuffer.isView(value)) {
-						buffer = value.buffer;
+						// 视图可能只覆盖底层 buffer 的一部分，必须按 byteOffset/byteLength 切片，
+						// 否则预览/下载的会是整个 buffer 而不是视图指向的那几个字节
+						buffer = value.buffer.slice(value.byteOffset, value.byteOffset + value.byteLength);
 					} else if (value.buffer instanceof ArrayBuffer) {
 						buffer = value.buffer;
 						mime = typeof value.mime === 'string' ? value.mime : '';
 					} else if (ArrayBuffer.isView(value.buffer)) {
-						buffer = value.buffer.buffer;
+						const v = value.buffer;
+						buffer = v.buffer.slice(v.byteOffset, v.byteOffset + v.byteLength);
 						mime = typeof value.mime === 'string' ? value.mime : '';
 					}
 					if (!buffer) return null;
@@ -3380,7 +3516,11 @@ SOFTWARE.
 							Array.from(db.objectStoreNames).forEach(storeName => {
 								const transaction = db.transaction(storeName, 'readonly');
 								const objectStore = transaction.objectStore(storeName);
-								const indexes = Array.from(objectStore.indexNames);
+								// 完整索引元数据（名称/键路径/唯一/多值），供编辑器与重建时保留语义
+								const indexes = Array.from(objectStore.indexNames).map(idxName => {
+									const idx = objectStore.index(idxName);
+									return { name: idx.name, keyPath: idx.keyPath, unique: !!idx.unique, multiEntry: !!idx.multiEntry };
+								});
 
 								// 获取对象存储的数据（最多1000条），同时统计总大小和总记录数
 								const data = [];
@@ -3402,12 +3542,22 @@ SOFTWARE.
 									// 阻止事务因游标失败而中止，在同一（未失败的）事务上回退到 getAll/getAllKeys
 									e.preventDefault();
 									e.stopPropagation();
-									// 点号 keyPath（如 'a.b'）逐段取值
+									// 清空游标已积累的部分结果，避免与 getAll 结果重复
+									data.length = 0;
+									storeTotalBytes = 0;
+									storeTotalRecords = 0;
+									// 点号 keyPath（如 'a.b'）逐段取值；数组 keyPath（复合键）逐段取数组键
 									const getKeyByPath = (value) => {
-										if (!objectStore.keyPath) return undefined;
-										return String(objectStore.keyPath).split('.').reduce((obj, seg) => {
+										const kp = objectStore.keyPath;
+										if (!kp || value === null || typeof value !== 'object') return undefined;
+										const extractOne = (p) => String(p).split('.').reduce((obj, seg) => {
 											return (obj !== null && typeof obj === 'object') ? obj[seg] : undefined;
 										}, value);
+										if (Array.isArray(kp)) {
+											const parts = kp.map(extractOne);
+											return parts.some(p => p === undefined) ? undefined : parts;
+										}
+										return extractOne(kp);
 									};
 									// 限制读取上限，避免大库一次性全部读入内存
 									const countRequest = objectStore.count();
@@ -3571,7 +3721,8 @@ SOFTWARE.
 				}
 				if (s.t === 'array' && Array.isArray(s.v)) {
 					const items = s.v.map(i => this.deserializeIdbKey(i));
-					if (items.length === 0 || items.some(i => i === undefined)) return undefined;
+					// 空数组是合法的 IndexedDB 键，允许还原
+					if (items.some(i => i === undefined)) return undefined;
 					return items;
 				}
 				return undefined;
@@ -3586,7 +3737,7 @@ SOFTWARE.
 						const items = {};
 						for (let i = 0; i < store.length; i++) {
 							const key = store.key(i);
-							if (key === this.MTIME_KEY) continue; // 内部元数据不导出
+							if (this.isInternalKey(key)) continue; // 内部元数据与工具设置不导出
 							items[key] = store.getItem(key);
 						}
 						this.downloadJson({
@@ -3713,7 +3864,7 @@ SOFTWARE.
 				const store = this.getWebStorage(storageType);
 				let imported = 0;
 				for (const key of Object.keys(items)) {
-					if (key === this.MTIME_KEY) continue; // 内部元数据不导入
+					if (this.isInternalKey(key)) continue; // 内部元数据与工具设置不导入
 					store.setItem(key, String(items[key]));
 					this.setMtime(storageType, key);
 					imported++;
@@ -3722,11 +3873,34 @@ SOFTWARE.
 			},
 
 			// 导入 IndexedDB（同名数据库经确认、自动备份后删除重建；兼容 v1/v2 导出格式）
+			// 在任何删除/写入之前先完整校验文件结构；每个对象存储的写入独立报告成功/失败，绝不假报成功。
 			importIndexedDBData: async function (data) {
 				const databases = Array.isArray(data.databases) ? data.databases : [];
 				if (databases.length === 0) throw new Error('文件格式不正确：databases 为空');
+
+				// 前置结构校验：文件形状有问题时直接报错，不触碰任何现有数据库
+				for (const dbData of databases) {
+					if (!dbData || typeof dbData.name !== 'string' || !dbData.name) {
+						throw new Error('文件格式不正确：存在无效的数据库条目（缺少 name）');
+					}
+					if (!Array.isArray(dbData.stores)) {
+						throw new Error(`数据库 ${dbData.name} 格式不正确：缺少 stores 数组`);
+					}
+					for (const s of dbData.stores) {
+						if (!s || typeof s.name !== 'string' || !s.name) {
+							throw new Error(`数据库 ${dbData.name} 格式不正确：存在无效的对象存储（缺少 name）`);
+						}
+						if (s.records !== undefined && !Array.isArray(s.records)) {
+							throw new Error(`对象存储 ${s.name} 格式不正确：records 不是数组`);
+						}
+						if (s.indexes !== undefined && !Array.isArray(s.indexes)) {
+							throw new Error(`对象存储 ${s.name} 格式不正确：indexes 不是数组`);
+						}
+					}
+				}
+
 				const existingNames = (await indexedDB.databases()).map(d => d.name);
-				const overwriteNames = databases.filter(d => d && existingNames.includes(d.name)).map(d => d.name);
+				const overwriteNames = databases.filter(d => existingNames.includes(d.name)).map(d => d.name);
 				if (overwriteNames.length > 0) {
 					if (!await confirm(`以下数据库已存在，导入将删除并重建：\n${overwriteNames.join('\n')}\n\n将先自动下载这些数据库当前内容的备份（JSON，不含二进制记录），然后继续导入。是否继续？`)) return;
 					// 覆盖前自动备份现有库，导入失败时可用备份恢复
@@ -3737,85 +3911,113 @@ SOFTWARE.
 						if (!await confirm(`自动备份失败（${e.message}）。仍要继续导入吗？现有数据可能被覆盖且无法恢复。`)) return;
 					}
 				}
+
 				let importedRecords = 0;
 				let skippedRecords = 0;
+				const storeResults = [];
 				for (const dbData of databases) {
-					if (!dbData || typeof dbData.name !== 'string' || !dbData.name) continue;
 					// 删除同名旧库
 					if (existingNames.includes(dbData.name)) {
 						await new Promise((resolve, reject) => {
 							const delReq = indexedDB.deleteDatabase(dbData.name);
 							delReq.onsuccess = () => resolve();
 							delReq.onerror = () => reject(delReq.error || new Error(`删除数据库 ${dbData.name} 失败`));
-							delReq.onblocked = () => reject(new Error(`数据库 ${dbData.name} 被占用，请关闭其他标签页后重试`));
+							// 请求无法中途取消，阻塞时不谎报失败：提示后继续等待，其他标签页关闭后自动继续
+							delReq.onblocked = () => { alert(`数据库 ${dbData.name} 正被其他标签页占用，操作将在其关闭后自动继续`); };
 						});
 					}
 					// 创建结构（对象存储 + 索引），版本号沿用导出值（v2），兼容缺失时取 1
 					const targetVersion = Math.max(1, parseInt(dbData.version, 10) || 1);
-					await new Promise((resolve, reject) => {
-						const openReq = indexedDB.open(dbData.name, targetVersion);
-						openReq.onupgradeneeded = (event) => {
-							const db = event.target.result;
-							(dbData.stores || []).forEach(storeData => {
-								if (!storeData || !storeData.name || db.objectStoreNames.contains(storeData.name)) return;
-								const options = {};
-								if (storeData.keyPath) options.keyPath = storeData.keyPath;
-								if (storeData.autoIncrement) options.autoIncrement = true;
-								const objectStore = db.createObjectStore(storeData.name, options);
-								(storeData.indexes || []).forEach(idx => {
-									if (idx && typeof idx === 'object') {
-										// v2：完整索引元数据
-										objectStore.createIndex(idx.name, idx.keyPath, { unique: !!idx.unique, multiEntry: !!idx.multiEntry });
-									} else {
-										// 兼容 v1：索引名即键路径
-										objectStore.createIndex(idx, idx);
-									}
+					try {
+						await new Promise((resolve, reject) => {
+							const openReq = indexedDB.open(dbData.name, targetVersion);
+							openReq.onupgradeneeded = (event) => {
+								const db = event.target.result;
+								(dbData.stores || []).forEach(storeData => {
+									if (!storeData || !storeData.name || db.objectStoreNames.contains(storeData.name)) return;
+									const options = {};
+									if (storeData.keyPath) options.keyPath = storeData.keyPath;
+									if (storeData.autoIncrement) options.autoIncrement = true;
+									const objectStore = db.createObjectStore(storeData.name, options);
+									(storeData.indexes || []).forEach(idx => {
+										if (idx && typeof idx === 'object') {
+											// v2：完整索引元数据
+											objectStore.createIndex(idx.name, idx.keyPath, { unique: !!idx.unique, multiEntry: !!idx.multiEntry });
+										} else {
+											// 兼容 v1：索引名即键路径
+											objectStore.createIndex(idx, idx);
+										}
+									});
 								});
-							});
-						};
-						openReq.onsuccess = (event) => { event.target.result.close(); resolve(); };
-						openReq.onerror = () => reject(openReq.error || new Error(`创建数据库 ${dbData.name} 失败`));
-						openReq.onblocked = () => reject(new Error(`数据库 ${dbData.name} 被阻塞，请关闭其他标签页`));
-					});
-					// 写入记录
+							};
+							openReq.onsuccess = (event) => { event.target.result.close(); resolve(); };
+							openReq.onerror = () => reject(openReq.error || new Error(`创建数据库 ${dbData.name} 失败`));
+							openReq.onblocked = () => { alert(`数据库 ${dbData.name} 正被其他标签页占用，操作将在其关闭后自动继续`); };
+						});
+					} catch (e) {
+						storeResults.push(`✗ ${dbData.name}：创建结构失败（${e.message}）`);
+						continue;
+					}
+					// 写入记录：每个对象存储独立事务、独立报告，事务失败如实标记
 					for (const storeData of (dbData.stores || [])) {
 						const records = Array.isArray(storeData.records) ? storeData.records : [];
 						if (records.length === 0) continue;
-						await new Promise((resolve) => {
-							const openReq = indexedDB.open(dbData.name);
-							openReq.onsuccess = (event) => {
-								const db = event.target.result;
-								const tx = db.transaction(storeData.name, 'readwrite');
-								const objectStore = tx.objectStore(storeData.name);
-								records.forEach(rec => {
-									try {
-										if (storeData.keyPath) {
-											// 键含于值中，不能显式传键
-											objectStore.put(rec.value);
-											importedRecords++;
-										} else {
-											const key = this.deserializeIdbKey(rec.key);
-											if (key === undefined || !this.isValidIdbKey(key)) { skippedRecords++; return; }
-											objectStore.put(rec.value, key);
-											importedRecords++;
-										}
-									} catch (e) { skippedRecords++; }
-								});
-								tx.oncomplete = () => { db.close(); resolve(); };
-								// 单条失败导致事务中止时保留已写入部分，继续后续存储
-								tx.onerror = () => { db.close(); resolve(); };
-								tx.onabort = () => { db.close(); resolve(); };
-							};
-							openReq.onerror = () => resolve();
-						});
+						try {
+							const written = await this.importStoreRecords(dbData.name, storeData);
+							importedRecords += written.queued;
+							skippedRecords += written.skipped;
+							let line = `✓ ${dbData.name} / ${storeData.name}：写入 ${written.queued} 条`;
+							if (written.skipped > 0) line += `，${written.skipped} 条键无效被跳过`;
+							storeResults.push(line);
+						} catch (e) {
+							storeResults.push(`✗ ${dbData.name} / ${storeData.name}：写入失败（${e.message}），该对象存储的记录未导入`);
+						}
 					}
 				}
 				// 导入后统计缓存全部失效
-				this._idbStatsCache = {};
-				let msg = `导入完成：共写入 ${importedRecords} 条记录`;
+				this._idbStatsCache = Object.create(null);
+				const failedCount = storeResults.filter(l => l[0] === '✗').length;
+				let msg = failedCount === 0
+					? `导入完成：共写入 ${importedRecords} 条记录`
+					: `导入部分失败：成功写入 ${importedRecords} 条记录，${failedCount} 个对象存储失败`;
 				if (skippedRecords > 0) msg += `\n${skippedRecords} 条记录因键无效或数据不合法被跳过`;
-				msg += '\n注意：导出不包含二进制记录，不能作为完整备份';
+				if (storeResults.length > 0) msg += '\n\n' + storeResults.join('\n');
+				msg += '\n\n注意：导出不包含二进制记录，不能作为完整备份';
 				alert(msg);
+			},
+
+			// 把一组导入记录写入指定对象存储（单个事务）。
+			// 记录数在事务真正提交后才统计；事务失败/中止时 reject，绝不假报成功。
+			importStoreRecords: function (dbName, storeData) {
+				return new Promise((resolve, reject) => {
+					const records = Array.isArray(storeData.records) ? storeData.records : [];
+					const openReq = indexedDB.open(dbName);
+					openReq.onerror = () => reject(openReq.error || new Error(`打开数据库 ${dbName} 失败`));
+					openReq.onsuccess = (event) => {
+						const db = event.target.result;
+						let queued = 0;
+						let skipped = 0;
+						const tx = db.transaction(storeData.name, 'readwrite');
+						const objectStore = tx.objectStore(storeData.name);
+						records.forEach(rec => {
+							try {
+								if (storeData.keyPath) {
+									// 键含于值中，不能显式传键
+									objectStore.put(rec.value);
+									queued++;
+								} else {
+									const key = this.deserializeIdbKey(rec.key);
+									if (key === undefined || !this.isValidIdbKey(key)) { skipped++; return; }
+									objectStore.put(rec.value, key);
+									queued++;
+								}
+							} catch (e) { skipped++; }
+						});
+						tx.oncomplete = () => { db.close(); resolve({ queued, skipped }); };
+						tx.onerror = () => { const err = tx.error; db.close(); reject(err || new Error('写入事务失败')); };
+						tx.onabort = () => { const err = tx.error; db.close(); reject(err || new Error('写入事务被中止')); };
+					};
+				});
 			},
 
 			// 保存当前项
@@ -3834,14 +4036,11 @@ SOFTWARE.
 						return;
 					}
 					this.clearDirty();
-					// 保存后重建列表，并保持滚动位置与选中高亮
+					// 保存后重建列表（等待异步类型渲染完成），再恢复滚动位置与选中高亮
 					const listEl = document.getElementById('storageItemsList');
 					const scrollTop = listEl ? listEl.scrollTop : 0;
-					this.loadStorageItems(this.currentStorageType);
-					if (listEl) listEl.scrollTop = scrollTop;
-					const selected = Array.from(document.querySelectorAll('.storage-item')).find(item =>
-						(item.dataset.key === sel.key || item.dataset.name === sel.key) && item.dataset.type === sel.type);
-					if (selected) selected.classList.add('selected');
+					await this.loadStorageItems(this.currentStorageType);
+					this.restoreListSelection(scrollTop);
 					// Web Storage 编辑器重渲染，刷新大小/上次修改等显示
 					if (sel.type === 'localStorage' || sel.type === 'sessionStorage') {
 						this.renderWebStorageEditor(sel.type, sel.key, this.getWebStorage(sel.type).getItem(sel.key), false);
@@ -3891,7 +4090,9 @@ SOFTWARE.
 			},
 
 			// 解析 JSON 值。普通文本（不像 JSON 的输入）按字符串保存；
-			// 形如 JSON 但解析失败（如 {bad}）时抛出带位置说明的错误，避免类型被静默改变
+			// 形如 JSON 但解析失败（如 {bad}）时抛出带位置说明的错误，避免类型被静默改变。
+			// 注意：只有明确的结构化 JSON 起始符 { [ " 解析失败才报错；
+			// 数字/true/false/null 要么能解析成功，要么按字符串保存（test/foo/note/3D 不会误判）
 			parseJsonValue: function (value, context) {
 				if (value === undefined || value === null) return '';
 				const trimmed = String(value).trim();
@@ -3899,7 +4100,7 @@ SOFTWARE.
 				try {
 					return JSON.parse(trimmed);
 				} catch (e) {
-					const looksJson = /^[[{"tfn\-0-9]/.test(trimmed);
+					const looksJson = /^[[{"]/.test(trimmed);
 					if (looksJson) {
 						throw new Error((context ? context + '：' : '') +
 							'JSON 解析失败（' + e.message + '）。如需保存为字符串，请用英文双引号包裹，如 "文本"');
@@ -3986,8 +4187,6 @@ SOFTWARE.
 					const keyPath = this.parseKeyPathInput(keyPathInput ? keyPathInput.value : '');
 					const autoIncrementInput = section.querySelector('[data-field="store-auto-increment"]');
 					const autoIncrement = autoIncrementInput ? autoIncrementInput.value === 'true' : false;
-					const indexesInput = section.querySelector('[data-field="store-indexes"]');
-					const indexes = indexesInput ? indexesInput.value.split(',').map(s => s.trim()).filter(Boolean) : [];
 
 					if (isDeleted) {
 						if (!isNewStore && originalStoreName) {
@@ -3998,6 +4197,35 @@ SOFTWARE.
 
 					if (!newStoreName) {
 						throw new Error('对象存储名称不能为空');
+					}
+
+					// 收集结构化索引行（名称 + 键路径 + 唯一 + 多值）
+					const indexes = [];
+					const indexRows = section.querySelectorAll('tr[data-index-row]');
+					for (const irow of indexRows) {
+						const nameEl = irow.querySelector('[data-field="index-name"]');
+						const kpEl = irow.querySelector('[data-field="index-key-path"]');
+						const uniqueEl = irow.querySelector('[data-field="index-unique"]');
+						const meEl = irow.querySelector('[data-field="index-multi-entry"]');
+						const iname = nameEl ? nameEl.value.trim() : '';
+						if (!iname) {
+							throw new Error('对象存储 "' + newStoreName + '" 中存在未命名的索引');
+						}
+						const ikp = this.parseKeyPathInput(kpEl ? kpEl.value : '');
+						if (!ikp) {
+							throw new Error('对象存储 "' + newStoreName + '" 的索引 "' + iname + '" 缺少键路径');
+						}
+						indexes.push({
+							name: iname,
+							keyPath: ikp,
+							unique: uniqueEl ? uniqueEl.value === 'true' : false,
+							multiEntry: meEl ? meEl.value === 'true' : false
+						});
+					}
+					const indexNames = indexes.map(i => i.name);
+					const dupIndexes = indexNames.filter((n, i) => indexNames.indexOf(n) !== i);
+					if (dupIndexes.length > 0) {
+						throw new Error('对象存储 "' + newStoreName + '" 的索引名称重复: ' + dupIndexes.join(', '));
 					}
 
 					// 对比原始对象存储元数据，判断是否需要重建或修改索引
@@ -4060,7 +4288,11 @@ SOFTWARE.
 						if (!this.keyPathEqual(originalStore.keyPath, keyPath) || origAutoIncrement !== autoIncrement) {
 							wasRecreated = true;
 						}
-						if (origIndexes.length !== indexes.length || !origIndexes.every(idx => indexes.includes(idx))) {
+						// 索引按完整元数据比较（名称/键路径/唯一/多值），任一不一致才需要增删索引
+						const idxMetaEqual = (a, b) => a.name === b.name && this.keyPathEqual(a.keyPath, b.keyPath) &&
+							!!a.unique === !!b.unique && !!a.multiEntry === !!b.multiEntry;
+						if (origIndexes.length !== indexes.length ||
+							!origIndexes.every(o => indexes.some(n => idxMetaEqual(o, n)))) {
 							indexChanged = true;
 						}
 					}
@@ -4151,7 +4383,8 @@ SOFTWARE.
 					let asyncError = null; // 事务内请求级异步错误（如约束冲突）
 
 					request.onerror = () => reject(syncError || asyncError || request.error || new Error(`打开数据库 ${dbName} 失败`));
-					request.onblocked = () => reject(new Error(`数据库 ${dbName} 被阻塞，请关闭其他标签页`));
+					// 请求无法中途取消，阻塞时不谎报失败：提示后继续等待，其他标签页关闭后自动继续
+					request.onblocked = () => { alert(`数据库 ${dbName} 正被其他标签页占用，操作将在其关闭后自动继续`); };
 
 					request.onupgradeneeded = (event) => {
 						const db = event.target.result;
@@ -4175,27 +4408,34 @@ SOFTWARE.
 									if (store.keyPath) options.keyPath = store.keyPath;
 									if (store.autoIncrement) options.autoIncrement = true;
 									const objectStore = db.createObjectStore(store.newName, options);
-									// 创建索引
-									(store.indexes || []).forEach(indexName => {
-										if (!objectStore.indexNames.contains(indexName)) {
-											objectStore.createIndex(indexName, indexName);
+									// 按完整元数据创建索引（名称/键路径/唯一/多值）
+									(store.indexes || []).forEach(idx => {
+										if (!objectStore.indexNames.contains(idx.name)) {
+											objectStore.createIndex(idx.name, idx.keyPath, { unique: !!idx.unique, multiEntry: !!idx.multiEntry });
 										}
 									});
 								} else if (store.indexChanged && dbInfo) {
-									// 仅索引变化：在原对象存储上增删索引
+									// 仅索引变化：在原对象存储上增删索引；同名但元数据不同的索引先删后建
 									if (db.objectStoreNames.contains(store.newName)) {
 										const objectStore = tx.objectStore(store.newName);
 										const originalStore = (dbInfo.objectStores || []).find(s => s.name === store.originalName);
 										const origIndexes = originalStore ? (originalStore.indexes || []) : [];
 										const newIndexes = store.indexes || [];
 										origIndexes.forEach(idx => {
-											if (!newIndexes.includes(idx) && objectStore.indexNames.contains(idx)) {
-												objectStore.deleteIndex(idx);
+											if (!newIndexes.some(n => n.name === idx.name) && objectStore.indexNames.contains(idx.name)) {
+												objectStore.deleteIndex(idx.name);
 											}
 										});
 										newIndexes.forEach(idx => {
-											if (!objectStore.indexNames.contains(idx)) {
-												objectStore.createIndex(idx, idx);
+											const orig = origIndexes.find(o => o.name === idx.name);
+											const changed = !orig ||
+												!this.keyPathEqual(orig.keyPath, idx.keyPath) ||
+												!!orig.unique !== !!idx.unique || !!orig.multiEntry !== !!idx.multiEntry;
+											if (changed) {
+												if (objectStore.indexNames.contains(idx.name)) {
+													objectStore.deleteIndex(idx.name);
+												}
+												objectStore.createIndex(idx.name, idx.keyPath, { unique: !!idx.unique, multiEntry: !!idx.multiEntry });
 											}
 										});
 									}
@@ -4255,7 +4495,8 @@ SOFTWARE.
 				if (typeof key === 'string') return true;
 				if (key instanceof Date) return !Number.isNaN(key.getTime());
 				if (key instanceof ArrayBuffer || ArrayBuffer.isView(key)) return true;
-				if (Array.isArray(key)) return key.length > 0 && key.every(item => this.isValidIdbKey(item));
+				// 数组键逐元素递归校验；空数组按规范也是合法键
+				if (Array.isArray(key)) return key.every(item => this.isValidIdbKey(item));
 				return false;
 			},
 
@@ -4264,7 +4505,8 @@ SOFTWARE.
 				return new Promise((resolve, reject) => {
 					const request = indexedDB.open(dbName);
 					request.onerror = () => reject(new Error(`打开数据库 ${dbName} 失败`));
-					request.onblocked = () => reject(new Error(`数据库 ${dbName} 被阻塞，请关闭其他标签页`));
+					// 请求无法中途取消，阻塞时不谎报失败：提示后继续等待，其他标签页关闭后自动继续
+					request.onblocked = () => { alert(`数据库 ${dbName} 正被其他标签页占用，操作将在其关闭后自动继续`); };
 					request.onsuccess = (event) => {
 						const db = event.target.result;
 						if (!db.objectStoreNames.contains(storeName)) {
@@ -4402,8 +4644,11 @@ SOFTWARE.
 					}
 				});
 
-				// 第二阶段：构造写操作序列
-				const ops = [];
+				// 第二阶段：构造写操作序列。
+				// 全部 delete 排在 add/put 之前（先腾空旧键再写新键），避免键互换/链式改键时中途撞键；
+				// keyPath 且键变化的记录用 delete + add 而不是 put，目标键被占用时报错而不是静默覆盖。
+				const deleteOps = [];
+				const writeOps = [];
 
 				if (!forceAsNew && dbInfo) {
 					// 删除已不存在的旧记录（按键对象比较，而非引用比较）
@@ -4415,7 +4660,7 @@ SOFTWARE.
 									this.idbKeysEqual(record.originalKey, origRecord.key);
 							});
 							if (!survives) {
-								ops.push({ type: 'delete', key: origRecord.key });
+								deleteOps.push({ type: 'delete', key: origRecord.key });
 							}
 						});
 					}
@@ -4429,46 +4674,48 @@ SOFTWARE.
 					if (keyPath) {
 						// key 包含在 value 中，不能显式传 key
 						if (isNewRecord) {
-							ops.push({ type: 'add', value: record.value });
+							writeOps.push({ type: 'add', value: record.value });
 						} else {
-							// 如果 key 发生变化，先删除旧记录
+							// key 发生变化：delete + add（目标键被占用时 ConstraintError 报错，而非 put 静默覆盖）
 							if (keyChanged) {
-								ops.push({ type: 'delete', key: record.originalKey });
+								deleteOps.push({ type: 'delete', key: record.originalKey });
+								writeOps.push({ type: 'add', value: record.value });
+							} else {
+								writeOps.push({ type: 'put', value: record.value });
 							}
-							ops.push({ type: 'put', value: record.value });
 						}
 					} else if (autoIncrement) {
 						// 自增时，key 可选
 						if (isNewRecord) {
 							if (effectiveKey === undefined || effectiveKey === '') {
-								ops.push({ type: 'add', value: record.value });
+								writeOps.push({ type: 'add', value: record.value });
 							} else {
-								ops.push({ type: 'add', value: record.value, key: effectiveKey });
+								writeOps.push({ type: 'add', value: record.value, key: effectiveKey });
 							}
 						} else {
 							if (keyChanged) {
-								ops.push({ type: 'delete', key: record.originalKey });
-								ops.push({ type: 'add', value: record.value, key: effectiveKey });
+								deleteOps.push({ type: 'delete', key: record.originalKey });
+								writeOps.push({ type: 'add', value: record.value, key: effectiveKey });
 							} else {
-								ops.push({ type: 'put', value: record.value, key: effectiveKey });
+								writeOps.push({ type: 'put', value: record.value, key: effectiveKey });
 							}
 						}
 					} else {
 						// 无 keyPath 且非自增，必须提供 key（已在第一阶段校验）
 						if (isNewRecord) {
-							ops.push({ type: 'add', value: record.value, key: effectiveKey });
+							writeOps.push({ type: 'add', value: record.value, key: effectiveKey });
 						} else {
 							if (keyChanged) {
-								ops.push({ type: 'delete', key: record.originalKey });
-								ops.push({ type: 'add', value: record.value, key: effectiveKey });
+								deleteOps.push({ type: 'delete', key: record.originalKey });
+								writeOps.push({ type: 'add', value: record.value, key: effectiveKey });
 							} else {
-								ops.push({ type: 'put', value: record.value, key: effectiveKey });
+								writeOps.push({ type: 'put', value: record.value, key: effectiveKey });
 							}
 						}
 					}
 				});
 
-				return ops;
+				return deleteOps.concat(writeOps);
 			},
 
 			// 应用 IndexedDB 记录变更（无结构变更时）。
@@ -4477,7 +4724,8 @@ SOFTWARE.
 				return new Promise((resolve, reject) => {
 					const request = indexedDB.open(dbName);
 					request.onerror = () => reject(new Error(`打开数据库 ${dbName} 失败`));
-					request.onblocked = () => reject(new Error(`数据库 ${dbName} 被阻塞，请关闭其他标签页`));
+					// 请求无法中途取消，阻塞时不谎报失败：提示后继续等待，其他标签页关闭后自动继续
+					request.onblocked = () => { alert(`数据库 ${dbName} 正被其他标签页占用，操作将在其关闭后自动继续`); };
 
 					request.onsuccess = (event) => {
 						const db = event.target.result;
@@ -4544,8 +4792,8 @@ SOFTWARE.
 				// 未保存修改处理：删除正在编辑的项时修改必然随删除丢失；删除其他项时走统一三态处理
 				if (this.isDirty) {
 					if (isCurrent) {
+						// 只警告，不提前清 dirty：最终确认取消时未保存标记仍然有效
 						if (!await confirm('正在编辑的“' + key + '”有未保存的更改，删除后这些更改将丢失。是否继续删除？')) return;
-						this.clearDirty();
 					} else {
 						const r = await this.resolveDirty();
 						if (r === 'cancel') return;
@@ -4578,7 +4826,8 @@ SOFTWARE.
 									const delReq = indexedDB.deleteDatabase(key);
 									delReq.onsuccess = () => resolve();
 									delReq.onerror = () => reject(delReq.error || new Error(`删除数据库 ${key} 失败`));
-									delReq.onblocked = () => reject(new Error(`数据库 ${key} 被占用，请关闭其他标签页后重试`));
+									// 请求无法中途取消，阻塞时不谎报失败：提示后继续等待，其他标签页关闭后自动继续
+									delReq.onblocked = () => { alert(`数据库 ${key} 正被其他标签页占用，操作将在其关闭后自动继续`); };
 								});
 								delete this._idbStatsCache[key];
 								break;
@@ -4591,16 +4840,21 @@ SOFTWARE.
 								break;
 						}
 
-						// 重新加载存储项
-						this.loadStorageItems(this.currentStorageType);
+						// 只有删除的是当前选中项时才需要清空编辑器
+						const wasSelected = !!(this.currentSelection &&
+							this.currentSelection.type === storageType && this.currentSelection.key === key);
+
+						// 重新加载存储项（等待渲染完成后恢复未删除项的选中高亮）
+						const listEl = document.getElementById('storageItemsList');
+						const scrollTop = listEl ? listEl.scrollTop : 0;
+						await this.loadStorageItems(this.currentStorageType);
+						if (!wasSelected) this.restoreListSelection(scrollTop);
 
 						// 刷新用量摘要
 						this.updateStorageSpaceInfo(this.currentStorageType);
 
-						// 只有删除的是当前选中项时才清空编辑器；
-						// 先清脏标记，绝不再触发“是否保存”（否则会把刚删掉的键写回）
-						if (this.currentSelection &&
-							this.currentSelection.type === storageType && this.currentSelection.key === key) {
+						// 删除的是当前选中项：先清脏标记，绝不再触发“是否保存”（否则会把刚删掉的键写回）
+						if (wasSelected) {
 							this.clearDirty();
 							await this.clearSelection();
 						}
@@ -4617,10 +4871,9 @@ SOFTWARE.
 					alert("请打开任一存储选项卡后再进行操作。");
 					return 0;
 				}
-				// 清空全部会使当前编辑器内容必然失效：先明确丢弃，避免删除后被“是否保存”写回
+				// 清空全部会使当前编辑器内容必然失效：先警告，但最终确认通过后才丢弃未保存标记
 				if (this.isDirty) {
 					if (!await confirm('当前编辑器中有未保存的更改，清空全部存储将丢弃这些更改。是否继续？')) return;
-					this.clearDirty();
 				}
 				var alertText = "确定清除所有 " + this.currentStorageType + " 存储吗？\n\n注意：不建议在这里删除任何数据，可能会引发很多未知问题。";
 				if (this.currentStorageType == 'localStorage') alertText = alertText + "\n删除 LocalStorage 后，可能导致网站设置丢失、登录状态失效、部分功能异常。";
@@ -4628,18 +4881,32 @@ SOFTWARE.
 				if (this.currentStorageType == 'indexedDB') alertText = alertText + "\n将清空所有 IndexedDB 数据库中的数据（数据库与对象存储结构保留），可能导致依赖它的网站出现异常，本地数据丢失且难以恢复。";
 				if (this.currentStorageType == 'cacheStorage') alertText = alertText + "\n删除 CacheStorage 后，可能导致缓存资源被清空，网站下次加载可能变慢；若网站的 Service Worker 逻辑不完善，可能出现短时异常。";
 				if (await confirm(alertText)) {
+					// 最终确认已通过，此处才丢弃未保存标记（之后不会再触发“是否保存”）
+					this.clearDirty();
 					switch (this.currentStorageType) {
 						case 'localStorage':
 						case 'sessionStorage':
-							this.getWebStorage(this.currentStorageType).clear();
+							// 逐键删除以保留工具自身设置（主题、修改时间元数据）
+							const webStore = this.getWebStorage(this.currentStorageType);
+							for (let i = webStore.length - 1; i >= 0; i--) {
+								const k = webStore.key(i);
+								if (this.isInternalKey(k)) continue;
+								webStore.removeItem(k);
+							}
 							break;
 
 						case 'indexedDB':
 							if (window.indexedDB && window.indexedDB.databases) {
+								const failedDbs = [];
 								try {
 									const databases = await indexedDB.databases();
-									// 等待所有数据库清空真正完成后再继续
+									// 等待所有数据库清空真正完成后再继续，逐个记录失败
 									await Promise.all(databases.map(dbInfo => new Promise((resolve) => {
+										let dbFailed = false;
+										const failAndResolve = () => {
+											if (!dbFailed) { dbFailed = true; failedDbs.push(dbInfo.name); }
+											resolve();
+										};
 										// 打开数据库
 										const request = indexedDB.open(dbInfo.name, dbInfo.version);
 										request.onsuccess = (event) => {
@@ -4651,10 +4918,12 @@ SOFTWARE.
 												return;
 											}
 											let completed = 0;
-											const done = () => {
+											const done = (failed) => {
+												if (failed) dbFailed = true;
 												completed++;
 												if (completed === storeNames.length) {
 													db.close(); // 操作完成后关闭数据库
+													if (dbFailed) failedDbs.push(dbInfo.name);
 													resolve();
 												}
 											};
@@ -4672,25 +4941,30 @@ SOFTWARE.
 												clearRequest.onerror = (e) => {
 													console.error(`清空 ${storeName} 失败:`, e.target.error);
 												};
-												transaction.oncomplete = done;
-												transaction.onerror = done;
-												transaction.onabort = done;
+												transaction.oncomplete = () => done(false);
+												transaction.onerror = () => done(true);
+												transaction.onabort = () => done(true);
 											});
 										};
 										request.onerror = (e) => {
 											console.error(`打开数据库 ${dbInfo.name} 失败:`, e.target.error);
-											resolve();
+											failAndResolve();
 										};
 									})));
 								} catch (error) {
 									console.error('获取数据库列表失败:', error);
+									failedDbs.push('（获取数据库列表失败）');
+								}
+								console.log('已删除所有IndexedDB数据，但结构保留');
+								this._idbStatsCache = Object.create(null);
+								if (failedDbs.length === 0) {
+									alert(`已删除所有 IndexedDB 数据，但结构保留`);
+								} else {
+									alert(`清空部分失败，以下数据库未能完全清空：\n${failedDbs.join('\n')}`);
 								}
 							} else {
-								console.error('浏览器不支持IndexedDB枚举');
+								alert('您的浏览器不支持 IndexedDB 数据库枚举，无法执行清空');
 							}
-							console.log('已删除所有IndexedDB数据，但结构保留');
-							this._idbStatsCache = {};
-							alert(`已删除所有 IndexedDB 数据，但结构保留`);
 							break;
 
 						case 'cacheStorage':
@@ -4733,9 +5007,10 @@ SOFTWARE.
 						case 'localStorage':
 						case 'sessionStorage': {
 							const store = this.getWebStorage(storageType);
-							// 已用空间（按 UTF-16 码元计量，与浏览器口径一致）
+							// 已用空间（按 UTF-16 码元计量，与浏览器口径一致；不含工具内部键）
 							for (let i = 0; i < store.length; i++) {
 								const key = store.key(i);
+								if (this.isInternalKey(key)) continue;
 								const value = store.getItem(key);
 								usedSpace += this.localStorageEntrySize(key, value);
 							}
