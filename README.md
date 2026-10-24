@@ -41,6 +41,7 @@ Example / 示例: https://momotan.cc/storage.html
 ## 安全提示
 
 - 导出的 JSON 可能包含 **token、会话等敏感信息**，请勿随意分享。
+- 草稿会把未保存内容（包括 sessionStorage / IndexedDB 的编辑）暂存到 localStorage，可能包含 token 等敏感信息；恢复或丢弃后会清除草稿。
 - **一般情况下不推荐把本页面公开暴露在生产路径**：至少加 `noindex`，最好加访问保护。
 - 不要导入来源不可信的 JSON 文件（导入覆盖同名 IndexedDB 数据库前会自动下载一次当前备份，但该备份同样不含二进制与复杂类型记录）。
 
@@ -58,15 +59,15 @@ Example / 示例: https://momotan.cc/storage.html
 ## 开发
 
 - 单文件、无构建，可以直接编辑 `storage.html`。
-- 纯函数测试页：`storage-test.html`（需通过 HTTP 访问，与 storage.html 同目录；file:// 协议下因同源限制无法运行；**不要部署到生产路径**）。
-- 测试页通过隐藏 iframe 加载 storage.html 并直接调用其中的 `storageManager`，覆盖 XSS 转义、IndexedDB 键序列化、写计划校验、升级事务回滚、导入事务失败等数据安全高发区。
+- 自动化测试页：`storage-test.html`（需通过 HTTP 访问，与 storage.html 同目录；file:// 协议下因同源限制无法运行；**不要部署到生产路径**）。
+- 测试页通过隐藏 iframe 加载 storage.html 并直接调用其中的 `storageManager`，覆盖 XSS 转义、IndexedDB 键序列化、写计划校验、升级事务回滚、导入事务失败、草稿恢复与生命周期等数据安全高发区。
 
 ## 页面截图
 
-<img width="1598" height="1177" alt="image" src="https://github.com/user-attachments/assets/03ea672c-df65-4320-b84d-86d4fbf384e2" />
-<img width="1598" height="1177" alt="image" src="https://github.com/user-attachments/assets/0870025c-23da-4ef7-ae29-2ee7e01c24b5" />
-<img width="1598" height="1177" alt="image" src="https://github.com/user-attachments/assets/77100817-026f-47b2-9918-8072e44fd15f" />
-<img width="1599" height="1177" alt="image" src="https://github.com/user-attachments/assets/02e54915-3821-4447-afb1-baa470a8911b" />
-<img width="1598" height="1177" alt="image" src="https://github.com/user-attachments/assets/30d9374b-fd56-4229-a5d7-c091b909e523" />
-<img width="3699" height="2345" alt="b4ef1782136f914948df35649d7c8c1d" src="https://github.com/user-attachments/assets/77d2511b-7cdc-46ce-af29-e752659bebdf" />
-<img width="3734" height="2347" alt="e03be8de73c7735ed3c5cefc07cb5bb0" src="https://github.com/user-attachments/assets/c6fbf4cb-729b-45ea-a662-03498202b4cd" />
+<img width="1663" height="1163" alt="image" src="https://github.com/user-attachments/assets/584ba517-6cfd-4a2a-82a5-f13ad1b4eed4" />
+<img width="1663" height="1166" alt="image" src="https://github.com/user-attachments/assets/a1b2d87c-70cb-4287-861d-aa6b1348ea7e" />
+<img width="1663" height="1165" alt="image" src="https://github.com/user-attachments/assets/46a64447-54ae-4a07-95ca-08372934c5ef" />
+<img width="1663" height="1164" alt="image" src="https://github.com/user-attachments/assets/8ab4f338-b213-4acd-9ee0-8677acab2b99" />
+<img width="1663" height="1165" alt="image" src="https://github.com/user-attachments/assets/26ec79b9-f009-4c82-839a-00315f634a7a" />
+<img width="3732" height="2345" alt="0e53321f163f199a640c03d3adc17950" src="https://github.com/user-attachments/assets/487b4af2-4e93-49a9-9668-925b70458760" />
+<img width="3732" height="2345" alt="24e882fb0c348db2ca881b94bcf4d188" src="https://github.com/user-attachments/assets/e5174bde-6cf4-4aff-9445-f7166bb8701f" />
