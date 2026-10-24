@@ -619,9 +619,15 @@ SOFTWARE.
 			justify-content: center;
 			text-align: center;
 			-webkit-tap-highlight-color: transparent;
-			outline: none;
+			outline: 2px solid transparent;
+			outline-offset: 2px;
 			border: none;
 			transition: all 0.3s ease;
+		}
+
+		.md-btn:focus-visible {
+			outline: 2px solid var(--primary-color);
+			outline-offset: 2px;
 		}
 
 		.md-btn:hover {
@@ -1686,7 +1692,8 @@ SOFTWARE.
 		 * 特性：
 		 * 自动创建所需 DOM（如果页面中不存在）
 		 * 支持消息中的 \n 换行
-		 * 键盘适配：alert(ESC/Enter/Space关闭)，confirm(ESC取消，Enter/Space确认)
+		 * 键盘适配：ESC取消；Enter/Space激活当前焦点按钮（打开时默认焦点为确定，焦点不在按钮上时兜底为确定）
+		 * 关闭后恢复焦点到打开弹窗前持有焦点的元素
 		 * 背景点击关闭
 		 * 注：需要带上css样式，或者自行定义样式
 		 */
@@ -1700,6 +1707,26 @@ SOFTWARE.
 			let currentAlertResolve = null;
 			let currentConfirmResolve = null;
 			let keydownHandler = null;
+
+			// 弹窗打开前持有焦点的元素（触发者），关闭弹窗后恢复焦点
+			let focusBeforeModal = null;
+
+			// 记录打开弹窗前的焦点；已有弹窗激活（链式弹窗）或焦点在弹窗内/body 时不记录
+			function captureFocusBeforeModal() {
+				if (document.querySelector('.shortcutmodal.active')) return;
+				const el = document.activeElement;
+				if (!el || el === document.body || el.closest('.shortcutmodal')) return;
+				focusBeforeModal = el;
+			}
+
+			// 关闭弹窗后把焦点还给触发者；元素已不在文档中（如列表刷新后）则跳过
+			function restoreFocusBeforeModal() {
+				const el = focusBeforeModal;
+				focusBeforeModal = null;
+				if (el && document.contains(el) && !el.disabled && typeof el.focus === 'function') {
+					el.focus();
+				}
+			}
 
 			// 弹窗打开时压入一条历史记录，使用户可通过浏览器返回键 / 移动端侧滑手势关闭弹窗
 			let pushedHistoryForModal = false;
@@ -1825,6 +1852,13 @@ SOFTWARE.
 						next.focus();
 						return;
 					}
+					// 焦点已在弹窗按钮上时，Enter/Space 交给浏览器原生激活（触发该按钮的 click），
+					// 否则 Tab/点击选中的取消、放弃等按钮会被这里误当作确定；焦点不在按钮上时维持兜底
+					if (e.key === ENTER_KEY || e.key === SPACE_KEY) {
+						const modal = document.querySelector('.shortcutmodal.active');
+						const active = document.activeElement;
+						if (modal && active && active.tagName === 'BUTTON' && modal.contains(active)) return;
+					}
 					if (type === 'alert') {
 						if (e.key === ESCAPE_KEY || e.key === ENTER_KEY || e.key === SPACE_KEY) {
 							e.preventDefault();
@@ -1859,6 +1893,7 @@ SOFTWARE.
 				currentAlertResolve = null;
 				unbindKeyboard();
 				popModalHistory();
+				restoreFocusBeforeModal();
 			}
 
 			function closeConfirm() {
@@ -1867,6 +1902,7 @@ SOFTWARE.
 				currentConfirmResolve = null;
 				unbindKeyboard();
 				popModalHistory();
+				restoreFocusBeforeModal();
 			}
 
 			function showAlert(message) {
@@ -1882,6 +1918,7 @@ SOFTWARE.
 					// 强制回流：弹窗 DOM 为惰性创建，先让浏览器计算初始（非 active）样式，
 					// 否则首次打开时进入过渡动画不生效
 					void customAlert.offsetHeight;
+					captureFocusBeforeModal();
 					customAlert.classList.add('active');
 					pushModalHistory();
 					alertConfirm.focus();
@@ -1916,6 +1953,7 @@ SOFTWARE.
 					// 强制回流：弹窗 DOM 为惰性创建，先让浏览器计算初始（非 active）样式，
 					// 否则首次打开时进入过渡动画不生效
 					void customConfirmModal.offsetHeight;
+					captureFocusBeforeModal();
 					customConfirmModal.classList.add('active');
 					pushModalHistory();
 					confirmOkBtn.focus();
@@ -1935,7 +1973,7 @@ SOFTWARE.
 			}
 
 			// 三选确认框：返回 'ok' / 'third' / 'cancel'
-			// options: { okText, thirdText, cancelText }；键盘 Enter=ok，ESC=cancel，第三项仅点击（防误按）
+			// options: { okText, thirdText, cancelText }；ESC=cancel，Enter/Space=激活焦点按钮（打开时焦点在确定上，Tab 可到达第三项）
 			function showConfirm3(message, options) {
 				const opts = options || {};
 				return new Promise((resolve) => {
@@ -1958,6 +1996,7 @@ SOFTWARE.
 					// 强制回流：弹窗 DOM 为惰性创建，先让浏览器计算初始（非 active）样式，
 					// 否则首次打开时进入过渡动画不生效
 					void customConfirmModal.offsetHeight;
+					captureFocusBeforeModal();
 					customConfirmModal.classList.add('active');
 					pushModalHistory();
 					confirmOkBtn.focus();
@@ -2264,7 +2303,7 @@ SOFTWARE.
 
 				// 关于按钮
 				document.getElementById('about').addEventListener('click', () => {
-					alert('Momotan Storage Explorer\n网站本地存储管理工具\nCopyright©2026, Aphasia\nv3.2.1 release 2026/10/24\n\n基于 MIT 协议开源 / Licensed under the MIT License.\n开源地址 / Open source address: https://github.com/kvetc/Momotan-Storage-Explorer\n\n操作说明：\nEnter/Space: 确认 / Confirm\nESC: 取消 / Cancel\nCtrl+S: 保存 / Save\nDelete: 删除 / Delete');
+					alert('Momotan Storage Explorer\n网站本地存储管理工具\nCopyright©2026, Aphasia\nv3.2.1 release 2026/10/24\n\n基于 MIT 协议开源 / Licensed under the MIT License.\n开源地址 / Open source address: https://github.com/kvetc/Momotan-Storage-Explorer\n\n操作说明：\nTab: 切换弹窗按钮 / Switch dialog buttons\nEnter/Space: 激活焦点按钮（默认为确认）/ Activate focused button (Confirm by default)\nESC: 取消 / Cancel\nCtrl+S: 保存 / Save\nDelete: 删除 / Delete');
 				});
 
 				// 搜索栏
