@@ -192,6 +192,7 @@ SOFTWARE.
 			cursor: pointer;
 			position: relative;
 			-webkit-tap-highlight-color: transparent;
+			outline: none;
 			transition: all 0.2s ease;
 		}
 
@@ -208,6 +209,10 @@ SOFTWARE.
 
 		.storage-item:hover {
 			background-color: var(--light-bg);
+		}
+
+		.storage-item:focus-visible {
+			box-shadow: inset 0 0 0 1px var(--primary-color) !important;
 		}
 
 		.dark-theme .storage-item:hover {
@@ -2479,8 +2484,8 @@ SOFTWARE.
 					searchInput.value = '';
 				}
 
-				// 加载存储内容
-				this.loadStorageItems(storageType);
+				// 加载存储内容（等待异步列表渲染完成，供草稿恢复后立即选中并高亮对应项）
+				await this.loadStorageItems(storageType);
 
 				// 更新存储空间信息
 				this.updateStorageSpaceInfo(storageType);
@@ -2664,6 +2669,8 @@ SOFTWARE.
 						section.querySelectorAll('[data-index-row]').forEach(irow => {
 							sec.indexes.push({
 								name: (irow.querySelector('[data-field="index-name"]') || {}).value || '',
+								originalName: irow.dataset.originalName || '',
+								deleted: irow.dataset.deleted === 'true',
 								keyPath: (irow.querySelector('[data-field="index-key-path"]') || {}).value || '',
 								unique: (irow.querySelector('[data-field="index-unique"]') || {}).value || 'false',
 								multiEntry: (irow.querySelector('[data-field="index-multi-entry"]') || {}).value || 'false'
@@ -2697,6 +2704,9 @@ SOFTWARE.
 
 			// 把草稿快照恢复到编辑器（返回是否成功）
 			restoreDraft: async function (draft) {
+				if (!['localStorage', 'sessionStorage', 'indexedDB'].includes(draft.type)) return false;
+				await this.showStorage(draft.type);
+				if (this.currentStorageType !== draft.type) return false;
 				if (draft.type === 'localStorage' || draft.type === 'sessionStorage') {
 					if (draft.isNew) {
 						await this.createNewItem(draft.type);
@@ -2733,21 +2743,55 @@ SOFTWARE.
 						setVal('store-original-name', secDraft.storeName);
 						setVal('store-key-path', secDraft.keyPath);
 						setVal('store-auto-increment', secDraft.autoIncrement);
-						if (secDraft.deleted) { section.dataset.deleted = 'true'; section.style.display = 'none'; }
-						// 索引行
-						(secDraft.indexes || []).forEach((idxDraft, j) => {
-							let irow = section.querySelectorAll('[data-index-row]')[j];
+						section.dataset.keyPath = secDraft.keyPath || '';
+						section.dataset.autoIncrement = secDraft.autoIncrement || 'false';
+						section.dataset.deleted = secDraft.deleted ? 'true' : 'false';
+						section.style.display = secDraft.deleted ? 'none' : '';
+						// 索引按原始名称匹配，避免删除或换序后把字段回填到错误的索引
+						const indexRows = Array.from(section.querySelectorAll('[data-index-row]'));
+						const matchedRows = new Set();
+						(secDraft.indexes || []).forEach(idxDraft => {
+							let irow = indexRows.find(row => {
+								if (matchedRows.has(row)) return false;
+								const nameInput = row.querySelector('[data-field="index-name"]');
+								return idxDraft.originalName
+									? row.dataset.originalName === idxDraft.originalName
+									: !!nameInput && nameInput.value === idxDraft.name;
+							});
 							if (!irow) {
 								this.addIndexRow(section);
-								irow = section.querySelectorAll('[data-index-row]')[j];
+								const rows = section.querySelectorAll('[data-index-row]');
+								irow = rows[rows.length - 1];
+								if (irow) indexRows.push(irow);
 							}
 							if (!irow) return;
-							const setI = (field, v) => { const el = irow.querySelector(`[data-field="${field}"]`); if (el) el.value = v; };
+							matchedRows.add(irow);
+							irow.dataset.originalName = idxDraft.originalName || '';
+							const setI = (field, v) => { const el = irow.querySelector(`[data-field="${field}"]`); if (el && v !== undefined) el.value = v; };
 							setI('index-name', idxDraft.name);
 							setI('index-key-path', idxDraft.keyPath);
 							setI('index-unique', idxDraft.unique);
 							setI('index-multi-entry', idxDraft.multiEntry);
+							irow.dataset.deleted = idxDraft.deleted ? 'true' : 'false';
+							irow.style.display = idxDraft.deleted ? 'none' : '';
 						});
+						// 兼容旧草稿：被直接移除的已删除索引不会出现在快照中，剩余未匹配行同样视为删除
+						indexRows.forEach(row => {
+							if (matchedRows.has(row)) return;
+							row.dataset.deleted = 'true';
+							row.style.display = 'none';
+						});
+						const indexesCell = section.querySelector('.indexes-cell');
+						const hasVisibleIndexes = indexRows.some(row => row.dataset.deleted !== 'true');
+						let emptyIndexesMsg = indexesCell && indexesCell.querySelector('.empty-records');
+						if (!hasVisibleIndexes && indexesCell && !emptyIndexesMsg) {
+							emptyIndexesMsg = document.createElement('div');
+							emptyIndexesMsg.className = 'empty-records';
+							emptyIndexesMsg.textContent = '该对象存储暂无索引';
+							indexesCell.insertBefore(emptyIndexesMsg, indexesCell.querySelector('[data-action="add-index"]'));
+						} else if (hasVisibleIndexes && emptyIndexesMsg) {
+							emptyIndexesMsg.remove();
+						}
 						// 记录行：新增的行先补建，再回填键/值并恢复修改/删除标记
 						(secDraft.records || []).forEach(recDraft => {
 							let row = section.querySelector(`tr[data-record-index="${recDraft.recordIndex}"]`);
@@ -2813,15 +2857,17 @@ SOFTWARE.
 				// 'cancel'（稍后决定）：保留草稿，下次打开再提示
 			},
 
-			// 保存成功后清掉与当前项对应的草稿
+			// 保存或删除成功后，只清掉与当前项精确对应的草稿
 			clearDraftIfMatches: function (sel) {
 				try {
 					const raw = localStorage.getItem(this.DRAFT_KEY);
 					if (!raw) return;
 					const d = JSON.parse(raw);
-					if (d && d.type === sel.type && (d.key === sel.key || d.isNew)) {
-						localStorage.removeItem(this.DRAFT_KEY);
-					}
+					const matches = d && d.type === sel.type && (
+						(d.isNew && sel.isNew) ||
+						(!d.isNew && d.key === sel.key)
+					);
+					if (matches) localStorage.removeItem(this.DRAFT_KEY);
 				} catch (e) { }
 			},
 
@@ -2948,6 +2994,21 @@ SOFTWARE.
 				return target.closest && target.closest('.storage-item-actions, .inline-action-btn');
 			},
 
+			// 列表项可用鼠标、Enter 或 Space 选中；行内删除按钮保留独立键盘行为
+			bindStorageItemSelection: function (item, select) {
+				item.tabIndex = 0;
+				item.setAttribute('role', 'button');
+				item.addEventListener('click', (e) => {
+					if (!this.isActionButton(e.target)) select();
+				});
+				item.addEventListener('keydown', (e) => {
+					if ((e.key === 'Enter' || e.key === ' ') && !this.isActionButton(e.target)) {
+						e.preventDefault();
+						select();
+					}
+				});
+			},
+
 			// 内部元数据键（记录各存储项的修改时间），列表与导出中跳过
 			MTIME_KEY: '__momotan_storage_mtimes__',
 
@@ -3049,12 +3110,7 @@ SOFTWARE.
                         </div>
                     `;
 
-					// 点击事件（选中/编辑）
-					storageItem.addEventListener('click', (e) => {
-						if (!this.isActionButton(e.target)) {
-							this.selectStorageItem(storageType, key, value);
-						}
-					});
+					this.bindStorageItemSelection(storageItem, () => this.selectStorageItem(storageType, key, value));
 
 					// 删除按钮
 					storageItem.querySelector('[data-action="delete"]').addEventListener('click', (e) => {
@@ -3118,12 +3174,7 @@ SOFTWARE.
 								this.filterStorageItems(searchInput ? searchInput.value : '');
 							});
 
-							// 点击事件
-							storageItem.addEventListener('click', (e) => {
-								if (!this.isActionButton(e.target)) {
-									this.selectStorageItem('indexedDB', dbInfo.name, dbInfo);
-								}
-							});
+							this.bindStorageItemSelection(storageItem, () => this.selectStorageItem('indexedDB', dbInfo.name, dbInfo));
 
 							storageItemsList.appendChild(storageItem);
 						});
@@ -3190,12 +3241,7 @@ SOFTWARE.
 									</div>
 								`;
 
-								// 点击事件
-								storageItem.addEventListener('click', (e) => {
-									if (!this.isActionButton(e.target)) {
-										this.selectStorageItem('cacheStorage', cacheInfo.name, cacheInfo);
-									}
-								});
+								this.bindStorageItemSelection(storageItem, () => this.selectStorageItem('cacheStorage', cacheInfo.name, cacheInfo));
 
 								// 删除按钮
 								storageItem.querySelector('[data-action="delete"]').addEventListener('click', (e) => {
@@ -3515,7 +3561,7 @@ SOFTWARE.
 				const kpText = idx.keyPath === null || idx.keyPath === undefined ? '' :
 					(Array.isArray(idx.keyPath) ? JSON.stringify(idx.keyPath) : idx.keyPath);
 				return `
-					<div class="index-item" data-index-row="true">
+					<div class="index-item" data-index-row="true" data-original-name="${this.escapeAttr(idx.originalName !== undefined ? idx.originalName : (idx.name || ''))}">
 						<div class="index-item-header">
 							<input type="text" class="section-title-input" value="${this.escapeAttr(idx.name || '')}" placeholder="索引名" data-field="index-name">
 							<button class="inline-action-btn" title="展开/收起详情" data-action="toggle-index">${this.expandIconSvg}</button>
@@ -3675,11 +3721,14 @@ SOFTWARE.
 					this.markDirty();
 					const cell = btn.closest('.indexes-cell');
 					const item = btn.closest('[data-index-row]');
-					if (item) item.remove();
+					if (item) {
+						item.dataset.deleted = 'true';
+						item.style.display = 'none';
+					}
 					// 索引全部删完时恢复空提示
-					if (cell && !cell.querySelector('[data-index-row]')) {
-						const items = cell.querySelector('.index-items');
-						if (items) items.remove();
+					if (cell && !cell.querySelector('[data-index-row]:not([data-deleted="true"])')) {
+
+						// 删除行保留在 DOM 中，供草稿记录与保存过滤使用
 						const empty = document.createElement('div');
 						empty.className = 'empty-records';
 						empty.textContent = '该对象存储暂无索引';
@@ -4659,7 +4708,7 @@ SOFTWARE.
 
 					// 收集结构化索引行（名称 + 键路径 + 唯一 + 多值）
 					const indexes = [];
-					const indexRows = section.querySelectorAll('[data-index-row]');
+					const indexRows = section.querySelectorAll('[data-index-row]:not([data-deleted="true"])');
 					for (const irow of indexRows) {
 						const nameEl = irow.querySelector('[data-field="index-name"]');
 						const kpEl = irow.querySelector('[data-field="index-key-path"]');
@@ -5306,6 +5355,13 @@ SOFTWARE.
 					const wasSelected = !!(this.currentSelection &&
 						this.currentSelection.type === storageType && this.currentSelection.key === key);
 
+					// 删除成功后，不再让该项的旧草稿在下次打开时复活数据
+					this.clearDraftIfMatches({
+						type: storageType,
+						key: key,
+						isNew: !!(wasSelected && this.currentSelection.isNew)
+					});
+
 					// 重新加载存储项（等待渲染完成后恢复未删除项的选中高亮）
 					const listEl = document.getElementById('storageItemsList');
 					const scrollTop = listEl ? listEl.scrollTop : 0;
@@ -5443,6 +5499,12 @@ SOFTWARE.
 							alert(`已删除所有缓存`);
 							break;
 					}
+
+					// 清空全部也会使旧草稿失效；内部键过滤不会阻止这里显式删除
+					try {
+						localStorage.removeItem(this.DRAFT_KEY);
+						localStorage.removeItem(this.DRAFT_OVERFLOW_KEY);
+					} catch (e) { }
 
 					// 重新加载存储项
 					this.loadStorageItems(this.currentStorageType);
