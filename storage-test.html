@@ -4,7 +4,7 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Momotan Storage Explorer - 纯函数测试</title>
+	<title>Momotan Storage Explorer - 自动化测试</title>
 	<style>
 		body { font-family: 'Segoe UI', Arial, sans-serif; margin: 24px; color: #333; }
 		h1 { font-size: 20px; }
@@ -17,16 +17,21 @@
 </head>
 
 <body>
-	<h1>Momotan Storage Explorer 纯函数测试</h1>
-	<p class="note">通过隐藏 iframe 加载同目录 storage.html，直接测试其中的 storageManager 纯函数，避免双份实现漂移。需通过 HTTP(S) 访问（file:// 下同源策略会阻止访问 iframe）。<strong>本页仅供开发使用，不要随生产部署。</strong></p>
+	<h1>Momotan Storage Explorer 自动化测试</h1>
+	<p class="note">通过隐藏 iframe 加载同目录 storage.html，直接测试其中的 storageManager，避免双份实现漂移。需通过 HTTP(S) 访问（file:// 下同源策略会阻止访问 iframe）。<strong>本页仅供开发使用，不要随生产部署。</strong></p>
 	<div id="summary">加载中…</div>
 	<div id="results"></div>
 
 	<script>
 		const resultsEl = document.getElementById('results');
 		const summaryEl = document.getElementById('summary');
-		let passCount = 0, failCount = 0;
+		let passCount = 0, failCount = 0, totalTests = 0;
 		const pending = [];
+		const TEST_TIMEOUT_MS = 10000;
+
+		function updateRunningSummary() {
+			summaryEl.textContent = `测试中 ${passCount + failCount} / 共 ${totalTests} 项（通过 ${passCount}，失败 ${failCount}）`;
+		}
 
 		function report(name, ok, detail) {
 			const div = document.createElement('div');
@@ -34,24 +39,30 @@
 			div.textContent = (ok ? '✓ ' : '✗ ') + name + (ok ? '' : (detail !== undefined ? ' — ' + detail : ''));
 			resultsEl.appendChild(div);
 			ok ? passCount++ : failCount++;
-			summaryEl.textContent = `通过 ${passCount} / ${passCount + failCount}`;
+			updateRunningSummary();
 			summaryEl.style.borderColor = failCount ? '#d1242f' : '#1a7f37';
 		}
 
+		let testQueue = Promise.resolve();
 		function t(name, fn) {
-			try {
-				const r = fn();
-				if (r && typeof r.then === 'function') {
-					pending.push(r.then(v => report(name, v === true, v))
-						.catch(e => report(name, false, e && e.message)));
-				} else if (r === true) {
-					report(name, true);
-				} else {
-					report(name, false, r);
+			totalTests++;
+			updateRunningSummary();
+			const run = testQueue.then(async () => {
+				let timeoutId;
+				try {
+					const timeout = new Promise((resolve, reject) => {
+						timeoutId = setTimeout(() => reject(new Error(`用例超时（${TEST_TIMEOUT_MS}ms）`)), TEST_TIMEOUT_MS);
+					});
+					const r = await Promise.race([Promise.resolve().then(fn), timeout]);
+					report(name, r === true, r);
+				} catch (e) {
+					report(name, false, e && e.message);
+				} finally {
+					clearTimeout(timeoutId);
 				}
-			} catch (e) {
-				report(name, false, e && e.message);
-			}
+			});
+			pending.push(run);
+			testQueue = run;
 		}
 
 		function throws(fn) {
@@ -62,6 +73,8 @@
 
 		function loadTarget() {
 			return new Promise((resolve, reject) => {
+				localStorage.removeItem('__momotan_draft__');
+				localStorage.removeItem('__momotan_draft_overflow__');
 				const frame = document.createElement('iframe');
 				frame.style.display = 'none';
 				frame.src = 'storage.html';
@@ -525,9 +538,198 @@
 				}
 			});
 
+			// ---------- 草稿恢复与生命周期 ----------
+			t('草稿恢复后类型、列表、工具栏、高亮及键盘选中正常', async () => {
+				const key = '__momotan_test_draft_restore__';
+				try {
+					W.localStorage.setItem(key, 'before');
+					M.currentSelection = null;
+					M.currentStorageType = undefined;
+					M.clearDirty();
+					const restored = await M.restoreDraft({
+						v: 1, ts: Date.now(), type: 'localStorage', key: key, isNew: false,
+						keyInput: key, valueInput: 'after'
+					});
+					const item = Array.from(doc.querySelectorAll('.storage-item')).find(el => el.dataset.key === key);
+					const toolbarReady = ['addStorageBtn', 'clearAllBtn', 'exportBtn', 'importBtn', 'helpStorageBtn']
+						.every(id => !doc.getElementById(id).classList.contains('disabled'));
+					if (!restored || M.currentStorageType !== 'localStorage') return '存储类型未恢复';
+					if (!doc.getElementById('localStorageBtn').classList.contains('styleShowStorage')) return '类型未高亮';
+					if (!item || !item.classList.contains('selected')) return '列表未加载或列表项未高亮';
+					if (!toolbarReady) return '工具栏仍处于禁用状态';
+					if (doc.getElementById('localValueInput').value !== 'after') return '草稿内容未回填';
+					if (item.tabIndex !== 0 || item.getAttribute('role') !== 'button') return '列表项缺少键盘语义';
+					M.clearDirty();
+					const event = new W.KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true });
+					item.dispatchEvent(event);
+					await Promise.resolve();
+					if (!event.defaultPrevented || !M.currentSelection || M.currentSelection.key !== key) return 'Enter 未选中列表项';
+					return true;
+				} finally {
+					M.clearDirty();
+					await M.clearSelection();
+					W.localStorage.removeItem(key);
+					W.localStorage.removeItem(M.DRAFT_KEY);
+				}
+			});
+
+			t('真实IDB：删除一个索引并编辑另一个后，草稿恢复保存结果正确', async () => {
+				const dbName = '__momotan_test_draft_index__';
+				const originalAlert = W.alert;
+				W.alert = () => Promise.resolve();
+				await idbDelete(dbName);
+				try {
+					await new Promise((res, rej) => {
+						const r = W.indexedDB.open(dbName, 1);
+						r.onupgradeneeded = (e) => {
+							const store = e.target.result.createObjectStore('s', { keyPath: 'id' });
+							store.createIndex('email', 'email');
+							store.createIndex('name', 'name');
+							store.add({ id: 1, email: 'a@x', name: 'before' });
+						};
+						r.onsuccess = (e) => { e.target.result.close(); res(); };
+						r.onerror = () => rej(r.error);
+					});
+					await M.showStorage('indexedDB');
+					await M.selectStorageItem('indexedDB', dbName, null);
+					const rows = Array.from(doc.querySelectorAll('[data-index-row]'));
+					const emailRow = rows.find(row => row.querySelector('[data-field="index-name"]').value === 'email');
+					const nameRow = rows.find(row => row.querySelector('[data-field="index-name"]').value === 'name');
+					emailRow.querySelector('[data-action="delete-index"]').click();
+					const nameKeyPath = nameRow.querySelector('[data-field="index-key-path"]');
+					nameKeyPath.value = 'displayName';
+					nameKeyPath.dispatchEvent(new W.Event('input', { bubbles: true }));
+					const draft = M.collectDraftSnapshot();
+					M.clearDirty();
+					if (!await M.restoreDraft(draft)) return '草稿恢复失败';
+					const restoredListItem = Array.from(doc.querySelectorAll('.storage-item'))
+						.find(item => item.dataset.type === 'indexedDB' && item.dataset.name === dbName);
+					if (!restoredListItem || !restoredListItem.classList.contains('selected')) return 'IDB 草稿恢复后列表项未高亮';
+					await M.saveCurrentItem();
+					if (M.isDirty) return '保存失败';
+					const details = await M.getIndexedDBDetails(dbName);
+					const indexes = details.objectStores[0].indexes;
+					return indexes.length === 1 && indexes[0].name === 'name' && indexes[0].keyPath === 'displayName'
+						? true : '恢复保存后的索引不正确: ' + JSON.stringify(indexes);
+				} finally {
+					M.clearDirty();
+					await M.clearSelection();
+					W.alert = originalAlert;
+					W.localStorage.removeItem(M.DRAFT_KEY);
+					await idbDelete(dbName);
+				}
+			});
+
+			t('删除当前项与清空全部后对应草稿被清除', async () => {
+				const deleteKey = '__momotan_test_draft_delete__';
+				const clearKey = '__momotan_test_draft_clear__';
+				const originalConfirm = W.confirm;
+				const originalAlert = W.alert;
+				W.confirm = () => Promise.resolve(true);
+				W.alert = () => Promise.resolve();
+				try {
+					await M.showStorage('localStorage');
+					W.localStorage.setItem(deleteKey, 'value');
+					await M.selectStorageItem('localStorage', deleteKey, null);
+					W.localStorage.setItem(M.DRAFT_KEY, JSON.stringify({ v: 1, type: 'localStorage', key: deleteKey }));
+					await M.doDeleteStorageItem('localStorage', deleteKey);
+					if (W.localStorage.getItem(M.DRAFT_KEY) !== null) return '删除当前项后草稿仍存在';
+
+					W.localStorage.setItem(clearKey, 'value');
+					await M.loadStorageItems('localStorage');
+					await M.selectStorageItem('localStorage', clearKey, null);
+					W.localStorage.setItem(M.DRAFT_KEY, JSON.stringify({ v: 1, type: 'localStorage', key: clearKey }));
+					await M.clearAllStorage();
+					return W.localStorage.getItem(M.DRAFT_KEY) === null ? true : '清空全部后草稿仍存在';
+				} finally {
+					M.clearDirty();
+					await M.clearSelection();
+					W.confirm = originalConfirm;
+					W.alert = originalAlert;
+					W.localStorage.removeItem(deleteKey);
+					W.localStorage.removeItem(clearKey);
+					W.localStorage.removeItem(M.DRAFT_KEY);
+				}
+			});
+
+			t('删除未保存的新项时对应草稿被清除', async () => {
+				try {
+					await M.showStorage('localStorage');
+					await M.createNewItem('localStorage');
+					const newKey = M.currentSelection.key;
+					W.localStorage.setItem(M.DRAFT_KEY, JSON.stringify({
+						v: 1, ts: Date.now(), type: 'localStorage', key: newKey, isNew: true,
+						keyInput: newKey, valueInput: 'unsaved-new-value'
+					}));
+					await M.doDeleteStorageItem('localStorage', newKey);
+					return W.localStorage.getItem(M.DRAFT_KEY) === null ? true : '删除未保存新项后草稿仍存在';
+				} finally {
+					M.clearDirty();
+					await M.clearSelection();
+					W.localStorage.removeItem(M.DRAFT_KEY);
+				}
+			});
+
+			t('存在新项草稿时删除另一个已有项，新项草稿应保留', async () => {
+				const existingKey = '__momotan_test_draft_existing__';
+				const newItemDraft = {
+					v: 1, ts: Date.now(), type: 'localStorage', key: 'new-localstorage', isNew: true,
+					keyInput: 'new-localstorage', valueInput: 'unsaved-new-value'
+				};
+				try {
+					W.localStorage.setItem(existingKey, 'existing-value');
+					W.localStorage.setItem(M.DRAFT_KEY, JSON.stringify(newItemDraft));
+					await M.showStorage('localStorage');
+					await M.selectStorageItem('localStorage', existingKey, null);
+					await M.doDeleteStorageItem('localStorage', existingKey);
+					const raw = W.localStorage.getItem(M.DRAFT_KEY);
+					return raw === JSON.stringify(newItemDraft) ? true : '删除已有项误清了新项草稿';
+				} finally {
+					M.clearDirty();
+					await M.clearSelection();
+					W.localStorage.removeItem(existingKey);
+					W.localStorage.removeItem(M.DRAFT_KEY);
+				}
+			});
+
+			t('草稿超配额后下次打开提示 overflow 且不残留旧草稿', async () => {
+				const key = '__momotan_test_draft_overflow__';
+				const originalSetItem = W.Storage.prototype.setItem;
+				const originalAlert = W.alert;
+				let alertMessage = '';
+				try {
+					W.localStorage.setItem(key, 'before');
+					await M.showStorage('localStorage');
+					await M.selectStorageItem('localStorage', key, null);
+					doc.getElementById('localValueInput').value = 'x'.repeat(10000);
+					M.markDirty();
+					W.localStorage.setItem(M.DRAFT_KEY, 'old-draft');
+					W.Storage.prototype.setItem = function (k, v) {
+						if (k === M.DRAFT_KEY) throw new W.DOMException('quota', 'QuotaExceededError');
+						return originalSetItem.call(this, k, v);
+					};
+					W.dispatchEvent(new W.Event('pagehide'));
+					if (W.localStorage.getItem(M.DRAFT_KEY) !== null) return '旧草稿未清除';
+					if (W.localStorage.getItem(M.DRAFT_OVERFLOW_KEY) === null) return '未写入 overflow 标记';
+					W.alert = (message) => { alertMessage = String(message); return Promise.resolve(); };
+					await M.checkPendingDraft();
+					if (W.localStorage.getItem(M.DRAFT_OVERFLOW_KEY) !== null) return 'overflow 标记未消费';
+					return alertMessage.includes('草稿未能保存') ? true : '未显示 overflow 提示: ' + alertMessage;
+				} finally {
+					W.Storage.prototype.setItem = originalSetItem;
+					W.alert = originalAlert;
+					M.clearDirty();
+					await M.clearSelection();
+					W.localStorage.removeItem(key);
+					W.localStorage.removeItem(M.DRAFT_KEY);
+					W.localStorage.removeItem(M.DRAFT_OVERFLOW_KEY);
+				}
+			});
+
 			// ---------- 完成 ----------
 			Promise.all(pending).then(() => {
-				summaryEl.textContent += failCount === 0 ? '，全部通过 ✓' : '，存在失败 ✗';
+				summaryEl.textContent = `测试完成 ${passCount + failCount} / 共 ${totalTests} 项（通过 ${passCount}，失败 ${failCount}）` +
+					(failCount === 0 ? '，全部通过 ✓' : '，存在失败 ✗');
 			});
 		}).catch(err => {
 			summaryEl.textContent = '测试初始化失败：' + err.message;
