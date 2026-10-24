@@ -2,7 +2,7 @@
 Momotan Storage Explorer
 网站本地存储管理工具 / Website local storage management tool
 Copyright©2026, Aphasia
-v3.2.0 release 2026/10/24
+v3.2.1 release 2026/10/24
 基于 MIT 协议开源 / Licensed under the MIT License.
 开源地址 / Open source address: https://github.com/kvetc/Momotan-Storage-Explorer
 MIT 协议 / MIT License：
@@ -73,6 +73,17 @@ SOFTWARE.
 			margin: 0;
 			padding: 0;
 			font-family: 'Segoe UI', Arial, sans-serif;
+		}
+
+		select {
+			-webkit-appearance: none;
+			-moz-appearance: none;
+			appearance: none;
+		}
+
+		button:focus-visible {
+			box-shadow: inset 0 0 0 1px var(--primary-color) !important;
+			outline: none;
 		}
 
 		html {
@@ -346,15 +357,11 @@ SOFTWARE.
 			border-bottom: 1px solid var(--border-color-dark);
 		}
 
-		.summary-info .usage-bar {
-			margin-bottom: 0;
-		}
-
 		.summary-item {
 			font-size: 16px;
 			display: flex;
 			justify-content: space-between;
-			margin-bottom: 4px;
+			margin-bottom: 3.5px;
 			min-height: 28px;
 			transition: all 0.2s ease;
 		}
@@ -385,7 +392,7 @@ SOFTWARE.
 			height: 8px;
 			background-color: #e0e0e0;
 			border-radius: 4px;
-			margin: 0 0 10px 0;
+			margin: 0 0 1.5px 0;
 			overflow: hidden;
 			transition: all 0.2s ease;
 		}
@@ -510,7 +517,10 @@ SOFTWARE.
 			text-align: center;
 			border-right: 1px solid var(--border-color);
 			border-bottom: 1px solid var(--border-color);
+			border-left: none;
+			border-top: none;
 			-webkit-tap-highlight-color: transparent;
+			outline: none;
 			text-decoration: none;
 			flex-shrink: 0;
 			cursor: pointer;
@@ -547,7 +557,10 @@ SOFTWARE.
 			text-align: center;
 			border-right: 1px solid var(--border-color);
 			border-bottom: 1px solid var(--border-color);
+			border-left: none;
+			border-top: none;
 			-webkit-tap-highlight-color: transparent;
+			outline: none;
 			text-decoration: none;
 			flex-shrink: 0;
 			cursor: pointer;
@@ -907,8 +920,8 @@ SOFTWARE.
 			font-weight: 600;
 			color: #555;
 			font-size: 14px;
-			width: 172px;
-			min-width: 172px;
+			width: 160px;
+			min-width: 160px;
 			transition: all 0.2s ease;
 		}
 
@@ -1344,8 +1357,8 @@ SOFTWARE.
 		.empty-records {
 			color: #999;
 			font-size: 14px;
-			padding: 12px;
-			text-align: center;
+			padding: 8px 4px 12px 4px;
+			text-align: left;
 		}
 
 		.dark-theme .empty-records {
@@ -1420,6 +1433,10 @@ SOFTWARE.
 			opacity: 1;
 		}
 
+		.storage-item-actions:has(.inline-action-btn:focus-visible) {
+			opacity: 1;
+		}
+
 		/* 触屏设备（平板/触控笔记本）没有 hover，列表操作按钮常显 */
 		@media (hover: none) {
 			.storage-item-actions {
@@ -1454,11 +1471,11 @@ SOFTWARE.
 
 			.detail-table th {
 				font-size: 14px;
-				width: 168px;
-				min-width: 168px;
+				width: 142px;
+				min-width: 142px;
+				padding: 10px 9px;
 			}
 
-			.detail-table th,
 			.detail-table td {
 				padding: 10px 9px;
 			}
@@ -1539,25 +1556,25 @@ SOFTWARE.
 	<div class="container">
 		<!-- 左侧存储类型选择（图标由 createBtnSvg 在初始化时统一渲染） -->
 		<div class="leftbar">
-			<div class="createbotton" id="localStorageBtn" title="localStorage"></div>
-			<div class="createbotton" id="sessionStorageBtn" title="sessionStorage"></div>
-			<div class="createbotton" id="indexedDBBtn" title="indexedDB"></div>
-			<div class="createbotton" id="cacheStorageBtn" title="cacheStorage"></div>
+			<button class="createbotton" id="localStorageBtn" title="localStorage"></button>
+			<button class="createbotton" id="sessionStorageBtn" title="sessionStorage"></button>
+			<button class="createbotton" id="indexedDBBtn" title="indexedDB"></button>
+			<button class="createbotton" id="cacheStorageBtn" title="cacheStorage"></button>
 
-			<div class="otherbotton" id="themeToggle" title="主题 (Theme)">
-				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-					stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+			<button class="otherbotton" id="themeToggle" title="主题 (Theme)">
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+					stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 					<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
 				</svg>
-			</div>
-			<div class="otherbotton" id="about" title="关于 (About)">
-				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-					stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+			</button>
+			<button class="otherbotton" id="about" title="关于 (About)">
+				<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+					stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 					<circle cx="12" cy="12" r="10"></circle>
 					<line x1="12" y1="16" x2="12" y2="12"></line>
 					<line x1="12" y1="8" x2="12.01" y2="8"></line>
 				</svg>
-			</div>
+			</button>
 		</div>
 
 		<!-- 左侧列表 -->
@@ -1584,39 +1601,39 @@ SOFTWARE.
 					<input type="text" class="search-input" id="storageSearchInput" placeholder="搜索...">
 				</div>
 				<div class="summary-actions">
-					<div class="otherbotton" id="addStorageBtn" title="新增"></div>
-					<div class="otherbotton" id="clearAllBtn" title="删除 (Delete)">
+					<button class="otherbotton" id="addStorageBtn" title="新增"></button>
+					<button class="otherbotton" id="clearAllBtn" title="删除 (Delete)">
 						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
 							stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 							<polyline points="3 6 5 6 21 6"></polyline>
 							<path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
 							</path>
 						</svg>
-					</div>
-					<div class="otherbotton" id="exportBtn" title="导出 (Export)">
+					</button>
+					<button class="otherbotton" id="exportBtn" title="导出 (Export)">
 						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
 							stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 							<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
 							<polyline points="7 10 12 15 17 10"></polyline>
 							<line x1="12" y1="15" x2="12" y2="3"></line>
 						</svg>
-					</div>
-					<div class="otherbotton" id="importBtn" title="导入 (Import)">
+					</button>
+					<button class="otherbotton" id="importBtn" title="导入 (Import)">
 						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
 							stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 							<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
 							<polyline points="17 8 12 3 7 8"></polyline>
 							<line x1="12" y1="3" x2="12" y2="15"></line>
 						</svg>
-					</div>
-					<div class="otherbotton" id="helpStorageBtn" title="当前存储类型说明">
+					</button>
+					<button class="otherbotton" id="helpStorageBtn" title="当前存储类型说明">
 						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
 							stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 							<circle cx="12" cy="12" r="10"></circle>
 							<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
 							<line x1="12" y1="17" x2="12.01" y2="17"></line>
 						</svg>
-					</div>
+					</button>
 				</div>
 			</div>
 			<div class="storage-items-list" id="storageItemsList">
@@ -2247,7 +2264,7 @@ SOFTWARE.
 
 				// 关于按钮
 				document.getElementById('about').addEventListener('click', () => {
-					alert('Momotan Storage Explorer\n网站本地存储管理工具\nCopyright©2026, Aphasia\nv3.2.0 release 2026/10/24\n\n基于 MIT 协议开源 / Licensed under the MIT License.\n开源地址 / Open source address: https://github.com/kvetc/Momotan-Storage-Explorer\n\n操作说明：\nEnter/Space: 确认 / Confirm\nESC: 取消 / Cancel\nCtrl+S: 保存 / Save\nDelete: 删除 / Delete');
+					alert('Momotan Storage Explorer\n网站本地存储管理工具\nCopyright©2026, Aphasia\nv3.2.1 release 2026/10/24\n\n基于 MIT 协议开源 / Licensed under the MIT License.\n开源地址 / Open source address: https://github.com/kvetc/Momotan-Storage-Explorer\n\n操作说明：\nEnter/Space: 确认 / Confirm\nESC: 取消 / Cancel\nCtrl+S: 保存 / Save\nDelete: 删除 / Delete');
 				});
 
 				// 搜索栏
@@ -3299,7 +3316,7 @@ SOFTWARE.
 								<td>${this.formatBytes(size)}</td>
 							</tr>
 							<tr>
-								<th>上次修改 / Modified</th>
+								<th>修改于 / Modified</th>
 								<td>${this.escapeHtml(mtimeText)}</td>
 							</tr>
 						</table>
@@ -3393,7 +3410,7 @@ SOFTWARE.
 								<table class="detail-table">
 									<tr><th>原始名称</th><td><input type="text" class="editable-input" value="${this.escapeAttr(store.name)}" data-field="store-original-name"></td></tr>
 									<tr><th>键路径 / Key Path</th><td><input type="text" class="editable-input" value="${store.keyPath !== null && store.keyPath !== undefined ? this.escapeAttr(Array.isArray(store.keyPath) ? JSON.stringify(store.keyPath) : store.keyPath) : ''}" placeholder="（无），复合键用 JSON 数组如 [&quot;a&quot;,&quot;b&quot;]" data-field="store-key-path"></td></tr>
-									<tr><th>自增 / Auto Increment</th><td>
+									<tr><th>自增 / Auto Inc.</th><td>
 										<select class="editable-input editable-select" data-field="store-auto-increment">
 											<option value="false" ${store.autoIncrement ? '' : 'selected'}>否</option>
 											<option value="true" ${store.autoIncrement ? 'selected' : ''}>是</option>
@@ -3714,7 +3731,7 @@ SOFTWARE.
 					<table class="detail-table">
 						<tr><th>原始名称</th><td><input type="text" class="editable-input" value="new-store" data-field="store-original-name"></td></tr>
 						<tr><th>键路径 / Key Path</th><td><input type="text" class="editable-input" value="" placeholder="（无）" data-field="store-key-path"></td></tr>
-						<tr><th>自增 / Auto Increment</th><td>
+						<tr><th>自增 / Auto Inc.</th><td>
 							<select class="editable-input" data-field="store-auto-increment">
 								<option value="false" selected>否</option>
 								<option value="true">是</option>
